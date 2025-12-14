@@ -21,7 +21,8 @@ import Audio.WebAudio.Oscillator
   , startOscillator
   )
 import Audio.WebAudio.Types
-  ( AudioContext
+  ( AnalyserNode
+  , AudioContext
   , AudioContextState(..)
   , GainNode
   , OscillatorNode
@@ -53,7 +54,11 @@ type InitializedModel =
   }
 
 type Controls =
-  { ctx ∷ AudioContext, g ∷ GainNode, osc ∷ OscillatorNode }
+  { anal ∷ AnalyserNode
+  , ctx ∷ AudioContext
+  , g ∷ GainNode
+  , osc ∷ OscillatorNode
+  }
 
 data PlaybackModel
   = Started IntervalId

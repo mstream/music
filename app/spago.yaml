@@ -2,6 +2,7 @@ package:
   name: music
   dependencies:
     - arrays
+    - canvas
     - effect
     - maybe
     - elmish
@@ -9,6 +10,7 @@ package:
     - js-timers
     - parsing
     - prelude
+    - uint
     - webaudio
 workspace:
   extraPackages:

@@ -105,4 +105,6 @@ viewInitialized model dispatch =
             Started _ → "started"
             Stopped → "stopped"
         ]
+    , H.canvas_ "" { height: "200px", id: "analyzer", width: "800px" }
+        ""
     ]
