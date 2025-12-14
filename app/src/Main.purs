@@ -2,7 +2,6 @@ module Main (main) where
 
 import Prelude
 
-import Audio (beep)
 import Audio.WebAudio.AudioParam (getValue, setValue, setValueAtTime)
 import Audio.WebAudio.BaseAudioContext
   ( createGain

@@ -7,6 +7,7 @@ package:
     - elmish
     - elmish-html
     - js-timers
+    - parsing
     - prelude
     - webaudio
 workspace:

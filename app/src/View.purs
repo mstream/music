@@ -41,6 +41,7 @@ import Elmish
   )
 import Elmish.Boot as Boot
 import Elmish.Dispatch (handleEffect)
+import Elmish.HTML.Events (inputText)
 import Elmish.HTML.Styled as H
 import Message (Message(..))
 import Model (Controls, InitializedModel, Model(..), PlaybackModel(..))
@@ -62,20 +63,43 @@ view model dispatch = go dispatch
 
 viewUninitialized ∷ ViewVoid
 viewUninitialized dispatch =
-  H.div "m-4" [ H.button_ "btn m-1" { onClick } "Start" ]
+  H.div "" [ H.button_ "" { onClick } "Start" ]
   where
   onClick = handleEffect \e → do
-    -- stopPropagation e
     ctrls ← createControls
     dispatch $ ControlsCreated ctrls
 
 viewInitialized ∷ View InitializedModel
 viewInitialized model dispatch =
-  H.div "m-4"
-    [ H.button_ "btn m-1" { onClick: dispatch <| PlayRequested }
+  H.div ""
+    [ H.button_ "" { onClick: dispatch <| PlayRequested }
         "Play"
-    , H.button_ "btn m-1" { onClick: dispatch <| StopRequested } "Stop"
-    , H.div "m-1"
+    , H.button_ "" { onClick: dispatch <| StopRequested } "Stop"
+    , H.div ""
+        [ H.label_ "" { htmlFor: "gain" } "gain"
+        , H.text $ show model.gain
+        , H.input_ ""
+            { id: "gain"
+            , min: "0"
+            , max: "1"
+            , onChange: dispatch <| \e → GainInputChanged (inputText e)
+            , step: "0.01"
+            , type: "range"
+            }
+        ]
+    , H.div ""
+        [ H.label_ "" { htmlFor: "frequency" } "frequency"
+        , H.text $ show model.frequency
+        , H.input_ "frequency"
+            { min: "1.75"
+            , max: "4.25"
+            , onChange: dispatch <| \e → FrequencyInputChanged
+                (inputText e)
+            , step: "0.05"
+            , type: "range"
+            }
+        ]
+    , H.div ""
         [ H.text case model.playback of
             Starting → "starting"
             Started _ → "started"

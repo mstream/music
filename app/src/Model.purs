@@ -46,7 +46,11 @@ import Web.Event.Event (preventDefault, stopPropagation)
 data Model = Initialized InitializedModel | Uninitialized
 
 type InitializedModel =
-  { ctrls ∷ Controls, playback ∷ PlaybackModel }
+  { ctrls ∷ Controls
+  , frequency ∷ Number
+  , gain ∷ Number
+  , playback ∷ PlaybackModel
+  }
 
 type Controls =
   { ctx ∷ AudioContext, g ∷ GainNode, osc ∷ OscillatorNode }

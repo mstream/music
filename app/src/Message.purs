@@ -46,6 +46,8 @@ import Web.Event.Event (preventDefault, stopPropagation)
 
 data Message
   = ControlsCreated Controls
+  | GainInputChanged String
+  | FrequencyInputChanged String
   | PlayRequested
   | PlaybackStarted IntervalId
   | StopRequested

@@ -1,4 +1,4 @@
-module Audio (beep, createControls) where
+module Audio (adjustControls, createControls, play, stop) where
 
 import Prelude
 
@@ -57,12 +57,17 @@ createControls = do
   suspend ctx
   pure { ctx, g, osc }
 
-beep ∷ Controls → Effect Unit
-beep ctrls = do
+adjustControls ∷ Controls → Number → Number → Effect Unit
+adjustControls ctrls gainVal freqVal = do
   freqParam ← frequency ctrls.osc
-  f ← getValue freqParam
-  setValue 60.0 freqParam
+  setValue freqVal freqParam
   -- t ← currentTime ctrls.ctx
   gainParam ← gain ctrls.g
-  _ ← setValue 0.1 gainParam
+  _ ← setValue gainVal gainParam
   pure unit
+
+play ∷ Controls → Effect Unit
+play ctrls = resume ctrls.ctx
+
+stop ∷ Controls → Effect Unit
+stop ctrls = suspend ctrls.ctx
