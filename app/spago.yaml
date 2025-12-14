@@ -1,0 +1,26 @@
+package:
+  name: music
+  dependencies:
+    - arrays
+    - effect
+    - maybe
+    - elmish
+    - elmish-html
+    - js-timers
+    - prelude
+    - webaudio
+workspace:
+  extraPackages:
+    webaudio:
+      dependencies:
+        - aff
+        - arraybuffer
+        - arraybuffer-types
+        - effect
+        - maybe
+        - prelude
+        - web-events
+      git: https://github.com/mstream/purescript-webaudio.git
+      ref: f6b537a55f77a2e3dd5c797fd5be3bf087b7c66a
+  packageSet:
+    registry: 66.7.0
