@@ -5,6 +5,7 @@
   script,
   spago,
   treefmt,
+  watchexec,
   ...
 }:
 {
@@ -53,8 +54,9 @@
     category = categories.previews;
     description = "Preview website";
     exec = script "app" ''
-      run build-app
-      ${http-server} .
+      ${http-server} . &
+      ${watchexec} --exts html,js,purs,yaml --print-events -- run build-app
+      kill %1
     '';
   };
 }
