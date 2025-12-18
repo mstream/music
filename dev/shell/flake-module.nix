@@ -1,12 +1,27 @@
 {
   perSystem =
     { config, pkgs, ... }:
+    let
+      makeShell =
+        shellName: inputsFrom:
+        pkgs.mkShell {
+          inherit inputsFrom;
+          shellHook = ''
+            PS1="music-${shellName}-shell \\w > "
+          '';
+        };
+    in
     {
-      devShells.default = pkgs.mkShell {
-        inputsFrom = [ config.mission-control.devShell ];
-        shellHook = ''
-          PS1="music-shell \\w > "
-        '';
+      devShells = rec {
+        build = makeShell "build" (with config; [ packages.music ]);
+        default = dev;
+        dev = makeShell "dev" (
+          with config;
+          [
+            mission-control.devShell
+            treefmt.build.devShell
+          ]
+        );
       };
     };
 }

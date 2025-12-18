@@ -51,14 +51,9 @@
           };
 
           packages = rec {
-            default = music-prod;
-            music-dev = pkgs.callPackage ./app/package.nix {
+            default = music;
+            music = pkgs.callPackage ./app/package.nix {
               inherit buildDependencies;
-              isDev = true;
-            };
-            music-prod = pkgs.callPackage ./app/package.nix {
-              inherit buildDependencies;
-              isDev = false;
             };
           };
         };

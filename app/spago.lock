@@ -5,15 +5,20 @@
         "path": "./",
         "core": {
           "dependencies": [
-            "arrays",
+            "arraybuffer",
             "canvas",
             "effect",
+            "either",
             "elmish",
             "elmish-html",
+            "exceptions",
+            "integers",
             "js-timers",
             "maybe",
+            "numbers",
             "parsing",
             "prelude",
+            "tailrec",
             "uint",
             "webaudio"
           ],

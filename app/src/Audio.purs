@@ -7,16 +7,14 @@ import Audio.WebAudio.AnalyserNode
   , getByteTimeDomainData
   , setFftSize
   )
-import Audio.WebAudio.AudioParam (getValue, setValue, setValueAtTime)
+import Audio.WebAudio.AudioParam (setValue)
 import Audio.WebAudio.BaseAudioContext
   ( createAnalyser
   , createGain
   , createOscillator
-  , currentTime
   , destination
   , newAudioContext
   , resume
-  , state
   , suspend
   )
 import Audio.WebAudio.GainNode (gain)
@@ -26,45 +24,16 @@ import Audio.WebAudio.Oscillator
   , setOscillatorType
   , startOscillator
   )
-import Audio.WebAudio.Types
-  ( AudioContext
-  , AudioContextState(..)
-  , GainNode
-  , OscillatorNode
-  , connect
-  )
-import Control.Monad.Rec.Class
-  ( Step(..)
-  , loop2
-  , tailRec
-  , tailRec2
-  , tailRecM
-  , tailRecM2
-  , untilJust
-  , whileJust
-  )
+import Audio.WebAudio.Types (connect)
+import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.ArrayBuffer.Typed as AB
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
 import Data.UInt (toInt)
 import Effect (Effect)
-import Effect.Class (liftEffect)
 import Effect.Exception (throw)
-import Effect.Timer (IntervalId, clearInterval, setInterval)
-import Elmish
-  ( Dispatch
-  , ReactElement
-  , Transition
-  , fork
-  , forkVoid
-  , (<|)
-  )
-import Elmish.Boot as Boot
-import Elmish.Dispatch (handleEffect)
-import Elmish.HTML.Styled as H
 import Graphics.Canvas
   ( beginPath
-  , fillPath
   , fillRect
   , getCanvasDimensions
   , getCanvasElementById
@@ -77,7 +46,6 @@ import Graphics.Canvas
   , stroke
   )
 import Model (Controls)
-import Web.Event.Event (preventDefault, stopPropagation)
 
 createControls ∷ Effect Controls
 createControls = do

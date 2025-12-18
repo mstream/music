@@ -1,15 +1,20 @@
 package:
   name: music
   dependencies:
-    - arrays
+    - arraybuffer
     - canvas
     - effect
-    - maybe
+    - either
     - elmish
     - elmish-html
+    - exceptions
+    - integers
     - js-timers
+    - maybe
+    - numbers
     - parsing
     - prelude
+    - tailrec
     - uint
     - webaudio
 workspace:

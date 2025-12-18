@@ -3,50 +3,12 @@ module View (view) where
 import Prelude
 
 import Audio (createControls)
-import Audio.WebAudio.AudioParam (getValue, setValue, setValueAtTime)
-import Audio.WebAudio.BaseAudioContext
-  ( createGain
-  , createOscillator
-  , currentTime
-  , destination
-  , newAudioContext
-  , resume
-  , state
-  , suspend
-  )
-import Audio.WebAudio.GainNode (gain)
-import Audio.WebAudio.Oscillator
-  ( OscillatorType(..)
-  , frequency
-  , setOscillatorType
-  , startOscillator
-  )
-import Audio.WebAudio.Types
-  ( AudioContext
-  , AudioContextState(..)
-  , GainNode
-  , OscillatorNode
-  , connect
-  )
-import Effect (Effect)
-import Effect.Class (liftEffect)
-import Effect.Timer (IntervalId, clearInterval, setInterval)
-import Elmish
-  ( Dispatch
-  , ReactElement
-  , Transition
-  , fork
-  , forkVoid
-  , (<|)
-  )
-import Elmish.Boot as Boot
+import Elmish (Dispatch, ReactElement, (<|))
 import Elmish.Dispatch (handleEffect)
 import Elmish.HTML.Events (inputText)
 import Elmish.HTML.Styled as H
 import Message (Message(..))
-import Model (Controls, InitializedModel, Model(..), PlaybackModel(..))
-import Model (Model(..))
-import Web.Event.Event (preventDefault, stopPropagation)
+import Model (InitializedModel, Model(..), PlaybackModel(..))
 
 type ViewVoid = Dispatch Message → ReactElement
 type View m = m → Dispatch Message → ReactElement
@@ -65,7 +27,7 @@ viewUninitialized ∷ ViewVoid
 viewUninitialized dispatch =
   H.div "" [ H.button_ "" { onClick } "Start" ]
   where
-  onClick = handleEffect \e → do
+  onClick = handleEffect \_ → do
     ctrls ← createControls
     dispatch $ ControlsCreated ctrls
 

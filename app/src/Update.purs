@@ -3,52 +3,15 @@ module Update (init, update) where
 import Prelude
 
 import Audio (adjustControls, play, stop)
-import Audio.WebAudio.AudioParam (getValue, setValue, setValueAtTime)
-import Audio.WebAudio.BaseAudioContext
-  ( createGain
-  , createOscillator
-  , currentTime
-  , destination
-  , newAudioContext
-  , resume
-  , state
-  , suspend
-  )
-import Audio.WebAudio.GainNode (gain)
-import Audio.WebAudio.Oscillator
-  ( OscillatorType(..)
-  , frequency
-  , setOscillatorType
-  , startOscillator
-  )
-import Audio.WebAudio.Types
-  ( AudioContext
-  , AudioContextState(..)
-  , GainNode
-  , OscillatorNode
-  , connect
-  )
 import Data.Either (Either(..))
 import Data.Number (pow, round)
-import Effect (Effect)
 import Effect.Class (liftEffect)
-import Effect.Timer (IntervalId, clearInterval, setInterval)
-import Elmish
-  ( Dispatch
-  , ReactElement
-  , Transition
-  , fork
-  , forkVoid
-  , (<|)
-  )
-import Elmish.Boot as Boot
-import Elmish.Dispatch (handleEffect)
-import Elmish.HTML.Styled as H
+import Effect.Timer (clearInterval, setInterval)
+import Elmish (Transition, fork, forkVoid)
 import Message (Message(..))
-import Model (Controls, InitializedModel, Model(..), PlaybackModel(..))
+import Model (InitializedModel, Model(..), PlaybackModel(..))
 import Parsing (runParser)
 import Parsing.String.Basic (number)
-import Web.Event.Event (preventDefault, stopPropagation)
 
 type Update m = m → Message → Transition Message Model
 type UpdateVoid = Message → Transition Message Model

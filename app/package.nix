@@ -1,25 +1,17 @@
 {
   buildDependencies,
-  isDev,
   mkSpagoDerivation,
   nodejs,
 }:
-let
-  bundleDevScript = ''
-    set -x
-    spago bundle --bundle-type module --platform browser
-  '';
-  bundleProdScript = ''
-    set -x
-    spago bundle --bundle-type module --pedantic-packages --platform browser --strict
-  '';
-in
 mkSpagoDerivation {
   buildNodeModulesArgs = {
     inherit nodejs;
     npmRoot = ./.;
   };
-  buildPhase = if isDev then bundleDevScript else bundleProdScript;
+  buildPhase = ''
+    set -x
+    spago bundle --bundle-type module --ensure-ranges --minify --pedantic-packages --platform browser --pure --strict --verbose --verbose-stats
+  '';
   installPhase = ''
     set -x
     mkdir $out

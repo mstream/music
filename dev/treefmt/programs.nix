@@ -1,3 +1,4 @@
+{ documentWidth, ... }:
 {
   actionlint.enable = true;
   deadnix = {
@@ -12,9 +13,12 @@
   nixfmt = {
     enable = true;
     strict = true;
-    width = 72;
+    width = documentWidth;
   };
-  purs-tidy.enable = true;
+  purs-tidy = {
+    enable = true;
+    includes = [ "*.purs" ];
+  };
   statix.enable = true;
   typos = {
     binary = false;
