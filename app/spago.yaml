@@ -17,6 +17,12 @@ package:
     - tailrec
     - uint
     - webaudio
+  test:
+    main: Test.Main
+    dependencies:
+      - parsing
+      - spec
+      - spec-node
 workspace:
   extraPackages:
     webaudio:

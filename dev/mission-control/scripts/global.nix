@@ -10,6 +10,7 @@
     category = categories.checks;
     description = "Check all files";
     exec = script ''
+      run app-test
       ${treefmt} --ci --verbose
     '';
   };

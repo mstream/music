@@ -1,4 +1,15 @@
-module Model (Controls, InitializedModel, Model(..), PlaybackModel(..)) where
+module Model
+  ( AudioComponent(..)
+  , AudioNode
+  , Controls
+  , InitializedModel
+  , Model(..)
+  , OscillatorConf
+  , PlaybackModel(..)
+  , audioNode
+  ) where
+
+import Prelude
 
 import Audio.WebAudio.Types
   ( AnalyserNode
@@ -6,7 +17,10 @@ import Audio.WebAudio.Types
   , GainNode
   , OscillatorNode
   )
+import Data.Generic.Rep (class Generic)
+import Data.Show.Generic (genericShow)
 import Effect.Timer (IntervalId)
+import Parsing (Parser, fail)
 
 data Model = Initialized InitializedModel | Uninitialized
 
@@ -29,3 +43,16 @@ data PlaybackModel
   | Starting
   | Stopped
 
+type AudioNode = { component ∷ AudioComponent, id ∷ String }
+data AudioComponent = Oscillator OscillatorConf
+
+derive instance Eq AudioComponent
+derive instance Generic AudioComponent _
+
+instance Show AudioComponent where
+  show = genericShow
+
+type OscillatorConf = { frequency ∷ Number, gain ∷ Number }
+
+audioNode ∷ Parser String AudioNode
+audioNode = fail "TODO"

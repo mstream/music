@@ -8,6 +8,13 @@
   ...
 }:
 {
+  app-test = {
+    description = "Test application";
+    category = categories.checks;
+    exec = script ''
+      ${spago} test 
+    '';
+  };
   compile = {
     description = "Compile code";
     exec = script ''
