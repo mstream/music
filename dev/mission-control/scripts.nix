@@ -8,55 +8,20 @@
   watchexec,
   ...
 }:
-{
-  compile = {
-    description = "Compile code";
-    exec = script "app" ''
-      ${spago} bundle --bundle-type module --platform browser
-    '';
+let
+  app = import ./scripts/app.nix {
+    inherit
+      categories
+      http-server
+      npm
+      spago
+      watchexec
+      ;
+    script = script "app";
   };
-  update-npm-packages = {
-    description = "Update NPM packages";
-    exec = script "app" ''
-      ${npm} update
-    '';
+  global = import ./scripts/global.nix {
+    inherit categories npm treefmt;
+    script = script ".";
   };
-  update-spago-packages = {
-    description = "Update NPM packages";
-    exec = script "app" ''
-      ${spago} build
-    '';
-  };
-  build-app = {
-    category = categories.builds;
-    description = "Build application";
-    exec = script "app" ''
-      ${spago} bundle --bundle-type module --platform browser
-    '';
-  };
-  check-all = {
-    category = categories.checks;
-    description = "Check all files";
-    exec = script "." ''
-      ${treefmt} --ci --verbose
-    '';
-  };
-  format-all = {
-    category = categories.formats;
-    description = "Format all files";
-    exec = script "." ''
-      ${treefmt}
-      cd app
-      ${npm} exec purescript-psa@0.9.0 --censor-lib --json-errors --stash 2>&1 | ${npm} exec purescript-suggest@2.2.0 --apply
-    '';
-  };
-  preview-app = {
-    category = categories.previews;
-    description = "Preview website";
-    exec = script "app" ''
-      ${http-server} . &
-      ${watchexec} --exts html,js,purs,yaml --print-events -- run build-app
-      kill %1
-    '';
-  };
-}
+in
+global // app
