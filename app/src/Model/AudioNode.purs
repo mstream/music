@@ -4,12 +4,15 @@ module Model.AudioNode
   , OscillatorConf
   , Wave(..)
   , audioNode
+  , render
   ) where
 
 import Prelude
 
 import Data.CodePoint.Unicode (isAlphaNum)
 import Data.Generic.Rep (class Generic)
+import Data.Int (fromNumber, toNumber)
+import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 import Parsing (Parser, fail)
 import Parsing.String (char, string)
@@ -33,6 +36,20 @@ derive instance Generic Wave _
 
 instance Show Wave where
   show = genericShow
+
+render ∷ AudioNode → String
+render { id, component } =
+  case component of
+    Oscillator { frequency, gain, wave } →
+      "osc "
+        <> id
+        <> " {f="
+        <> show frequency
+        <> ",g="
+        <> show gain
+        <> ",w="
+        <> renderWave wave
+        <> "}"
 
 audioNode ∷ Parser String AudioNode
 audioNode = do
@@ -69,6 +86,14 @@ audioNode = do
   _ ← char '}'
 
   pure { id, component: Oscillator { frequency, gain, wave } }
+
+renderWave ∷ Wave → String
+renderWave wave =
+  case wave of
+    Sine →
+      "sine"
+    Square →
+      "square"
 
 parseWave ∷ Parser String Wave
 parseWave = do

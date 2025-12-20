@@ -8,17 +8,27 @@
   ...
 }:
 {
-  app-test = {
-    description = "Test application";
-    category = categories.checks;
-    exec = script ''
-      ${spago} test 
-    '';
-  };
-  compile = {
-    description = "Compile code";
+  app-build = {
+    category = categories.builds;
+    description = "Build application";
     exec = script ''
       ${spago} bundle --bundle-type module --platform browser
+    '';
+  };
+  app-preview = {
+    category = categories.previews;
+    description = "Preview website";
+    exec = script ''
+      ${http-server} . &
+      ${watchexec} --exts html,js,purs,yaml --print-events -- run build-app
+      kill %1
+    '';
+  };
+  app-test = {
+    category = categories.checks;
+    description = "Test application";
+    exec = script ''
+      ${spago} test 
     '';
   };
   update-npm-packages = {
@@ -31,22 +41,6 @@
     description = "Update Spago packages";
     exec = script ''
       ${spago} build
-    '';
-  };
-  build-app = {
-    category = categories.builds;
-    description = "Build application";
-    exec = script ''
-      ${spago} bundle --bundle-type module --platform browser
-    '';
-  };
-  preview-app = {
-    category = categories.previews;
-    description = "Preview website";
-    exec = script ''
-      ${http-server} . &
-      ${watchexec} --exts html,js,purs,yaml --print-events -- run build-app
-      kill %1
     '';
   };
 }

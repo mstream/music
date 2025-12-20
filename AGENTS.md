@@ -11,7 +11,9 @@
 
 - when possible, do not exceed code line length of 72 columns
 - keep code comments to minimum 
+- when writing any key-value pair data structures, sort keys alphabetically
 
-## PR instructions
+## Workflow
 
+- make sure that `run app-build` command does not produce any warning messages 
 - use conventional commit messages

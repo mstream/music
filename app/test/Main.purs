@@ -9,6 +9,7 @@ import Model.AudioNode
   , AudioNode
   , Wave(..)
   , audioNode
+  , render
   )
 import Parsing (runParser)
 import Test.Spec (Spec, describe, it)
@@ -19,20 +20,27 @@ import Test.Spec.Runner.Node (runSpecAndExitProcess)
 main ∷ Effect Unit
 main = runSpecAndExitProcess [ consoleReporter ] spec
 
-testCase ∷ String → AudioNode → String → Spec Unit
-testCase title audioNodeExample audioNodeText = it title do
-  case runParser audioNodeText audioNode of
-    Left error →
-      fail $ show error
+codeCodecTestCase ∷ String → AudioNode → String → Spec Unit
+codeCodecTestCase title parsedAudioNodeExample renderedAudioNodeExample =
+  it title do
+    case runParser renderedAudioNodeExample audioNode of
+      Left error →
+        fail $ show error
 
-    Right parsedAudioNode →
-      shouldEqual audioNodeExample parsedAudioNode
+      Right parsedAudioNode → do
+        shouldEqual parsedAudioNodeExample parsedAudioNode
+        let
+          renderedAudioNode ∷ String
+          renderedAudioNode = render parsedAudioNode
+        shouldEqual renderedAudioNodeExample renderedAudioNode
 
 spec ∷ Spec Unit
-spec = describe "parsing" do
-  testCase "oscillator"
-    { id: "osc1"
-    , component: Oscillator { frequency: 200.0, gain: 0.5, wave: Sine }
-    }
-    "osc osc1 {f=200,g=0.5,w=sine}"
+spec = do
+  describe "parsing" do
+    codeCodecTestCase "oscillator"
+      { id: "osc1"
+      , component: Oscillator
+          { frequency: 200.0, gain: 0.5, wave: Sine }
+      }
+      "osc osc1 {f=200.0,g=0.5,w=sine}"
 
