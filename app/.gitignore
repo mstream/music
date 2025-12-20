@@ -1,4 +1,5 @@
 .spago
+.spec-results
 index.js
 node_modules
 output

@@ -16,6 +16,7 @@ package:
     - prelude
     - tailrec
     - uint
+    - unicode
     - webaudio
   test:
     main: Test.Main

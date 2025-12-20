@@ -4,7 +4,12 @@ import Prelude
 
 import Data.Either (Either(..))
 import Effect (Effect)
-import Model (AudioComponent(..), AudioNode, audioNode)
+import Model.AudioNode
+  ( AudioComponent(..)
+  , AudioNode
+  , Wave(..)
+  , audioNode
+  )
 import Parsing (runParser)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail, shouldEqual)
@@ -27,7 +32,7 @@ spec ∷ Spec Unit
 spec = describe "parsing" do
   testCase "oscillator"
     { id: "osc1"
-    , component: Oscillator { frequency: 200.0, gain: 0.5 }
+    , component: Oscillator { frequency: 200.0, gain: 0.5, wave: Sine }
     }
-    "osc osc1 {f=200,g=0.5}"
+    "osc osc1 {f=200,g=0.5,w=sine}"
 
