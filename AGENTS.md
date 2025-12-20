@@ -1,10 +1,8 @@
 ## Dev environment tips
 
-- run every command inside a Nix shell which is created by command `nix develop`
-
 ## Testing instructions
 
-- run `run app-test` to execute unit tests
+- run `nix develop -c run app-test` to execute unit tests
 - do not write any tests, this is human developers responsibility
 
 ## Code style
@@ -15,5 +13,5 @@
 
 ## Workflow
 
-- make sure that `run app-build` command does not produce any warning messages 
+- make sure that `nix develop -c run app-build` command does not produce any warning messages 
 - use conventional commit messages
