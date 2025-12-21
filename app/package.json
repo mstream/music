@@ -1,6 +1,7 @@
 {
   "devDependencies": {},
   "dependencies": {
+    "mermaid": "^11",
     "react": "^17",
     "react-dom": "^17"
   }

@@ -3,12 +3,17 @@ module View (view) where
 import Prelude
 
 import Audio (createControls)
+import Data.Foldable (foldl)
+import Data.List (List)
+import Data.Maybe (Maybe, maybe)
 import Elmish (Dispatch, ReactElement, (<|))
 import Elmish.Dispatch (handleEffect)
 import Elmish.HTML.Events (inputText)
 import Elmish.HTML.Styled as H
 import Message (Message(..))
 import Model (InitializedModel, Model(..), PlaybackModel(..))
+import Model.AudioNode (AudioNode)
+import View.Code as Code
 
 type ViewVoid = Dispatch Message → ReactElement
 type View m = m → Dispatch Message → ReactElement
@@ -69,4 +74,19 @@ viewInitialized model dispatch =
         ]
     , H.canvas_ "" { height: "200px", id: "analyzer", width: "800px" }
         ""
+    , code model.nodes
+    , diagram model.nodesDiagramSvg
     ]
+
+code ∷ List AudioNode → ReactElement
+code nodes = H.pre ""
+  [ H.code ""
+      (foldl (\acc node → acc <> "\n" <> Code.render node) "" nodes)
+  ]
+
+diagram ∷ Maybe String → ReactElement
+diagram = maybe
+  (H.div "" [ H.text "not rendered" ])
+  ( \html → H.div_ "" { dangerouslySetInnerHTML: { __html: html } }
+      ([] ∷ Array ReactElement)
+  )

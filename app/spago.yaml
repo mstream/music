@@ -1,6 +1,8 @@
 package:
   name: music
   dependencies:
+    - aff
+    - aff-promise
     - arraybuffer
     - canvas
     - effect
@@ -8,8 +10,10 @@ package:
     - elmish
     - elmish-html
     - exceptions
+    - foldable-traversable
     - integers
     - js-timers
+    - lists
     - maybe
     - numbers
     - parsing

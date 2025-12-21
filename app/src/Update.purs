@@ -4,14 +4,20 @@ import Prelude
 
 import Audio (adjustControls, play, stop)
 import Data.Either (Either(..))
+import Data.Foldable (foldl)
+import Data.List (List(..), (:))
+import Data.Maybe (Maybe(..))
 import Data.Number (pow, round)
 import Effect.Class (liftEffect)
 import Effect.Timer (clearInterval, setInterval)
 import Elmish (Transition, fork, forkVoid)
+import Mermaid as Mermaid
 import Message (Message(..))
 import Model (InitializedModel, Model(..), PlaybackModel(..))
+import Model.AudioNode (AudioComponent(..), AudioNode, Wave(..))
 import Parsing (runParser)
 import Parsing.String.Basic (number)
+import View.Diagram as Diagram
 
 type Update m = m → Message → Transition Message Model
 type UpdateVoid = Message → Transition Message Model
@@ -52,9 +58,15 @@ updateInitialized model msg =
         newModel.gain
         newModel.frequency
       pure $ Initialized newModel
+
+    handleDiagramRendered ∷ String → Transition Message Model
+    handleDiagramRendered s = pure $ Initialized $ model
+      { nodesDiagramSvg = Just s }
   in
     case model.playback of
       Starting → case msg of
+        DiagramRendered s →
+          handleDiagramRendered s
         GainInputChanged s →
           handleGainInputChanged s
         FrequencyInputChanged s →
@@ -65,6 +77,8 @@ updateInitialized model msg =
           pure $ Initialized model
 
       Started intervalId → case msg of
+        DiagramRendered s →
+          handleDiagramRendered s
         GainInputChanged s →
           handleGainInputChanged s
         FrequencyInputChanged s →
@@ -78,6 +92,8 @@ updateInitialized model msg =
           pure $ Initialized model
 
       Stopped → case msg of
+        DiagramRendered s →
+          handleDiagramRendered s
         GainInputChanged s →
           handleGainInputChanged s
         FrequencyInputChanged s →
@@ -95,11 +111,44 @@ updateInitialized model msg =
 
 updateUninitialized ∷ UpdateVoid
 updateUninitialized = case _ of
-  ControlsCreated ctrls →
+  ControlsCreated ctrls → do
+    let
+      nodes ∷ List AudioNode
+      nodes =
+        { id: "osc1"
+        , component: Oscillator
+            { frequency: 100.0, gain: 1.0, wave: Sine }
+        }
+          :
+            { id: "osc2"
+            , component: Oscillator
+                { frequency: 200.0, gain: 0.5, wave: Sine }
+            }
+          :
+            { id: "osc3"
+            , component: Oscillator
+                { frequency: 400.0, gain: 0.25, wave: Sine }
+            }
+          : Nil
+
+    fork do
+      let
+        diagramDef ∷ String
+        diagramDef = foldl
+          (\acc node → acc <> "\n  " <> Diagram.render node)
+          "block"
+          nodes
+
+      diagramSvg ← Mermaid.render diagramDef
+
+      pure $ DiagramRendered diagramSvg
+
     pure $ Initialized
       { ctrls
       , gain: parseGain "0.5"
       , frequency: parseFrequency "3.0"
+      , nodes
+      , nodesDiagramSvg: Nothing
       , playback: Stopped
       }
   _ →

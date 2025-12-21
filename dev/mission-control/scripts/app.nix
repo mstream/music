@@ -12,6 +12,7 @@
     category = categories.builds;
     description = "Build application";
     exec = script ''
+      rm -f index.js
       ${spago} bundle --bundle-type module --platform browser
     '';
   };
@@ -20,8 +21,8 @@
     description = "Preview website";
     exec = script ''
       ${http-server} . &
-      ${watchexec} --exts html,js,purs,yaml --print-events -- run build-app
-      kill %1
+      trap "kill %1" EXIT
+      ${watchexec} --exts html,js,purs,yaml --print-events -- "run app-build; echo Ctrl-C to exit"
     '';
   };
   app-test = {

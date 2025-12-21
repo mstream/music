@@ -5,6 +5,7 @@ import Model (Controls)
 
 data Message
   = ControlsCreated Controls
+  | DiagramRendered String
   | GainInputChanged String
   | FrequencyInputChanged String
   | PlayRequested
