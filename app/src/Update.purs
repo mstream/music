@@ -3,21 +3,29 @@ module Update (init, update) where
 import Prelude
 
 import Audio (adjustControls, play, stop)
+import Data.Codec (encoder)
+import Data.Diagram as Diagram
 import Data.Either (Either(..))
-import Data.Foldable (foldl)
-import Data.List (List(..), (:))
+import Data.Map (Map, fromFoldable)
 import Data.Maybe (Maybe(..))
 import Data.Number (pow, round)
+import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Effect.Timer (clearInterval, setInterval)
 import Elmish (Transition, fork, forkVoid)
 import Mermaid as Mermaid
 import Message (Message(..))
 import Model (InitializedModel, Model(..), PlaybackModel(..))
-import Model.AudioNode (AudioComponent(..), AudioNode, Wave(..))
+import Model.AudioNode
+  ( AudioNode(..)
+  , AudioNodeId
+  , AudioNodes
+  , Wave(..)
+  , dummyAudioNodeId1
+  , dummyAudioNodeId2
+  )
 import Parsing (runParser)
 import Parsing.String.Basic (number)
-import View.Diagram as Diagram
 
 type Update m = m → Message → Transition Message Model
 type UpdateVoid = Message → Transition Message Model
@@ -113,33 +121,14 @@ updateUninitialized ∷ UpdateVoid
 updateUninitialized = case _ of
   ControlsCreated ctrls → do
     let
-      nodes ∷ List AudioNode
-      nodes =
-        { id: "osc1"
-        , component: Oscillator
-            { frequency: 100.0, gain: 1.0, wave: Sine }
-        }
-          :
-            { id: "osc2"
-            , component: Oscillator
-                { frequency: 200.0, gain: 0.5, wave: Sine }
-            }
-          :
-            { id: "osc3"
-            , component: Oscillator
-                { frequency: 400.0, gain: 0.25, wave: Sine }
-            }
-          : Nil
+      nodes ∷ AudioNodes
+      nodes = dummyNodes
+
+      renderDiagramDef ∷ AudioNodes → String
+      renderDiagramDef = encoder Diagram.codec unit
 
     fork do
-      let
-        diagramDef ∷ String
-        diagramDef = foldl
-          (\acc node → acc <> "\n  " <> Diagram.render node)
-          "block"
-          nodes
-
-      diagramSvg ← Mermaid.render diagramDef
+      diagramSvg ← Mermaid.render $ renderDiagramDef nodes
 
       pure $ DiagramRendered diagramSvg
 
@@ -167,3 +156,12 @@ parseFrequency s = case runParser s number of
     zero
   Right x →
     round $ pow 10.0 x
+
+dummyNodes ∷ Map AudioNodeId AudioNode
+dummyNodes =
+  fromFoldable
+    [ dummyAudioNodeId1 /\ Oscillator
+        { frequency: 100.0, gain: 1.0, wave: Sine }
+    , dummyAudioNodeId2 /\ Oscillator
+        { frequency: 200.0, gain: 0.5, wave: Sine }
+    ]

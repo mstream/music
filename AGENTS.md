@@ -7,8 +7,10 @@
 
 ## Code style
 
+- try to reuse already written code as much as possible
 - when possible, do not exceed code line length of 72 columns
 - keep code comments to minimum 
+- use descriptive names inside code to minimize need for adding comments 
 - when writing any key-value pair data structures, sort keys alphabetically
 
 ## Workflow

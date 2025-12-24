@@ -11,10 +11,10 @@ import Audio.WebAudio.Types
   , GainNode
   , OscillatorNode
   )
-import Data.List (List)
+import Data.Map (Map)
 import Data.Maybe (Maybe)
 import Effect.Timer (IntervalId)
-import Model.AudioNode (AudioNode)
+import Model.AudioNode (AudioNode, AudioNodeId)
 
 data Model = Initialized InitializedModel | Uninitialized
 
@@ -22,7 +22,7 @@ type InitializedModel =
   { ctrls ∷ Controls
   , frequency ∷ Number
   , gain ∷ Number
-  , nodes ∷ List AudioNode
+  , nodes ∷ Map AudioNodeId AudioNode
   , nodesDiagramSvg ∷ Maybe String
   , playback ∷ PlaybackModel
   }

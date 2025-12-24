@@ -22,9 +22,9 @@
       is_ci="false"
     fi
 
-    # disable caching
-    # XDG_CACHE_HOME=$(${mktemp} -d)
-    # export XDG_CACHE_HOME 
+    # make caching local
+    XDG_CACHE_HOME=.cache
+    export XDG_CACHE_HOME 
 
     export is_ci
 
