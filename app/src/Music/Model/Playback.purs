@@ -1,9 +1,12 @@
-module Model.Playback (Playback(..)) where
+module Music.Model.Playback (Playback(..), PlaybackControls) where
 
-import Audio.WebAudio.Types (AudioContext)
+import Audio.WebAudio.Types (AnalyserNode, AudioContext)
+
+type PlaybackControls =
+  { analyserNode ∷ AnalyserNode, audioContext ∷ AudioContext }
 
 data Playback
-  = Playing AudioContext
+  = Playing PlaybackControls
   | PlaybackStarting
   | Stopped
 

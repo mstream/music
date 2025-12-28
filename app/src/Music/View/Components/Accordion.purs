@@ -1,4 +1,4 @@
-module View.Components.Accordion (Item, Items, view) where
+module Music.View.Components.Accordion (Item, Items, view) where
 
 import Prelude
 
@@ -9,7 +9,7 @@ import Data.Map (Map)
 import Data.Map as Map
 import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
-import View.Types (ViewModelPure)
+import Music.View.Types (ViewModelPure)
 
 type Items t = Map t Item
 type Item = { contents ∷ ReactElement, open ∷ Boolean }

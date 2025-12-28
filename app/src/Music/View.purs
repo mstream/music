@@ -1,4 +1,4 @@
-module View (view) where
+module Music.View (view) where
 
 import Prelude
 
@@ -8,17 +8,17 @@ import Data.Map as Map
 import Data.Tuple.Nested ((/\))
 import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
-import Message (Message(..))
-import Model (Model)
-import Model.AudioNodes.Codec.Code (codec) as Code
-import Model.Perspective as Perspective
+import Music.Message (Message(..))
+import Music.Model (Model)
+import Music.Model.AudioNodes.Codec.Code (codec) as Code
+import Music.Model.Perspective as Perspective
 import Parsing (runParser)
-import Update.Perspective.Controls (init) as Controls
-import View.Code (view) as Code
-import View.Components.NavBar as NavBar
-import View.Controls (view) as Controls
-import View.Diagram as Diagram
-import View.Types (ViewModel, ViewVoid)
+import Music.Update.Perspective.Controls (init) as Controls
+import Music.View.Code (view) as Code
+import Music.View.Components.NavBar as NavBar
+import Music.View.Controls (view) as Controls
+import Music.View.Diagram as Diagram
+import Music.View.Types (ViewModel, ViewVoid)
 
 data Title = Code | Controls | Diagram
 

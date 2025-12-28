@@ -1,4 +1,4 @@
-module Model.AudioNodes.Codec.Diagram
+module Music.Model.AudioNodes.Codec.Diagram
   ( Diagram
   , codec
   , fromString
@@ -16,20 +16,20 @@ import Data.Function.Uncurried (Fn2, Fn5, mkFn5, runFn2)
 import Data.Identity (Identity)
 import Data.Map (fromFoldable)
 import Data.Tuple.Nested (type (/\), (/\))
-import Model.AudioNodeId (AudioNodeId)
-import Model.AudioNodeId as AudioNodeId
-import Model.AudioNodes
+import Music.Model.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodeId as AudioNodeId
+import Music.Model.AudioNodes
   ( AudioNode(..)
   , AudioNodes
   )
-import Model.AudioNodes.Codec
+import Music.Model.AudioNodes.Codec
   ( AudioNodesCodec
   , AudioNodesDecoder
   , AudioNodesEncoder
   )
-import Model.AudioNodes.Frequency as Frequency
-import Model.AudioNodes.Gain as Gain
-import Model.AudioNodes.Wave as Wave
+import Music.Model.AudioNodes.Frequency as Frequency
+import Music.Model.AudioNodes.Gain as Gain
+import Music.Model.AudioNodes.Wave as Wave
 import Parsing
   ( ParseError
   , ParseState(..)

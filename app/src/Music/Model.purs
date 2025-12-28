@@ -1,6 +1,6 @@
-module Model (Model(..)) where
+module Music.Model (Model(..)) where
 
-import Model.Perspective (Perspective)
+import Music.Model.Perspective (Perspective)
 
 type Model = { perspective ∷ Perspective }
 

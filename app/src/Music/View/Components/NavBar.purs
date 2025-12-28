@@ -1,4 +1,4 @@
-module View.Components.NavBar (Item(..), Items, view) where
+module Music.View.Components.NavBar (Item(..), Items, view) where
 
 import Prelude
 
@@ -9,8 +9,8 @@ import Data.Map (Map)
 import Elmish (ReactElement)
 import Elmish.Dispatch ((<|))
 import Elmish.HTML.Styled as H
-import Message (Message)
-import View.Types (ViewModel)
+import Music.Message (Message)
+import Music.View.Types (ViewModel)
 
 type Items t = Map t Item
 data Item = Active | Available Message | Unavailable String

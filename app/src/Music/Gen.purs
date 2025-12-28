@@ -1,4 +1,4 @@
-module Gen (arbitraryMap, genMap) where
+module Music.Gen (arbitraryMap, genMap) where
 
 import Prelude
 

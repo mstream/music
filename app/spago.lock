@@ -8,7 +8,10 @@
             "aff",
             "aff-promise",
             "arraybuffer",
+            "arrays",
             "canvas",
+            "console",
+            "control",
             "effect",
             "either",
             "elmish",
@@ -16,15 +19,21 @@
             "elmish-time-machine",
             "exceptions",
             "foldable-traversable",
+            "functions",
+            "gen",
+            "identity",
             "integers",
             "js-timers",
             "lists",
             "maybe",
             "numbers",
+            "ordered-collections",
             "parsing",
             "prelude",
             "quickcheck",
+            "strings",
             "tailrec",
+            "tuples",
             "uint",
             "unicode",
             "webaudio"
@@ -111,10 +120,11 @@
         },
         "test": {
           "dependencies": [
+            "lcg",
             "parsing",
+            "partial",
             "spec",
-            "spec-node",
-            "spec-quickcheck"
+            "spec-node"
           ],
           "build_plan": [
             "aff",
@@ -177,14 +187,12 @@
             "posix-types",
             "prelude",
             "profunctor",
-            "quickcheck",
             "random",
             "record",
             "refs",
             "safe-coerce",
             "spec",
             "spec-node",
-            "spec-quickcheck",
             "st",
             "strings",
             "tailrec",
@@ -1894,22 +1902,6 @@
         "prelude",
         "spec",
         "strings",
-        "tuples"
-      ]
-    },
-    "spec-quickcheck": {
-      "type": "registry",
-      "version": "5.0.2",
-      "integrity": "sha256-Qn3ahQEgCskgQiUOWA5pfgUbbB5Jcv/EVuRN7D70K+s=",
-      "dependencies": [
-        "aff",
-        "arrays",
-        "effect",
-        "foldable-traversable",
-        "lists",
-        "maybe",
-        "prelude",
-        "quickcheck",
         "tuples"
       ]
     },

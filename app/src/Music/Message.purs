@@ -1,9 +1,10 @@
-module Message (Message(..)) where
+module Music.Message (Message(..)) where
 
 import Audio.WebAudio.Types (AudioContext)
-import Model.AudioNodeId (AudioNodeId)
-import Model.AudioNodes (AudioNode)
-import Model.Perspective (Perspective)
+import Music.Model.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodes (AudioNode)
+import Music.Model.Perspective (Perspective)
+import Music.Model.Playback (PlaybackControls)
 
 data Message
   = AudioContextCreated AudioContext
@@ -12,5 +13,5 @@ data Message
   | DiagramRendered String
   | PerspectiveChanged Perspective
   | PlayRequested
-  | PlaybackStarted AudioContext
+  | PlaybackStarted PlaybackControls
   | StopRequested

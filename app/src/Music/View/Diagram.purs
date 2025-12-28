@@ -1,8 +1,8 @@
-module View.Diagram (view) where
+module Music.View.Diagram (view) where
 
 import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
-import View.Types (ViewModelPure)
+import Music.View.Types (ViewModelPure)
 
 view ∷ ViewModelPure String
 view renderedDiagramHtml = H.div_

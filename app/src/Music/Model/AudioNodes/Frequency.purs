@@ -1,4 +1,4 @@
-module Model.AudioNodes.Frequency
+module Music.Model.AudioNodes.Frequency
   ( Frequency
   , codec
   , fromNumber

@@ -1,11 +1,11 @@
-module Model.AudioNodes.Codec
+module Music.Model.AudioNodes.Codec
   ( AudioNodesCodec
   , AudioNodesDecoder
   , AudioNodesEncoder
   ) where
 
 import Data.Codec (Codec, Decoder, Encoder)
-import Model.AudioNodes (AudioNodes)
+import Music.Model.AudioNodes (AudioNodes)
 
 type AudioNodesCodec e o = Codec AudioNodes e o
 

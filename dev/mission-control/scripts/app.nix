@@ -13,7 +13,10 @@
     description = "Build application";
     exec = script ''
       rm -f index.js
-      ${spago} bundle --bundle-type module --platform browser
+      ${spago} bundle \
+        --bundle-type module \
+        --module MainDebug \
+        --platform browser
     '';
   };
   app-preview = {

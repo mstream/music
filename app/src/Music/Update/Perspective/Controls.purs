@@ -1,17 +1,14 @@
-module Update.Perspective.Controls (init, update) where
+module Music.Update.Perspective.Controls (init, update) where
 
 import Prelude
 
-import Audio as Audio
 import Elmish as E
-import Message (Message(..))
-import Model.AudioNodes (AudioNodes)
-import Model.Perspective
-  ( ControlsPerspective
-  , Perspective(..)
-  )
-import Model.Playback (Playback(..))
-import Update.Types (Update)
+import Music.Audio as Audio
+import Music.Message (Message(..))
+import Music.Model.AudioNodes (AudioNodes)
+import Music.Model.Perspective (ControlsPerspective, Perspective(..))
+import Music.Model.Playback (Playback(..))
+import Music.Update.Types (Update)
 
 init ∷ AudioNodes → ControlsPerspective
 init audioNodes = { audioNodes, playback: Stopped }
@@ -22,16 +19,19 @@ update model = case _ of
     pure { perspective }
   PlayRequested → do
     E.fork do
-      newAudioContext ← Audio.play model.audioNodes
-      pure $ PlaybackStarted newAudioContext
+      playbackControls ← Audio.play model.audioNodes
+      pure $ PlaybackStarted playbackControls
     pure { perspective: Controls model { playback = PlaybackStarting } }
-  PlaybackStarted audioContext →
+  PlaybackStarted playbackControls → do
+    E.forkVoid $ Audio.updateAnalyserCanvas
+      playbackControls.analyserNode
     pure
-      { perspective: Controls model { playback = Playing audioContext }
+      { perspective: Controls model
+          { playback = Playing playbackControls }
       }
   StopRequested → case model.playback of
-    Playing audioContext → do
-      E.forkVoid $ Audio.stop audioContext
+    Playing playbackControls → do
+      E.forkVoid $ Audio.stop playbackControls.audioContext
       pure { perspective: Controls model { playback = Stopped } }
     _ →
       pure { perspective: Controls model }

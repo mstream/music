@@ -1,13 +1,13 @@
-module Update (init, update) where
+module Music.Update (init, update) where
 
 import Prelude
 
 import Elmish (Transition)
-import Message (Message(..))
-import Model (Model)
-import Model.Perspective (Perspective(..))
-import Update.Perspective.Controls as Controls
-import Update.Types (Update)
+import Music.Message (Message(..))
+import Music.Model (Model)
+import Music.Model.Perspective (Perspective(..))
+import Music.Update.Perspective.Controls as Controls
+import Music.Update.Types (Update)
 
 exampleCode ∷ String
 exampleCode = "osc1 osc{f=200.0,g=0.5,w=sine}"

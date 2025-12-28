@@ -1,10 +1,10 @@
-module Model.Perspective
+module Music.Model.Perspective
   ( ControlsPerspective
   , Perspective(..)
   ) where
 
-import Model.AudioNodes (AudioNodes)
-import Model.Playback (Playback)
+import Music.Model.AudioNodes (AudioNodes)
+import Music.Model.Playback (Playback)
 
 type ControlsPerspective =
   { audioNodes ∷ AudioNodes

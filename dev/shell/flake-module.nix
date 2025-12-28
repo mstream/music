@@ -3,9 +3,9 @@
     { config, pkgs, ... }:
     let
       makeShell =
-        shellName: inputsFrom:
+        shellName: packages: inputsFrom:
         pkgs.mkShell {
-          inherit inputsFrom;
+          inherit inputsFrom packages;
           shellHook = ''
             PS1="music-${shellName}-shell \\w > "
           '';
@@ -13,9 +13,9 @@
     in
     {
       devShells = rec {
-        build = makeShell "build" (with config; [ packages.music ]);
+        build = makeShell "build" [ ] (with config; [ packages.music ]);
         default = dev;
-        dev = makeShell "dev" (
+        dev = makeShell "dev" (with pkgs; [ spago-unstable ]) (
           with config;
           [
             mission-control.devShell

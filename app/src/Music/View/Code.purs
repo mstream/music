@@ -1,4 +1,4 @@
-module View.Code (view) where
+module Music.View.Code (view) where
 
 import Prelude
 
@@ -7,11 +7,11 @@ import Data.Either (Either(..))
 import Elmish ((<|))
 import Elmish.HTML.Events (textareaText)
 import Elmish.HTML.Styled as H
-import Message (Message(..))
-import Model.AudioNodes.Codec.Code (codec) as Code
-import Model.Perspective (Perspective(..))
+import Music.Message (Message(..))
+import Music.Model.AudioNodes.Codec.Code (codec) as Code
+import Music.Model.Perspective (Perspective(..))
 import Parsing (parseErrorMessage, runParser)
-import View.Types (ViewModel)
+import Music.View.Types (ViewModel)
 
 view ∷ ViewModel String
 view s dispatch = H.div ""

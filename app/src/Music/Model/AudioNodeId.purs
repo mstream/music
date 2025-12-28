@@ -1,4 +1,4 @@
-module Model.AudioNodeId
+module Music.Model.AudioNodeId
   ( AudioNodeId
   , codec
   , fromString

@@ -1,4 +1,4 @@
-module View.Controls (view) where
+module Music.View.Controls (view) where
 
 import Prelude
 
@@ -11,22 +11,24 @@ import Elmish (ReactElement)
 import Elmish.Dispatch (handleEffect, (<|))
 import Elmish.HTML.Events (InputChangeEvent, inputText)
 import Elmish.HTML.Styled as H
-import Message (Message(..))
-import Model.AudioNodeId (AudioNodeId)
-import Model.AudioNodeId as AudioNodeId
-import Model.AudioNodes (AudioNode(..), OscillatorConf)
-import Model.AudioNodes.Frequency as Frequency
-import Model.AudioNodes.Gain as Gain
-import Model.Perspective (ControlsPerspective)
-import Model.Playback (Playback(..))
+import Music.Message (Message(..))
+import Music.Model.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodeId as AudioNodeId
+import Music.Model.AudioNodes (AudioNode(..), OscillatorConf)
+import Music.Model.AudioNodes.Frequency as Frequency
+import Music.Model.AudioNodes.Gain as Gain
+import Music.Model.Perspective (ControlsPerspective)
+import Music.Model.Playback (Playback(..))
+import Music.View.Components.Accordion as Accordion
+import Music.View.Types (ViewModel)
 import Parsing (parseErrorMessage, runParser)
-import View.Components.Accordion as Accordion
-import View.Types (ViewModel)
 
 view ∷ ViewModel ControlsPerspective
 view model dispatch =
   H.div ""
-    [ H.div_ "" { role: "group" } [ playButton, stopButton ]
+    [ H.canvas_ "" { height: "200px", id: "analyser", width: "800px" }
+        ""
+    , H.div_ "" { role: "group" } [ playButton, stopButton ]
     , controls
     ]
   where

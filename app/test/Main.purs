@@ -11,20 +11,20 @@ import Data.Map (Map, fromFoldable)
 import Data.Traversable (sequence_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
-import Gen (arbitraryMap) as Gen
+import Music.Gen (arbitraryMap) as Gen
 import Mermaid as Mermaid
-import Model.AudioNodeId (AudioNodeId)
-import Model.AudioNodeId as AudioNodeId
-import Model.AudioNodes
+import Music.Model.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodeId as AudioNodeId
+import Music.Model.AudioNodes
   ( AudioNode(..)
   , AudioNodes
   )
-import Model.AudioNodes.Codec (AudioNodesCodec)
-import Model.AudioNodes.Codec.Code as Code
-import Model.AudioNodes.Codec.Diagram as Diagram
-import Model.AudioNodes.Frequency as Frequency
-import Model.AudioNodes.Gain as Gain
-import Model.AudioNodes.Wave (Wave(..))
+import Music.Model.AudioNodes.Codec (AudioNodesCodec)
+import Music.Model.AudioNodes.Codec.Code as Code
+import Music.Model.AudioNodes.Codec.Diagram as Diagram
+import Music.Model.AudioNodes.Frequency as Frequency
+import Music.Model.AudioNodes.Gain as Gain
+import Music.Model.AudioNodes.Wave (Wave(..))
 import Parsing (ParseError, runParser)
 import Partial.Unsafe (unsafePartial)
 import Random.LCG (mkSeed)

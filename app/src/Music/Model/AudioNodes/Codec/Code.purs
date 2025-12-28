@@ -1,4 +1,4 @@
-module Model.AudioNodes.Codec.Code (codec) where
+module Music.Model.AudioNodes.Codec.Code (codec) where
 
 import Prelude
 
@@ -8,17 +8,17 @@ import Data.Codec as Codec
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Map (fromFoldable)
 import Data.Tuple.Nested (type (/\), (/\))
-import Model.AudioNodeId (AudioNodeId)
-import Model.AudioNodeId as AudioNodeId
-import Model.AudioNodes (AudioNode(..))
-import Model.AudioNodes.Codec
+import Music.Model.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodeId as AudioNodeId
+import Music.Model.AudioNodes (AudioNode(..))
+import Music.Model.AudioNodes.Codec
   ( AudioNodesCodec
   , AudioNodesDecoder
   , AudioNodesEncoder
   )
-import Model.AudioNodes.Frequency as Frequency
-import Model.AudioNodes.Gain as Gain
-import Model.AudioNodes.Wave as Wave
+import Music.Model.AudioNodes.Frequency as Frequency
+import Music.Model.AudioNodes.Gain as Gain
+import Music.Model.AudioNodes.Wave as Wave
 import Parsing (Parser)
 import Parsing.String (char, string)
 import Parsing.String.Basic (skipSpaces)

@@ -1,4 +1,4 @@
-module Model.AudioNodes.Gain
+module Music.Model.AudioNodes.Gain
   ( Gain
   , codec
   , fromNumber

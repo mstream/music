@@ -1,4 +1,4 @@
-module Model.AudioNodes.Wave (Wave(..), codec) where
+module Music.Model.AudioNodes.Wave (Wave(..), codec) where
 
 import Prelude
 
