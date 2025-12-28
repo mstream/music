@@ -2,32 +2,44 @@ module Test.Main (main) where
 
 import Prelude
 
-import Data.Code as Code
-import Data.Codec (decoder, encoder)
-import Data.Codec.AudioNodes (AudioNodesCodec)
-import Data.Diagram as Diagram
+import Data.Array as Array
+import Data.Codec as Codec
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.FoldableWithIndex (traverseWithIndex_)
 import Data.Map (Map, fromFoldable)
+import Data.Traversable (sequence_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
-import Model.AudioNode
+import Gen (arbitraryMap) as Gen
+import Mermaid as Mermaid
+import Model.AudioNodeId (AudioNodeId)
+import Model.AudioNodeId as AudioNodeId
+import Model.AudioNodes
   ( AudioNode(..)
-  , AudioNodeId
   , AudioNodes
-  , Wave(..)
-  , dummyAudioNodeId1
-  , dummyAudioNodeId2
   )
+import Model.AudioNodes.Codec (AudioNodesCodec)
+import Model.AudioNodes.Codec.Code as Code
+import Model.AudioNodes.Codec.Diagram as Diagram
+import Model.AudioNodes.Frequency as Frequency
+import Model.AudioNodes.Gain as Gain
+import Model.AudioNodes.Wave (Wave(..))
 import Parsing (ParseError, runParser)
+import Partial.Unsafe (unsafePartial)
+import Random.LCG (mkSeed)
+import Test.QuickCheck.Gen (evalGen, vectorOf) as Gen
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail, shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner.Node (runSpecAndExitProcess)
 
+foreign import mockBrowserImpl ∷ Effect Unit
+
 main ∷ Effect Unit
-main = runSpecAndExitProcess [ consoleReporter ] spec
+main = do
+  mockBrowserImpl
+  runSpecAndExitProcess [ consoleReporter ] spec
 
 spec ∷ Spec Unit
 spec = do
@@ -45,29 +57,32 @@ spec = do
     , examples:
         fromFoldable
           [ parsedAudioNodesExample /\
-              "block\n  dummy1[\"osc{f=200.0,g=0.5,w=sine}\"]\n  dummy2[\"osc{f=200.0,g=0.5,w=sine}\"]"
+              ( unsafePartial $ Diagram.fromString
+                  "block\n  dummy1[\"osc{f=200.0,g=0.5,w=sine}\"]\n  dummy2[\"osc{f=200.0,g=0.5,w=sine}\"]"
+              )
           ]
     , name: "diagram"
     }
+  mermaidTestSuite 10
 
-type CodeTestSuiteConf =
-  { codec ∷ AudioNodesCodec Unit
-  , examples ∷ Map AudioNodes String
+type CodeTestSuiteConf e =
+  { codec ∷ AudioNodesCodec e Unit
+  , examples ∷ Map AudioNodes e
   , name ∷ String
   }
 
-codecTestSuite ∷ CodeTestSuiteConf → Spec Unit
+codecTestSuite ∷ ∀ e. Eq e ⇒ Show e ⇒ CodeTestSuiteConf e → Spec Unit
 codecTestSuite { codec, examples, name } = describe
   (name <> " codec")
   (traverseWithIndex_ testCase examples)
   where
-  parse ∷ String → ParseError \/ AudioNodes
-  parse s = runParser s (decoder codec)
+  parse ∷ e → ParseError \/ AudioNodes
+  parse s = runParser s (Codec.decoder codec)
 
-  render ∷ AudioNodes → String
-  render = (encoder codec) unit
+  render ∷ AudioNodes → e
+  render = (Codec.encoder codec) unit
 
-  testCase ∷ AudioNodes → String → Spec Unit
+  testCase ∷ AudioNodes → e → Spec Unit
   testCase parsedExample renderedExample = it "roundtrips"
     ( case parse renderedExample of
         Left parseError →
@@ -84,9 +99,39 @@ parsedAudioNodesExample = fromFoldable
   ]
 
 parsedOscillatorExample1 ∷ AudioNodeId /\ AudioNode
-parsedOscillatorExample1 = dummyAudioNodeId1 /\ Oscillator
-  { frequency: 200.0, gain: 0.5, wave: Sine }
+parsedOscillatorExample1 = unsafePartial $
+  AudioNodeId.fromString "dummy1" /\ Oscillator
+    { frequency: Frequency.fromNumber 200.0
+    , gain: Gain.fromNumber 0.5
+    , wave: Sine
+    }
 
 parsedOscillatorExample2 ∷ AudioNodeId /\ AudioNode
-parsedOscillatorExample2 = dummyAudioNodeId2 /\ Oscillator
-  { frequency: 200.0, gain: 0.5, wave: Sine }
+parsedOscillatorExample2 = unsafePartial $
+  AudioNodeId.fromString "dummy2" /\ Oscillator
+    { frequency: Frequency.fromNumber 200.0
+    , gain: Gain.fromNumber 0.5
+    , wave: Sine
+    }
+
+mermaidTestSuite ∷ Int → Spec Unit
+mermaidTestSuite quantity = describe
+  "mermaid diagram rendering"
+  (sequence_ testCases)
+  where
+  testCases ∷ Array (Spec Unit)
+  testCases = Array.mapWithIndex testCase testInputs
+
+  testInputs ∷ Array AudioNodes
+  testInputs = Gen.evalGen
+    (Gen.vectorOf quantity Gen.arbitraryMap)
+    { newSeed: mkSeed 123, size: 100 }
+
+  testCase ∷ Int → AudioNodes → Spec Unit
+  testCase index audioNodes = it
+    ("diagram " <> show index)
+    ( void
+        $ Mermaid.render
+        $ Codec.encoder Diagram.codec unit audioNodes
+    )
+

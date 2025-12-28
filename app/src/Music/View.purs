@@ -1,0 +1,105 @@
+module View (view) where
+
+import Prelude
+
+import Data.Codec as Codec
+import Data.Either (Either(..))
+import Data.Map as Map
+import Data.Tuple.Nested ((/\))
+import Elmish (ReactElement)
+import Elmish.HTML.Styled as H
+import Message (Message(..))
+import Model (Model)
+import Model.AudioNodes.Codec.Code (codec) as Code
+import Model.Perspective as Perspective
+import Parsing (runParser)
+import Update.Perspective.Controls (init) as Controls
+import View.Code (view) as Code
+import View.Components.NavBar as NavBar
+import View.Controls (view) as Controls
+import View.Diagram as Diagram
+import View.Types (ViewModel, ViewVoid)
+
+data Title = Code | Controls | Diagram
+
+derive instance Eq Title
+
+instance Ord Title where
+  compare Code _ = LT
+  compare Diagram other = case other of
+    Code →
+      GT
+    Diagram →
+      EQ
+    Controls →
+      LT
+  compare Controls _ = GT
+
+instance Show Title where
+  show = case _ of
+    Code →
+      "Code"
+    Controls →
+      "Controls"
+    Diagram →
+      "Diagram"
+
+view ∷ ViewModel Model
+view model dispatch = H.div ""
+  [ H.header "" [ navBar dispatch ]
+  , H.main "" [ perspective ]
+  ]
+  where
+  navBar ∷ ViewVoid
+  navBar = NavBar.view $ Map.fromFoldable
+    [ Code /\ codeNavbarItem
+    , Controls /\ controlsNavbarItem
+    , Diagram /\ diagramNavbarItem
+    ]
+
+  codeNavbarItem ∷ NavBar.Item
+  codeNavbarItem = case model.perspective of
+    Perspective.Code _ →
+      NavBar.Active
+    Perspective.Controls controlsModel →
+      NavBar.Available
+        $ PerspectiveChanged
+        $ Perspective.Code
+        $ Codec.encoder Code.codec unit controlsModel.audioNodes
+    Perspective.Diagram _ →
+      NavBar.Unavailable "TODO"
+
+  controlsNavbarItem ∷ NavBar.Item
+  controlsNavbarItem = case model.perspective of
+    Perspective.Code s →
+      case runParser s (Codec.decoder Code.codec) of
+        Left _ →
+          NavBar.Unavailable "code error"
+        Right audioNodes →
+          NavBar.Available
+            $ PerspectiveChanged
+            $ Perspective.Controls
+            $ Controls.init audioNodes
+    Perspective.Controls _ →
+      NavBar.Active
+    Perspective.Diagram _ →
+      NavBar.Unavailable "TODO"
+
+  diagramNavbarItem ∷ NavBar.Item
+  diagramNavbarItem = case model.perspective of
+    Perspective.Code _ →
+      NavBar.Unavailable "TODO"
+    Perspective.Controls _ →
+      NavBar.Unavailable "TODO"
+    Perspective.Diagram _ →
+      NavBar.Unavailable "TODO"
+
+  perspective ∷ ReactElement
+  perspective = case model.perspective of
+    Perspective.Code s →
+      Code.view s dispatch
+    Perspective.Controls controlsModel →
+      Controls.view controlsModel dispatch
+    Perspective.Diagram renderedDiagramHtml →
+      Diagram.view renderedDiagramHtml
+

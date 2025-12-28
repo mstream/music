@@ -1,10 +1,18 @@
-import mermaid from "mermaid";
+let mermaid = null
+
+async function getRender() {
+  if (!mermaid) {
+    mermaid = (await import("mermaid")).default;
+  }
+  return mermaid.render
+}
 
 async function renderDiagramSvg(diagramDef) {
-  const elId = "mermaid-tmp"
+  const elId = "mermaid-dummy"
   const el = document.createElement('pre');
   el.setAttribute("id", elId);
-  const { svg } = await mermaid.render(elId, diagramDef);
+  const render = await getRender()
+  const { svg } = await render(elId, diagramDef);
   el.remove()
   return svg
 }

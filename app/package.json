@@ -1,5 +1,7 @@
 {
-  "devDependencies": {},
+  "devDependencies": {
+    "jsdom": "^27"
+  },
   "dependencies": {
     "mermaid": "^11",
     "react": "^17",

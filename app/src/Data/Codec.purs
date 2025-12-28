@@ -2,16 +2,16 @@ module Data.Codec (Codec, Decoder, Encoder, codec, decoder, encoder) where
 
 import Parsing (Parser)
 
-data Codec a o = Codec (Decoder a) (Encoder a o)
-type Decoder a = Parser String a
-type Encoder a o = o → a → String
+data Codec d e o = Codec (Decoder d e) (Encoder d e o)
+type Decoder d e = Parser e d
+type Encoder d e o = o → d → e
 
-codec ∷ ∀ a o. Decoder a → Encoder a o → Codec a o
+codec ∷ ∀ d e o. Decoder d e → Encoder d e o → Codec d e o
 codec = Codec
 
-decoder ∷ ∀ a o. Codec a o → Decoder a
+decoder ∷ ∀ d e o. Codec d e o → Decoder d e
 decoder (Codec dec _) = dec
 
-encoder ∷ ∀ a o. Codec a o → Encoder a o
+encoder ∷ ∀ d e o. Codec d e o → Encoder d e o
 encoder (Codec _ enc) = enc
 

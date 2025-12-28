@@ -10,7 +10,17 @@ mkSpagoDerivation {
   };
   buildPhase = ''
     set -x
-    spago bundle --bundle-type module --ensure-ranges --minify --pedantic-packages --platform browser --pure --strict --verbose --verbose-stats
+    spago bundle \
+      --bundle-type module \
+      --ensure-ranges \
+      --minify \
+      --module Main\
+      --pedantic-packages \
+      --platform browser \
+      --pure \
+      --strict \
+      --verbose \
+      --verbose-stats
   '';
   installPhase = ''
     set -x

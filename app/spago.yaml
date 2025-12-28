@@ -9,6 +9,7 @@ package:
     - either
     - elmish
     - elmish-html
+    - elmish-time-machine
     - exceptions
     - foldable-traversable
     - integers
@@ -18,6 +19,7 @@ package:
     - numbers
     - parsing
     - prelude
+    - quickcheck
     - tailrec
     - uint
     - unicode
@@ -28,6 +30,7 @@ package:
       - parsing
       - spec
       - spec-node
+      - spec-quickcheck
 workspace:
   extraPackages:
     webaudio:

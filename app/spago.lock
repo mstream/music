@@ -13,6 +13,7 @@
             "either",
             "elmish",
             "elmish-html",
+            "elmish-time-machine",
             "exceptions",
             "foldable-traversable",
             "integers",
@@ -22,6 +23,7 @@
             "numbers",
             "parsing",
             "prelude",
+            "quickcheck",
             "tailrec",
             "uint",
             "unicode",
@@ -48,6 +50,7 @@
             "either",
             "elmish",
             "elmish-html",
+            "elmish-time-machine",
             "enums",
             "exceptions",
             "exists",
@@ -64,6 +67,7 @@
             "js-date",
             "js-timers",
             "lazy",
+            "lcg",
             "lists",
             "maybe",
             "media-types",
@@ -79,6 +83,7 @@
             "partial",
             "prelude",
             "profunctor",
+            "quickcheck",
             "random",
             "record",
             "refs",
@@ -100,6 +105,7 @@
             "web-file",
             "web-html",
             "web-storage",
+            "web-uievents",
             "webaudio"
           ]
         },
@@ -107,7 +113,8 @@
           "dependencies": [
             "parsing",
             "spec",
-            "spec-node"
+            "spec-node",
+            "spec-quickcheck"
           ],
           "build_plan": [
             "aff",
@@ -144,6 +151,7 @@
             "invariant",
             "js-date",
             "lazy",
+            "lcg",
             "lists",
             "maybe",
             "mmorph",
@@ -169,11 +177,14 @@
             "posix-types",
             "prelude",
             "profunctor",
+            "quickcheck",
+            "random",
             "record",
             "refs",
             "safe-coerce",
             "spec",
             "spec-node",
+            "spec-quickcheck",
             "st",
             "strings",
             "tailrec",
@@ -1095,6 +1106,30 @@
         "web-html"
       ]
     },
+    "elmish-time-machine": {
+      "type": "registry",
+      "version": "0.3.1",
+      "integrity": "sha256-Ju+b6hiRZxN4uKZ0WXUYHRZokRY+vQpGcoGXugH8xVw=",
+      "dependencies": [
+        "arrays",
+        "debug",
+        "effect",
+        "elmish",
+        "elmish-html",
+        "foldable-traversable",
+        "functions",
+        "lists",
+        "maybe",
+        "ordered-collections",
+        "prelude",
+        "record",
+        "tuples",
+        "web-dom",
+        "web-events",
+        "web-html",
+        "web-uievents"
+      ]
+    },
     "enums": {
       "type": "registry",
       "version": "6.0.1",
@@ -1336,6 +1371,19 @@
         "foldable-traversable",
         "invariant",
         "prelude"
+      ]
+    },
+    "lcg": {
+      "type": "registry",
+      "version": "4.0.0",
+      "integrity": "sha256-h7ME5cthLfbgJOJdsZcSfFpwXsx4rf8YmhebU+3iSYg=",
+      "dependencies": [
+        "effect",
+        "integers",
+        "maybe",
+        "partial",
+        "prelude",
+        "random"
       ]
     },
     "lists": {
@@ -1713,6 +1761,40 @@
         "tuples"
       ]
     },
+    "quickcheck": {
+      "type": "registry",
+      "version": "8.0.1",
+      "integrity": "sha256-ZvpccKQCvgslTXZCNmpYW4bUsFzhZd/kQUr2WmxFTGY=",
+      "dependencies": [
+        "arrays",
+        "console",
+        "control",
+        "effect",
+        "either",
+        "enums",
+        "exceptions",
+        "foldable-traversable",
+        "gen",
+        "identity",
+        "integers",
+        "lazy",
+        "lcg",
+        "lists",
+        "maybe",
+        "newtype",
+        "nonempty",
+        "numbers",
+        "partial",
+        "prelude",
+        "record",
+        "st",
+        "strings",
+        "tailrec",
+        "transformers",
+        "tuples",
+        "unfoldable"
+      ]
+    },
     "random": {
       "type": "registry",
       "version": "6.0.0",
@@ -1812,6 +1894,22 @@
         "prelude",
         "spec",
         "strings",
+        "tuples"
+      ]
+    },
+    "spec-quickcheck": {
+      "type": "registry",
+      "version": "5.0.2",
+      "integrity": "sha256-Qn3ahQEgCskgQiUOWA5pfgUbbB5Jcv/EVuRN7D70K+s=",
+      "dependencies": [
+        "aff",
+        "arrays",
+        "effect",
+        "foldable-traversable",
+        "lists",
+        "maybe",
+        "prelude",
+        "quickcheck",
         "tuples"
       ]
     },
@@ -2018,6 +2116,14 @@
       "dependencies": [
         "nullable",
         "web-events"
+      ]
+    },
+    "web-uievents": {
+      "type": "registry",
+      "version": "5.0.0",
+      "integrity": "sha256-5I+ut9JYno3wowti3vJGs1afKCm1ucppKuy+zhuSyss=",
+      "dependencies": [
+        "web-html"
       ]
     },
     "webaudio": {
