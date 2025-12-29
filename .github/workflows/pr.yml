@@ -1,0 +1,31 @@
+---
+name: Pull Request
+on:
+  pull_request:
+    branches:
+      - main
+permissions:
+  packages: write
+  contents: write
+jobs:
+  linting-and-testing:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            substituters = https://cache.nixos.org/
+          nix_path: nixpkgs=channel:nixos-25.11
+      - name: Check out the repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Build web application
+        run: nix build .
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./result/
