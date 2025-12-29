@@ -18,8 +18,6 @@ branches:
 collaborators:
   - username: logsworth
     permission: push
-  - username: mstream
-    permission: admin
 repository:
   allow_auto_merge: true
   allow_merge_commit: false
