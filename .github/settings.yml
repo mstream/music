@@ -1,4 +1,7 @@
 branches:
+  - name: gh-pages
+    protection:
+      allow_deletions: false
   - name: main
     protection:
       allow_deletions: false
