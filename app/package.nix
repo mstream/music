@@ -25,6 +25,7 @@ mkSpagoDerivation {
   installPhase = ''
     set -x
     mkdir $out
+    cp ${./index.css} $out/index.css
     cp ${./index.html} $out/index.html
     cp index.js $out
   '';

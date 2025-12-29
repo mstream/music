@@ -1,17 +1,32 @@
 module Music.Model.Perspective
-  ( ControlsPerspective
+  ( CodePerspective
+  , ControlsPerspective
+  , DiagramPerspective
+  , DiagramState(..)
   , Perspective(..)
   ) where
 
 import Music.Model.AudioNodes (AudioNodes)
+import Music.Model.AudioNodes.Codec.Diagram (Diagram)
 import Music.Model.Playback (Playback)
+
+data Perspective
+  = Code CodePerspective
+  | Controls ControlsPerspective
+  | Diagram DiagramPerspective
+
+type CodePerspective =
+  { code ∷ String }
 
 type ControlsPerspective =
   { audioNodes ∷ AudioNodes
   , playback ∷ Playback
   }
 
-data Perspective
-  = Code String
-  | Controls ControlsPerspective
-  | Diagram String
+type DiagramPerspective =
+  { audioNodes ∷ AudioNodes
+  , state ∷ DiagramState
+  }
+
+data DiagramState = Generated String | Generating Diagram
+

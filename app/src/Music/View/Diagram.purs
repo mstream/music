@@ -2,10 +2,15 @@ module Music.View.Diagram (view) where
 
 import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
+import Music.Model.Perspective (DiagramPerspective, DiagramState(..))
 import Music.View.Types (ViewModelPure)
 
-view ∷ ViewModelPure String
-view renderedDiagramHtml = H.div_
-  ""
-  { dangerouslySetInnerHTML: { __html: renderedDiagramHtml } }
-  ([] ∷ Array ReactElement)
+view ∷ ViewModelPure DiagramPerspective
+view model = case model.state of
+  Generating _ →
+    H.text ""
+  Generated renderedDiagramHtml →
+    H.div_
+      ""
+      { dangerouslySetInnerHTML: { __html: renderedDiagramHtml } }
+      ([] ∷ Array ReactElement)

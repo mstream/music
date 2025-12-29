@@ -28,4 +28,9 @@ view model =
   renderItem ∷ t → Item → ReactElement
   renderItem title { contents, open } =
     H.details_ "" { open }
-      [ H.summary_ "" { role: "button" } (show title), contents ]
+      [ H.summary_
+          "contrast outline"
+          { role: "button" }
+          (show title)
+      , contents
+      ]
