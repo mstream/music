@@ -14,4 +14,3 @@ decoder (Codec dec _) = dec
 
 encoder ∷ ∀ d e o. Codec d e o → Encoder d e o
 encoder (Codec _ enc) = enc
-

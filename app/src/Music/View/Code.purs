@@ -4,25 +4,29 @@ import Prelude
 
 import Data.Codec as Codec
 import Data.Either (Either(..))
+import Data.Either.Nested (type (\/))
 import Elmish ((<|))
-import Elmish.HTML.Events (textareaText)
+import Elmish.HTML.Events as E
 import Elmish.HTML.Styled as H
 import Music.Message (Message(..))
+import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes.Codec.Code (codec) as Code
-import Music.Model.Perspective (Perspective(..))
-import Parsing (parseErrorMessage, runParser)
+import Music.Model.Perspective (CodePerspective)
 import Music.View.Types (ViewModel)
+import Parsing (ParseError, parseErrorMessage, runParser)
 
-view ∷ ViewModel String
-view s dispatch = H.div ""
+view ∷ ViewModel CodePerspective
+view { code } dispatch = H.div ""
   [ H.textarea_ ""
-      { defaultValue: s
-      , onChange: dispatch <| \e →
-          PerspectiveChanged $ Code $ textareaText e
+      { defaultValue: code
+      , onChange: dispatch <| CodeChanged <<< E.textareaText
       }
-  , H.text case runParser s (Codec.decoder Code.codec) of
+  , H.text case audioNodesParsingResult of
       Left parseError →
         "✗ " <> parseErrorMessage parseError
       Right _ →
         "☑"
   ]
+  where
+  audioNodesParsingResult ∷ ParseError \/ AudioNodes
+  audioNodesParsingResult = runParser code (Codec.decoder Code.codec)

@@ -1,42 +1,19 @@
-module Music.Update (init, update) where
+module Music.Update (update) where
 
-import Prelude
-
-import Elmish (Transition)
-import Music.Message (Message(..))
 import Music.Model (Model)
-import Music.Model.Perspective (Perspective(..))
+import Music.Model.Perspective as Perspective
+import Music.Update.Perspective.Code (update) as Code
 import Music.Update.Perspective.Controls as Controls
+import Music.Update.Perspective.Diagram as Diagram
 import Music.Update.Types (Update)
-
-exampleCode ∷ String
-exampleCode = "osc1 osc{f=200.0,g=0.5,w=sine}"
-
-init ∷ Transition Message Model
-init = pure { perspective: Code exampleCode }
 
 update ∷ Update Model
 update model = case model.perspective of
-  Code s →
-    updateCodePerspective s
+  Perspective.Code codePerspective →
+    Code.update codePerspective
 
-  Controls controlsModel →
-    Controls.update controlsModel
+  Perspective.Controls controlsPerspective →
+    Controls.update controlsPerspective
 
-  Diagram renderedDiagramHtml →
-    updateDiagramPerspective renderedDiagramHtml
-
-updateCodePerspective ∷ Update String
-updateCodePerspective model = case _ of
-  PerspectiveChanged perspective →
-    pure { perspective: perspective }
-  _ →
-    pure { perspective: Code model }
-
-updateDiagramPerspective ∷ Update String
-updateDiagramPerspective model = case _ of
-  PerspectiveChanged perspective →
-    pure { perspective: perspective }
-  _ →
-    pure { perspective: Diagram model }
-
+  Perspective.Diagram diagramPerspective →
+    Diagram.update diagramPerspective
