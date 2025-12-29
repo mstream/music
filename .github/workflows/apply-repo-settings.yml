@@ -1,0 +1,19 @@
+name: Apply Repository Settings
+
+jobs:
+  updating:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Update repository settings
+        uses: mooseburgr/repository-settings-action@v0
+        with:
+          token: ${{ secrets.SETTINGS_PAT }}
+          settings-path: .github/settings.yml
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/settings.yml
+  schedule:
+    - cron: "* 4 * * *"
