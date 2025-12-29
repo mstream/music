@@ -34,4 +34,4 @@ repository:
   is_template: false
   squash_merge_commit_message: COMMIT_MESSAGES
   squash_merge_commit_title: PR_TITLE
-  visibility: private
+  visibility: public
