@@ -57,6 +57,9 @@
             };
           };
         };
-      systems = with flake-utils.lib.system; [ aarch64-darwin ];
+      systems = with flake-utils.lib.system; [
+        aarch64-darwin
+        x86_64-linux
+      ];
     };
 }
