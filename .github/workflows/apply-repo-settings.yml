@@ -2,8 +2,6 @@ name: Apply Repository Settings
 
 jobs:
   updating:
-    permissions:
-      contents: read
     runs-on: ubuntu-24.04
     steps:
       - name: Update repository settings
