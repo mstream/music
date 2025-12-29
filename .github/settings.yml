@@ -2,6 +2,12 @@ branches:
   - name: gh-pages
     protection:
       allow_deletions: false
+      allow_force_pushes: true
+      block_creations: false
+      required_conversation_resolution: false
+      required_linear_history: true
+      required_pull_request_reviews: null
+      required_status_checks: null
   - name: main
     protection:
       allow_deletions: false
