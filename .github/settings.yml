@@ -22,7 +22,7 @@ branches:
         dismiss_stale_reviews: true
         required_approving_review_count: 1
       required_status_checks:
-        contexts: null
+        contexts: []
         enforce_admins: true
         strict: true
       restrictions: null
