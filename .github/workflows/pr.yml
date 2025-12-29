@@ -4,11 +4,10 @@ on:
   pull_request:
     branches:
       - main
-permissions:
-  packages: write
-  contents: write
 jobs:
-  linting-and-testing:
+  building-and-publishing:
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     steps:
       - name: Set up Nix
