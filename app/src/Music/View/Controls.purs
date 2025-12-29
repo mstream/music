@@ -26,8 +26,7 @@ import Parsing (parseErrorMessage, runParser)
 view ∷ ViewModel ControlsPerspective
 view model dispatch =
   H.div ""
-    [ H.canvas_ "" { height: "200px", id: "analyser", width: "800px" }
-        ""
+    [ H.div_ "" { id: "analyser" } [ H.text "" ]
     , H.div_ "" { role: "group" } [ playButton, stopButton ]
     , controls
     ]

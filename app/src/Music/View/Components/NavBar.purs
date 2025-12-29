@@ -37,4 +37,4 @@ view itemsByTitle dispatch = H.nav ""
           , onClick: dispatch <| message
           }
       Unavailable reason →
-        H.a_ "secondary" { title: reason }
+        H.a_ "secondary" { _data: H._data { tooltip: reason } }

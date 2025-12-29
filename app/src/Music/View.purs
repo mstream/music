@@ -12,13 +12,13 @@ import Music.Message (Message(..))
 import Music.Model (Model)
 import Music.Model.AudioNodes.Codec.Code (codec) as Code
 import Music.Model.Perspective as Perspective
-import Parsing (runParser)
 import Music.Update.Perspective.Controls (init) as Controls
 import Music.View.Code (view) as Code
 import Music.View.Components.NavBar as NavBar
 import Music.View.Controls (view) as Controls
 import Music.View.Diagram as Diagram
 import Music.View.Types (ViewModel, ViewVoid)
+import Parsing (runParser)
 
 data Title = Code | Controls | Diagram
 
@@ -46,10 +46,25 @@ instance Show Title where
 
 view ∷ ViewModel Model
 view model dispatch = H.div ""
-  [ H.header "" [ navBar dispatch ]
+  [ H.header "" [ logo, navBar dispatch ]
+  , H.hr ""
   , H.main "" [ perspective ]
+  , H.hr ""
+  , H.footer "" [ githubLink ]
   ]
   where
+  logo ∷ ReactElement
+  logo = H.div "" [ H.text "MUSIC" ]
+
+  githubLink ∷ ReactElement
+  githubLink = H.a_ "" { href: "https://github.com/mstream/music" }
+    [ H.img_ ""
+        { id: "gh-logo"
+        , src:
+            "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+        }
+    ]
+
   navBar ∷ ViewVoid
   navBar = NavBar.view $ Map.fromFoldable
     [ Code /\ codeNavbarItem

@@ -1,4 +1,4 @@
-module Music.Audio (play, stop, updateAnalyserCanvas) where
+module Music.Audio (initializeAnalyserCanvas, play, stop) where
 
 import Prelude
 
@@ -28,6 +28,7 @@ import Audio.WebAudio.Types (AnalyserNode, AudioContext, GainNode)
 import Audio.WebAudio.Types (connect) as WebAudio
 import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.ArrayBuffer.Typed as ArrayBuffer
+import Data.ArrayBuffer.Types (Uint8Array)
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse, traverse_)
@@ -36,19 +37,12 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception (throw)
-import Graphics.Canvas
-  ( beginPath
-  , fillRect
-  , getCanvasDimensions
-  , getCanvasElementById
-  , getContext2D
-  , lineTo
-  , moveTo
-  , setFillStyle
-  , setLineWidth
-  , setStrokeStyle
-  , stroke
-  )
+import Gesso (launchIn) as Gesso
+import Gesso.Application (WindowMode(..), defaultBehavior) as Gesso
+import Gesso.Geometry (Scalers, null) as Gesso
+import Gesso.State (States) as Gesso
+import Gesso.Time (Delta) as Gesso
+import Graphics.Canvas as Canvas
 import Music.Model.AudioNodes
   ( AudioNode(..)
   , AudioNodes
@@ -97,6 +91,79 @@ createOscillator audioContext conf = do
 stop ∷ AudioContext → Aff Unit
 stop = liftEffect <<< WebAudio.close
 
+initializeAnalyserCanvas ∷ AnalyserNode → Aff Unit
+initializeAnalyserCanvas analyserNode = liftEffect do
+  bufferLengthInBytes ← WebAudio.frequencyBinCount analyserNode
+  buffer ← ArrayBuffer.empty bufferLengthInBytes
+  Gesso.launchIn "#analyser"
+    { name: "analyser-spectrum"
+    , initialState: buffer
+    , viewBox: Gesso.null
+    , window: Gesso.Stretch
+    , behavior: Gesso.defaultBehavior
+        { render = render, update = update analyserNode }
+    }
+
+update
+  ∷ AnalyserNode
+  → Gesso.Delta
+  → Gesso.Scalers
+  → Uint8Array
+  → Effect (Maybe Uint8Array)
+update analyserNode _ _ buffer = do
+  WebAudio.getByteTimeDomainData analyserNode buffer
+  pure $ Just buffer
+
+render
+  ∷ Canvas.Context2D
+  → Gesso.Delta
+  → Gesso.Scalers
+  → Gesso.States Uint8Array
+  → Effect Unit
+render ctx _ { canvas } { current: buffer } = do
+  let
+    bufferLengthInBytes ∷ Int
+    bufferLengthInBytes = ArrayBuffer.length buffer
+
+    sliceWidth ∷ Number
+    sliceWidth = canvas.rect.width / Int.toNumber bufferLengthInBytes
+  Canvas.setFillStyle ctx "#111"
+  Canvas.fillRect ctx
+    { height: canvas.rect.height
+    , width: canvas.rect.width
+    , x: zero
+    , y: zero
+    }
+  Canvas.setStrokeStyle ctx "#EEE"
+  Canvas.setLineWidth ctx 2.0
+  Canvas.beginPath ctx
+  tailRecM
+    ( \i →
+        if i < bufferLengthInBytes then do
+          mbByte ← ArrayBuffer.at buffer i
+          v ← case mbByte of
+            Just byte →
+              pure $ Int.toNumber (UInt.toInt byte) / 128.0
+            Nothing →
+              throw $ "buffer index out of bound: " <> show i
+          let
+            x ∷ Number
+            x = Int.toNumber i * sliceWidth
+
+            y ∷ Number
+            y = v * canvas.rect.height / 2.0
+          if i == 0 then Canvas.moveTo ctx x y
+          else Canvas.lineTo ctx x y
+          pure (Loop (i + 1))
+        else
+          pure (Done unit)
+    )
+    0
+  Canvas.lineTo ctx canvas.rect.width (canvas.rect.height / 2.0)
+  Canvas.stroke ctx
+  pure unit
+
+{-
 updateAnalyserCanvas ∷ AnalyserNode → Aff Unit
 updateAnalyserCanvas analyserNode = liftEffect do
   mbCanvasEl ← getCanvasElementById "analyser"
@@ -143,3 +210,4 @@ updateAnalyserCanvas analyserNode = liftEffect do
       pure unit
     Nothing →
       throw "no analyser canvas found"
+-}

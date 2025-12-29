@@ -23,7 +23,7 @@ update model = case _ of
       pure $ PlaybackStarted playbackControls
     pure { perspective: Controls model { playback = PlaybackStarting } }
   PlaybackStarted playbackControls → do
-    E.forkVoid $ Audio.updateAnalyserCanvas
+    E.forkVoid $ Audio.initializeAnalyserCanvas
       playbackControls.analyserNode
     pure
       { perspective: Controls model
