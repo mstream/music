@@ -15,7 +15,7 @@ import Music.Model.Perspective (CodePerspective)
 import Music.View.Types (ViewModel)
 import Parsing (ParseError, parseErrorMessage, runParser)
 
-view ∷ ViewModel CodePerspective
+view ∷ ViewModel CodePerspective Message
 view { code } dispatch = H.div ""
   [ H.textarea_ ""
       { defaultValue: code

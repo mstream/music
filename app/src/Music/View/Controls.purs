@@ -23,7 +23,7 @@ import Music.View.Components.Accordion as Accordion
 import Music.View.Types (ViewModel)
 import Parsing (parseErrorMessage, runParser)
 
-view ∷ ViewModel ControlsPerspective
+view ∷ ViewModel ControlsPerspective Message
 view model dispatch =
   H.div ""
     [ H.div_ "" { id: "analyser" } [ H.text "" ]
@@ -50,7 +50,7 @@ view model dispatch =
   controls ∷ ReactElement
   controls = Accordion.view items
 
-  items ∷ Accordion.Items AudioNodeId
+  items ∷ Accordion.Model AudioNodeId
   items = mapWithIndex
     ( \nodeId node →
         { contents: renderItemContents nodeId node, open: false }
