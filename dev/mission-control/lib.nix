@@ -1,4 +1,4 @@
-{ execPaths, mktemp, ... }:
+{ execPaths, ... }:
 {
   categories = {
     builds = "Builds";
@@ -23,11 +23,12 @@
     fi
 
     # make caching local
-    XDG_CACHE_HOME=.cache
-    export XDG_CACHE_HOME 
+    #XDG_CACHE_HOME=.cache
+    #export XDG_CACHE_HOME 
 
     export is_ci
 
+    # some command derivation expect other commands to be on the PATH
     export PATH=''${PATH}:${execPaths}
 
     cd ${dir}

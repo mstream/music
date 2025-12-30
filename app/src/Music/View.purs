@@ -20,7 +20,7 @@ import Music.View.Diagram as Diagram
 import Music.View.Types (ViewModel, ViewVoid)
 import Parsing (runParser)
 
-view ∷ ViewModel Model
+view ∷ ViewModel Model Message
 view model dispatch = H.div ""
   [ H.header "" [ logo, navBar dispatch ]
   , H.hr ""
@@ -41,14 +41,14 @@ view model dispatch = H.div ""
         }
     ]
 
-  navBar ∷ ViewVoid
+  navBar ∷ ViewVoid Message
   navBar = NavBar.view $ Map.fromFoldable
     [ Code /\ codeNavbarItem
     , Controls /\ controlsNavbarItem
     , Diagram /\ diagramNavbarItem
     ]
 
-  codeNavbarItem ∷ NavBar.Item
+  codeNavbarItem ∷ NavBar.Item Message
   codeNavbarItem = case model.perspective of
     Perspective.Code _ →
       NavBar.Active
@@ -59,7 +59,7 @@ view model dispatch = H.div ""
       NavBar.Available $ PerspectiveChanged
         { audioNodes, toPerspective: Code }
 
-  controlsNavbarItem ∷ NavBar.Item
+  controlsNavbarItem ∷ NavBar.Item Message
   controlsNavbarItem = case model.perspective of
     Perspective.Code { code } →
       case runParser code (Codec.decoder Code.codec) of
@@ -74,7 +74,7 @@ view model dispatch = H.div ""
       NavBar.Available $ PerspectiveChanged
         { audioNodes, toPerspective: Controls }
 
-  diagramNavbarItem ∷ NavBar.Item
+  diagramNavbarItem ∷ NavBar.Item Message
   diagramNavbarItem = case model.perspective of
     Perspective.Code { code } →
       case runParser code (Codec.decoder Code.codec) of
@@ -97,4 +97,3 @@ view model dispatch = H.div ""
       Controls.view controlsPerspective dispatch
     Perspective.Diagram diagramPerspective →
       Diagram.view diagramPerspective
-

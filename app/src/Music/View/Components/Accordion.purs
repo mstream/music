@@ -1,4 +1,4 @@
-module Music.View.Components.Accordion (Item, Items, view) where
+module Music.View.Components.Accordion (Item, Model, view) where
 
 import Prelude
 
@@ -11,10 +11,11 @@ import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
 import Music.View.Types (ViewModelPure)
 
-type Items t = Map t Item
+type Model t = Map t Item
+
 type Item = { contents ∷ ReactElement, open ∷ Boolean }
 
-view ∷ ∀ t. Show t ⇒ ViewModelPure (Items t)
+view ∷ ∀ t. Show t ⇒ ViewModelPure (Model t)
 view model =
   H.div "" renderedElements
   where
