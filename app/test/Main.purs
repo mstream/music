@@ -25,12 +25,16 @@ import Music.Model.AudioNodes.Frequency as Frequency
 import Music.Model.AudioNodes.Gain (Gain)
 import Music.Model.AudioNodes.Gain as Gain
 import Music.Model.AudioNodes.Wave (Wave(..))
+import Music.Model.PerspectiveName (PerspectiveName)
 import Random.LCG (mkSeed)
 import Test.Codec (codecTestSuite, unsafeDecoded)
+import Test.Laws (lawsTestSuite)
 import Test.QuickCheck.Gen (evalGen, vectorOf) as Gen
+import Test.QuickCheck.Laws.Data (checkEq, checkOrd, checkSemigroup)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner.Node (runSpecAndExitProcess)
+import Type.Proxy (Proxy(..))
 
 foreign import mockBrowserImpl ∷ Effect Unit
 
@@ -60,6 +64,49 @@ spec = do
     , name: "audioNode/diagramDef"
     }
   mermaidTestSuite 10
+  lawsTestSuite "AudioNode" do
+    let
+      proxy ∷ Proxy AudioNode
+      proxy = Proxy
+    checkEq proxy
+    checkOrd proxy
+  lawsTestSuite "BlockId" do
+    let
+      proxy ∷ Proxy BlockId
+      proxy = Proxy
+    checkEq proxy
+    checkOrd proxy
+    checkSemigroup proxy
+  lawsTestSuite "DiagramDef" do
+    let
+      proxy ∷ Proxy DiagramDef
+      proxy = Proxy
+    checkEq proxy
+    checkOrd proxy
+  lawsTestSuite "Frequency" do
+    let
+      proxy ∷ Proxy Frequency
+      proxy = Proxy
+    checkEq proxy
+    checkOrd proxy
+  lawsTestSuite "Gain" do
+    let
+      proxy ∷ Proxy Gain
+      proxy = Proxy
+    checkEq proxy
+    checkOrd proxy
+  lawsTestSuite "PerspectiveName" do
+    let
+      proxy ∷ Proxy PerspectiveName
+      proxy = Proxy
+    checkEq proxy
+    checkOrd proxy
+  lawsTestSuite "Wave" do
+    let
+      proxy ∷ Proxy Wave
+      proxy = Proxy
+    checkEq proxy
+    checkOrd proxy
 
 diagramDefCodecExamples ∷ Map DiagramDef String
 diagramDefCodecExamples = Map.fromFoldable

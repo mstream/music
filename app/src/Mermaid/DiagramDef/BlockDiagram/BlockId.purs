@@ -17,6 +17,9 @@ derive newtype instance Ord BlockId
 instance Arbitrary BlockId where
   arbitrary = BlockId <$> Gen.genAlphaString
 
+instance Semigroup BlockId where
+  append (BlockId s1) (BlockId s2) = BlockId $ s1 <> "-" <> s2
+
 instance Show BlockId where
   show (BlockId s) = s
 
