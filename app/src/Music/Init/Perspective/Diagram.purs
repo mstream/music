@@ -5,18 +5,18 @@ import Prelude
 import Data.Codec as Codec
 import Elmish as E
 import Mermaid as Mermaid
+import Mermaid.DiagramDef (DiagramDef)
 import Music.Init.Types (Init)
 import Music.Message (Message(..))
 import Music.Model.AudioNodes (AudioNodes)
-import Music.Model.AudioNodes.Codec.Diagram (Diagram)
 import Music.Model.AudioNodes.Codec.Diagram as Diagram
 import Music.Model.Perspective (DiagramPerspective, DiagramState(..))
 
 init ∷ AudioNodes → Init DiagramPerspective
 init audioNodes = do
-  E.fork $ DiagramRendered <$> Mermaid.render diagram
-  pure { audioNodes, state: Generating diagram }
+  E.fork $ DiagramRendered <$> Mermaid.render diagramDef
+  pure { audioNodes, state: Generating diagramDef }
   where
-  diagram ∷ Diagram
-  diagram = Codec.encoder Diagram.codec unit audioNodes
+  diagramDef ∷ DiagramDef
+  diagramDef = Codec.encoder Diagram.codec unit audioNodes
 

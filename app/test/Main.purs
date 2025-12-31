@@ -4,33 +4,31 @@ import Prelude
 
 import Data.Array as Array
 import Data.Codec as Codec
-import Data.Either (Either(..))
-import Data.Either.Nested (type (\/))
-import Data.FoldableWithIndex (traverseWithIndex_)
-import Data.Map (Map, fromFoldable)
+import Data.Map (Map)
+import Data.Map as Map
 import Data.Traversable (sequence_)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
-import Music.Gen (arbitraryMap) as Gen
+import Gen (arbitraryMap) as Gen
 import Mermaid as Mermaid
+import Mermaid.DiagramDef (DiagramDef)
+import Mermaid.DiagramDef as DiagramDef
+import Mermaid.DiagramDef.BlockDiagram.BlockId (BlockId)
+import Mermaid.DiagramDef.BlockDiagram.BlockId as BlockId
 import Music.Model.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodeId as AudioNodeId
-import Music.Model.AudioNodes
-  ( AudioNode(..)
-  , AudioNodes
-  )
-import Music.Model.AudioNodes.Codec (AudioNodesCodec)
+import Music.Model.AudioNodes (AudioNode(..), AudioNodes)
 import Music.Model.AudioNodes.Codec.Code as Code
 import Music.Model.AudioNodes.Codec.Diagram as Diagram
+import Music.Model.AudioNodes.Frequency (Frequency)
 import Music.Model.AudioNodes.Frequency as Frequency
+import Music.Model.AudioNodes.Gain (Gain)
 import Music.Model.AudioNodes.Gain as Gain
 import Music.Model.AudioNodes.Wave (Wave(..))
-import Parsing (ParseError, runParser)
-import Partial.Unsafe (unsafePartial)
 import Random.LCG (mkSeed)
+import Test.Codec (codecTestSuite, unsafeDecoded)
 import Test.QuickCheck.Gen (evalGen, vectorOf) as Gen
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (fail, shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner.Node (runSpecAndExitProcess)
 
@@ -44,74 +42,76 @@ main = do
 spec ∷ Spec Unit
 spec = do
   codecTestSuite
+    { codec: DiagramDef.codec
+    , encoderOpts: unit
+    , examples: diagramDefCodecExamples
+    , name: "diagramDef/string"
+    }
+  codecTestSuite
     { codec: Code.codec
-    , examples:
-        fromFoldable
-          [ parsedAudioNodesExample /\
-              "dummy1 osc{f=200.0,g=0.5,w=sine}\ndummy2 osc{f=200.0,g=0.5,w=sine}"
-          ]
-    , name: "code"
+    , encoderOpts: unit
+    , examples: codeCodecExamples
+    , name: "audioNode/string"
     }
   codecTestSuite
     { codec: Diagram.codec
-    , examples:
-        fromFoldable
-          [ parsedAudioNodesExample /\
-              ( unsafePartial $ Diagram.fromString
-                  "block\n  dummy1[\"osc{f=200.0,g=0.5,w=sine}\"]\n  dummy2[\"osc{f=200.0,g=0.5,w=sine}\"]"
-              )
-          ]
-    , name: "diagram"
+    , encoderOpts: unit
+    , examples: diagramCodecExamples
+    , name: "audioNode/diagramDef"
     }
   mermaidTestSuite 10
 
-type CodeTestSuiteConf e =
-  { codec ∷ AudioNodesCodec e Unit
-  , examples ∷ Map AudioNodes e
-  , name ∷ String
-  }
+diagramDefCodecExamples ∷ Map DiagramDef String
+diagramDefCodecExamples = Map.fromFoldable
+  [ parsedBlockDiagramDefExample /\
+      "block\n  osc1[\"osc{f=100.0,g=0.25,w=sine}\"]\n  osc2[\"osc{f=200.0,g=0.75,w=square}\"]"
+  ]
 
-codecTestSuite ∷ ∀ e. Eq e ⇒ Show e ⇒ CodeTestSuiteConf e → Spec Unit
-codecTestSuite { codec, examples, name } = describe
-  (name <> " codec")
-  (traverseWithIndex_ testCase examples)
-  where
-  parse ∷ e → ParseError \/ AudioNodes
-  parse s = runParser s (Codec.decoder codec)
+codeCodecExamples ∷ Map AudioNodes String
+codeCodecExamples = Map.fromFoldable
+  [ parsedAudioNodesExample /\
+      "osc1 osc{f=100.0,g=0.25,w=sine}\nosc2 osc{f=200.0,g=0.75,w=square}"
+  ]
 
-  render ∷ AudioNodes → e
-  render = (Codec.encoder codec) unit
+diagramCodecExamples ∷ Map AudioNodes DiagramDef
+diagramCodecExamples = Map.fromFoldable
+  [ parsedAudioNodesExample /\ parsedBlockDiagramDefExample ]
 
-  testCase ∷ AudioNodes → e → Spec Unit
-  testCase parsedExample renderedExample = it "roundtrips"
-    ( case parse renderedExample of
-        Left parseError →
-          fail $ show parseError
-        Right parsed → do
-          shouldEqual parsedExample parsed
-          shouldEqual renderedExample (render parsed)
-    )
+parsedBlockDiagramDefExample ∷ DiagramDef
+parsedBlockDiagramDefExample = DiagramDef.BlockDiagram $
+  Map.fromFoldable
+    [ parsedBlockExample1
+    , parsedBlockExample2
+    ]
+
+parsedBlockExample1 ∷ BlockId /\ String
+parsedBlockExample1 =
+  unsafeBlockId "osc1" /\ "osc{f=100.0,g=0.25,w=sine}"
+
+parsedBlockExample2 ∷ BlockId /\ String
+parsedBlockExample2 =
+  unsafeBlockId "osc2" /\ "osc{f=200.0,g=0.75,w=square}"
 
 parsedAudioNodesExample ∷ AudioNodes
-parsedAudioNodesExample = fromFoldable
+parsedAudioNodesExample = Map.fromFoldable
   [ parsedOscillatorExample1
   , parsedOscillatorExample2
   ]
 
 parsedOscillatorExample1 ∷ AudioNodeId /\ AudioNode
-parsedOscillatorExample1 = unsafePartial $
-  AudioNodeId.fromString "dummy1" /\ Oscillator
-    { frequency: Frequency.fromNumber 200.0
-    , gain: Gain.fromNumber 0.5
+parsedOscillatorExample1 =
+  unsafeAudioNodeId "osc1" /\ Oscillator
+    { frequency: unsafeFrequency "100.0"
+    , gain: unsafeGain "0.25"
     , wave: Sine
     }
 
 parsedOscillatorExample2 ∷ AudioNodeId /\ AudioNode
-parsedOscillatorExample2 = unsafePartial $
-  AudioNodeId.fromString "dummy2" /\ Oscillator
-    { frequency: Frequency.fromNumber 200.0
-    , gain: Gain.fromNumber 0.5
-    , wave: Sine
+parsedOscillatorExample2 =
+  unsafeAudioNodeId "osc2" /\ Oscillator
+    { frequency: unsafeFrequency "200.0"
+    , gain: unsafeGain "0.75"
+    , wave: Square
     }
 
 mermaidTestSuite ∷ Int → Spec Unit
@@ -135,3 +135,14 @@ mermaidTestSuite quantity = describe
         $ Codec.encoder Diagram.codec unit audioNodes
     )
 
+unsafeAudioNodeId ∷ String → AudioNodeId
+unsafeAudioNodeId = unsafeDecoded AudioNodeId.codec
+
+unsafeBlockId ∷ String → BlockId
+unsafeBlockId = unsafeDecoded BlockId.codec
+
+unsafeFrequency ∷ String → Frequency
+unsafeFrequency = unsafeDecoded Frequency.codec
+
+unsafeGain ∷ String → Gain
+unsafeGain = unsafeDecoded Gain.codec

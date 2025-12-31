@@ -1,5 +1,9 @@
 # Music
 
+## Contributing
+
+See [guidelines for AI agents](./AGENTS.md).
+
 ## GitHub Workflows
 
 Require `SETTINGS_PAT` repository secret.
