@@ -1,149 +1,77 @@
-module Music.Model.AudioNodes.Codec.Diagram
-  ( Diagram
-  , codec
-  , fromString
-  , toString
-  ) where
+module Music.Model.AudioNodes.Codec.Diagram (codec) where
 
 import Prelude
 
-import Control.Alt ((<|>))
-import Data.Array (cons)
 import Data.Codec as Codec
 import Data.Either (Either(..))
-import Data.FoldableWithIndex (foldlWithIndex)
-import Data.Function.Uncurried (Fn2, Fn5, mkFn5, runFn2)
-import Data.Identity (Identity)
-import Data.Map (fromFoldable)
+import Data.Map (Map)
+import Data.Map as Map
+import Data.String.Common (joinWith)
 import Data.Tuple.Nested (type (/\), (/\))
+import Mermaid.DiagramDef (DiagramDef)
+import Mermaid.DiagramDef as DiagramDef
+import Mermaid.DiagramDef.BlockDiagram.BlockId (BlockId)
+import Mermaid.DiagramDef.BlockDiagram.BlockId as BlockId
 import Music.Model.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodeId as AudioNodeId
-import Music.Model.AudioNodes
-  ( AudioNode(..)
-  , AudioNodes
-  )
+import Music.Model.AudioNodes (AudioNode(..))
 import Music.Model.AudioNodes.Codec
   ( AudioNodesCodec
   , AudioNodesDecoder
   , AudioNodesEncoder
   )
+import Music.Model.AudioNodes.Codec.Code as Code
 import Music.Model.AudioNodes.Frequency as Frequency
 import Music.Model.AudioNodes.Gain as Gain
 import Music.Model.AudioNodes.Wave as Wave
-import Parsing
-  ( ParseError
-  , ParseState(..)
-  , Parser
-  , ParserT(..)
-  , runParser
-  )
-import Parsing.String (char, string)
-import Parsing.String.Basic (skipSpaces)
+import Parsing as P
 
-newtype Diagram = Diagram String
-
-derive instance Eq Diagram
-derive instance Ord Diagram
-derive newtype instance Show Diagram
-
-fromString ∷ Partial ⇒ String → Diagram
-fromString s = case runParser s stringDecoder of
-  Right _ →
-    Diagram s
-
-toString ∷ Diagram → String
-toString (Diagram s) = s
-
-codec ∷ AudioNodesCodec Diagram Unit
+codec ∷ AudioNodesCodec DiagramDef Unit
 codec = Codec.codec decoder encoder
 
-decoder ∷ AudioNodesDecoder Diagram
-decoder = ParserT f
+decoder ∷ AudioNodesDecoder DiagramDef
+decoder = do
+  P.ParseState diagram _ _ ← P.getParserT
+  case diagram of
+    DiagramDef.BlockDiagram blocks →
+      decodeBlocks blocks
+
+encoder ∷ AudioNodesEncoder DiagramDef Unit
+encoder _ audioNodes =
+  DiagramDef.BlockDiagram (Map.fromFoldable (toBlock <$> nodesArray))
   where
-  f
-    ∷ ∀ r
-    . Fn5
-        (ParseState Diagram)
-        ((Unit → r) → r)
-        (Identity (Unit → r) → r)
-        (Fn2 (ParseState Diagram) ParseError r)
-        (Fn2 (ParseState Diagram) AudioNodes r)
-        r
-  f = mkFn5 \state@(ParseState (Diagram s) _ _) _ _ throw done →
-    case runParser s stringDecoder of
-      Left parsingError →
-        runFn2 throw state parsingError
-      Right audioNodes →
-        runFn2 done state audioNodes
+  nodesArray =
+    Map.toUnfoldable audioNodes
+      ∷ Array (AudioNodeId.AudioNodeId /\ AudioNode)
 
-stringDecoder ∷ AudioNodesDecoder String
-stringDecoder = do
-  _ ← string "block"
-  nodes ← manyNodes
-  pure $ fromFoldable nodes
+  toBlock ∷ AudioNodeId /\ AudioNode → BlockId /\ String
+  toBlock (audioId /\ node) =
+    audioId /\ renderContent node
+
+renderContent ∷ AudioNode → String
+renderContent (Oscillator { frequency, gain, wave }) =
+  "osc{f="
+    <> Codec.encoder Frequency.codec unit frequency
+    <> ",g="
+    <> Codec.encoder Gain.codec unit gain
+    <> ",w="
+    <> Codec.encoder Wave.codec unit wave
+    <> "}"
+
+decodeBlocks ∷ Map BlockId.BlockId String → AudioNodesDecoder DiagramDef
+decodeBlocks blocks =
+  case P.runParser codeText (Codec.decoder Code.codec) of
+    Right audioNodes →
+      pure audioNodes
+    Left err →
+      P.fail (P.parseErrorMessage err)
   where
-  manyNodes =
-    ( do
-        node ← nodeLine
-        more ← manyNodes
-        pure $ cons node more
-    ) <|> pure []
+  codeText =
+    joinWith "\n"
+      (map renderBlock (Map.toUnfoldable blocks))
 
-  nodeLine = char '\n' *> skipSpaces *> audioNodeEntry
-
-encoder ∷ AudioNodesEncoder Diagram Unit
-encoder _ = Diagram <<< foldlWithIndex
-  (\nodeId acc node → acc <> "\n  " <> renderEntry nodeId node)
-  "block"
-
-renderEntry ∷ AudioNodeId → AudioNode → String
-renderEntry nodeId node = case node of
-  Oscillator { frequency, gain, wave } →
-    Codec.encoder AudioNodeId.codec unit nodeId
-      <> "[\"osc{f="
-      <> Codec.encoder Frequency.codec unit frequency
-      <> ",g="
-      <> Codec.encoder Gain.codec unit gain
-      <> ",w="
-      <> Codec.encoder Wave.codec unit wave
-      <> "}\"]"
-
-audioNodeEntry ∷ Parser String (AudioNodeId /\ AudioNode)
-audioNodeEntry = do
-  id ← Codec.decoder AudioNodeId.codec
-  skipSpaces
-
-  _ ← char '['
-  _ ← char '\"'
-
-  _ ← string "osc"
-
-  _ ← char '{'
-  skipSpaces
-
-  _ ← char 'f'
-  _ ← char '='
-  frequency ← Codec.decoder Frequency.codec
-  skipSpaces
-
-  _ ← char ','
-  skipSpaces
-
-  _ ← char 'g'
-  _ ← char '='
-  gain ← Codec.decoder Gain.codec
-  skipSpaces
-
-  _ ← char ','
-  skipSpaces
-
-  _ ← char 'w'
-  _ ← char '='
-  wave ← Codec.decoder Wave.codec
-  skipSpaces
-
-  _ ← char '}'
-  _ ← char '\"'
-  _ ← char ']'
-
-  pure $ id /\ Oscillator { frequency, gain, wave }
+renderBlock ∷ BlockId.BlockId /\ String → String
+renderBlock (blockId /\ contents) =
+  Codec.encoder BlockId.codec unit blockId
+    <> " "
+    <> contents

@@ -6,8 +6,8 @@ module Music.Model.Perspective
   , Perspective(..)
   ) where
 
+import Mermaid.DiagramDef (DiagramDef)
 import Music.Model.AudioNodes (AudioNodes)
-import Music.Model.AudioNodes.Codec.Diagram (Diagram)
 import Music.Model.Playback (Playback)
 
 data Perspective
@@ -28,5 +28,5 @@ type DiagramPerspective =
   , state ∷ DiagramState
   }
 
-data DiagramState = Generated String | Generating Diagram
+data DiagramState = Generated String | Generating DiagramDef
 
