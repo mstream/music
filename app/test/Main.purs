@@ -4,6 +4,8 @@ import Prelude
 
 import Data.Array as Array
 import Data.Codec as Codec
+import Data.Graph as Graph
+import Data.List (List(..))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Traversable (sequence_)
@@ -13,8 +15,9 @@ import Gen (arbitraryMap) as Gen
 import Mermaid as Mermaid
 import Mermaid.DiagramDef (DiagramDef)
 import Mermaid.DiagramDef as DiagramDef
-import Mermaid.DiagramDef.BlockDiagram.BlockId (BlockId)
-import Mermaid.DiagramDef.BlockDiagram.BlockId as BlockId
+import Mermaid.DiagramDef.Blocks as Blocks
+import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
+import Mermaid.DiagramDef.Blocks.BlockId as BlockId
 import Music.Model.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes (AudioNode(..), AudioNodes)
@@ -110,7 +113,7 @@ spec = do
 
 diagramDefCodecExamples ∷ Map DiagramDef String
 diagramDefCodecExamples = Map.fromFoldable
-  [ parsedBlockDiagramDefExample /\
+  [ parsedBlocksDiagramDefExample /\
       "block\n  osc1[\"osc{f=100.0,g=0.25,w=sine}\"]\n  osc2[\"osc{f=200.0,g=0.75,w=square}\"]"
   ]
 
@@ -122,22 +125,25 @@ codeCodecExamples = Map.fromFoldable
 
 diagramCodecExamples ∷ Map AudioNodes DiagramDef
 diagramCodecExamples = Map.fromFoldable
-  [ parsedAudioNodesExample /\ parsedBlockDiagramDefExample ]
+  [ parsedAudioNodesExample /\ parsedBlocksDiagramDefExample ]
 
-parsedBlockDiagramDefExample ∷ DiagramDef
-parsedBlockDiagramDefExample = DiagramDef.BlockDiagram $
-  Map.fromFoldable
-    [ parsedBlockExample1
-    , parsedBlockExample2
-    ]
+parsedBlocksDiagramDefExample ∷ DiagramDef
+parsedBlocksDiagramDefExample = DiagramDef.Blocks
+  $ Blocks.Def
+  $ Graph.fromMap
+  $
+    Map.fromFoldable
+      [ parsedBlockExample1
+      , parsedBlockExample2
+      ]
 
-parsedBlockExample1 ∷ BlockId /\ String
+parsedBlockExample1 ∷ BlockId /\ (String /\ List BlockId)
 parsedBlockExample1 =
-  unsafeBlockId "osc1" /\ "osc{f=100.0,g=0.25,w=sine}"
+  unsafeBlockId "osc1" /\ ("osc{f=100.0,g=0.25,w=sine}" /\ Nil)
 
-parsedBlockExample2 ∷ BlockId /\ String
+parsedBlockExample2 ∷ BlockId /\ (String /\ List BlockId)
 parsedBlockExample2 =
-  unsafeBlockId "osc2" /\ "osc{f=200.0,g=0.75,w=square}"
+  unsafeBlockId "osc2" /\ ("osc{f=200.0,g=0.75,w=square}" /\ Nil)
 
 parsedAudioNodesExample ∷ AudioNodes
 parsedAudioNodesExample = Map.fromFoldable

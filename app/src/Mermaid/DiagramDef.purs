@@ -1,33 +1,35 @@
-module Mermaid.DiagramDef (Blocks, DiagramDef(..), codec) where
+module Mermaid.DiagramDef (DiagramDef(..), codec) where
 
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
 import Data.Codec (Codec, Decoder, Encoder)
 import Data.Codec as Codec
-import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Generic.Rep (class Generic)
-import Data.Map (Map)
+import Data.Array (cons, fromFoldable)
+import Data.Graph as Graph
+import Data.List (List(..))
 import Data.Map as Map
 import Data.Show.Generic (genericShow)
+import Data.String.CodeUnits (fromCharArray)
+import Data.String.Common (joinWith)
 import Data.Tuple.Nested (type (/\), (/\))
-import Gen (arbitraryMap) as Gen
-import Mermaid.DiagramDef.BlockDiagram.BlockId (BlockId)
-import Mermaid.DiagramDef.BlockDiagram.BlockId as BlockId
+import Mermaid.DiagramDef.Blocks as Blocks
+import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
+import Mermaid.DiagramDef.Blocks.BlockId as BlockId
 import Parsing (Parser)
-import Parsing.String (anyTill, char, string) as P
-import Parsing.String.Basic (skipSpaces) as P
-import Test.QuickCheck.Arbitrary (class Arbitrary)
+import Parsing.Combinators as PC
+import Parsing.String as PS
+import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 
-data DiagramDef = BlockDiagram Blocks
+data DiagramDef = Blocks Blocks.Def
 
 derive instance Eq DiagramDef
 derive instance Generic DiagramDef _
 derive instance Ord DiagramDef
 
 instance Arbitrary DiagramDef where
-  arbitrary = BlockDiagram <$> Gen.arbitraryMap
+  arbitrary = Blocks <$> arbitrary
 
 instance Show DiagramDef where
   show = genericShow
@@ -35,45 +37,50 @@ instance Show DiagramDef where
 codec ∷ Codec DiagramDef String Unit
 codec = Codec.codec decoder encoder
 
-decoder ∷ Decoder DiagramDef String
-decoder = BlockDiagram <$> do
-  _ ← P.string "block"
-  blocks ← manyBlocks
-  pure $ Map.fromFoldable blocks
-  where
-  manyBlocks =
-    ( do
-        block ← blockLine
-        more ← manyBlocks
-        pure $ Array.cons block more
-    ) <|> pure []
-  blockLine = P.char '\n' *> P.skipSpaces *> blockEntry
+data DiagramType = Block
 
-blockEntry ∷ Parser String (BlockId /\ String)
-blockEntry = do
-  id ← Codec.decoder BlockId.codec
-  P.skipSpaces
-  _ ← P.char '['
-  _ ← P.char '\"'
-  contents /\ _ ← P.anyTill $ P.char '\"'
-  _ ← P.char ']'
-  pure $ id /\ contents
+decoder ∷ Decoder DiagramDef String
+decoder = blockDecoder
 
 encoder ∷ Encoder DiagramDef String Unit
 encoder _ = case _ of
-  BlockDiagram blocks →
-    encodeBlockDiagram blocks
+  Blocks def → renderBlockDiagram def
 
-encodeBlockDiagram ∷ Map BlockId String → String
-encodeBlockDiagram = foldlWithIndex
-  (\id acc block → acc <> "\n  " <> renderBlock id block)
-  "block"
+blockDecoder ∷ Decoder DiagramDef String
+blockDecoder = do
+  _ ← PS.string "block"
+  _ ← blockLineEnd
+  blocks ← PC.many blockLine
+  pure $ Blocks $ Blocks.Def $ Graph.fromMap
+    (Map.fromFoldable blocks)
+  where
+  blockLine ∷ Parser String (BlockId /\ (String /\ List BlockId))
+  blockLine = do
+    _ ← PC.many (PS.char ' ')
+    blockId ← Codec.decoder BlockId.codec
+    _ ← PS.char '['
+    _ ← PS.char '"'
+    contents ← fromCharArray <<< fromFoldable
+      <$> PC.manyTill PS.anyChar (PS.string "\"]")
+    _ ← PC.many (PS.char ' ')
+    _ ← blockLineEnd
+    pure $ blockId /\ (contents /\ Nil)
 
-renderBlock ∷ BlockId → String → String
-renderBlock id contents =
-  Codec.encoder BlockId.codec unit id
-    <> "[\""
-    <> contents
-    <> "\"]"
+  blockLineEnd ∷ Parser String Unit
+  blockLineEnd = (PS.char '\n' $> unit) <|> pure unit
 
-type Blocks = Map BlockId String
+renderBlockDiagram ∷ Blocks.Def → String
+renderBlockDiagram (Blocks.Def graph) = joinWith "\n" lines
+  where
+  lines ∷ Array String
+  lines =
+    cons "block"
+      (map renderLine (Map.toUnfoldable (Graph.toMap graph)))
+
+  renderLine ∷ BlockId /\ (String /\ List BlockId) → String
+  renderLine (blockId /\ (contents /\ _)) =
+    "  "
+      <> Codec.encoder BlockId.codec unit blockId
+      <> "[\""
+      <> contents
+      <> "\"]"

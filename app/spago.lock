@@ -22,6 +22,7 @@
             "foldable-traversable",
             "gen",
             "gesso",
+            "graphs",
             "integers",
             "lists",
             "maybe",
@@ -79,6 +80,7 @@
             "functors",
             "gen",
             "gesso",
+            "graphs",
             "halogen",
             "halogen-subscriptions",
             "halogen-vdom",
@@ -1456,6 +1458,15 @@
         "web-pointerevents",
         "web-touchevents",
         "web-uievents"
+      ]
+    },
+    "graphs": {
+      "type": "registry",
+      "version": "8.1.0",
+      "integrity": "sha256-mLOuNSMB/kHUBEIV+pePLc1Exo5z/WmT3BHmGIGlxQw=",
+      "dependencies": [
+        "catenable-lists",
+        "ordered-collections"
       ]
     },
     "halogen": {

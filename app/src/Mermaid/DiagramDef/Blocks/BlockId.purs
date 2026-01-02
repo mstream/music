@@ -1,4 +1,4 @@
-module Mermaid.DiagramDef.BlockDiagram.BlockId (BlockId, codec) where
+module Mermaid.DiagramDef.Blocks.BlockId (BlockId, codec) where
 
 import Prelude
 

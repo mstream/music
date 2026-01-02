@@ -6,8 +6,8 @@ module Music.Model.AudioNodeId
 import Prelude
 
 import Data.Codec (Codec)
-import Mermaid.DiagramDef.BlockDiagram.BlockId (BlockId)
-import Mermaid.DiagramDef.BlockDiagram.BlockId as BlockId
+import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
+import Mermaid.DiagramDef.Blocks.BlockId as BlockId
 
 type AudioNodeId = BlockId
 
