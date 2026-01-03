@@ -1,4 +1,4 @@
-module Mermaid.DiagramDef.Blocks.BlockId (BlockId, codec) where
+module Mermaid.DiagramDef.Blocks.BlockId (BlockId, codec, reserved) where
 
 import Prelude
 
@@ -22,6 +22,9 @@ instance Semigroup BlockId where
 
 instance Show BlockId where
   show (BlockId s) = s
+
+reserved ∷ BlockId
+reserved = BlockId "_reserved"
 
 codec ∷ Codec BlockId String Unit
 codec = Codec.codec decoder encoder

@@ -2,19 +2,26 @@ module Music.Model.AudioNodes.Codec.Diagram (codec) where
 
 import Prelude
 
+import Data.Array as Array
 import Data.Codec as Codec
 import Data.Either (Either(..))
+import Data.Graph (Graph)
 import Data.Graph as Graph
 import Data.List (List(..))
+import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
+import Data.Maybe as Maybe
 import Data.String.Common (joinWith)
-import Data.Tuple (fst)
 import Data.Tuple.Nested (type (/\), (/\))
 import Mermaid.DiagramDef (DiagramDef(..))
 import Mermaid.DiagramDef.Blocks as Blocks
+import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
+import Music.Model.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes (AudioNode(..))
+import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.Codec
   ( AudioNodesCodec
   , AudioNodesDecoder
@@ -44,30 +51,80 @@ decoder = do
     Blocks (Blocks.Def graph) →
       decodeBlocks blocks
       where
-      blocks ∷ Map BlockId.BlockId String
-      blocks = map fst (Graph.toMap graph)
+      blocks ∷ Map BlockId.BlockId (String /\ List BlockId)
+      blocks = Graph.toMap graph
 
 encoder ∷ AudioNodesEncoder DiagramDef Unit
-encoder _ audioNodes = Blocks $
-  Blocks.Def $ Graph.fromMap renderedNodes
+encoder _ audioNodes = Blocks $ Blocks.Def renderedNodes
   where
-  renderedNodes ∷ Map BlockId.BlockId (String /\ List BlockId.BlockId)
-  renderedNodes = map renderNode audioNodes
+  renderedNodes ∷ Graph BlockId String
+  renderedNodes = Graph.fromMap (map renderNode filteredGraph)
 
-  renderNode ∷ AudioNode → String /\ List BlockId.BlockId
-  renderNode node = renderContent node /\ Nil
+  filteredGraph ∷ Map BlockId (AudioNode /\ List BlockId)
+  filteredGraph = Map.fromFoldable (map keepConnections nodesInOrder)
+    where
+    keepConnections
+      ∷ BlockId /\ (AudioNode /\ List BlockId)
+      → BlockId /\ (AudioNode /\ List BlockId)
+    keepConnections (nodeId /\ (node /\ ends)) =
+      let
+        endsArray ∷ Array BlockId
+        endsArray = Array.fromFoldable ends
 
-renderContent ∷ AudioNode → String
-renderContent (Oscillator { frequency, gain, wave }) =
-  "osc{f="
-    <> Codec.encoder Frequency.codec unit frequency
-    <> ",g="
-    <> Codec.encoder Gain.codec unit gain
-    <> ",w="
-    <> Codec.encoder Wave.codec unit wave
-    <> "}"
+        keepDefault ∷ Boolean
+        keepDefault = endsArray == defaultConnection &&
+          Maybe.fromMaybe false (eq nodeId <$> firstDefault)
 
-decodeBlocks ∷ Map BlockId.BlockId String → AudioNodesDecoder DiagramDef
+        filteredEnds ∷ List BlockId
+        filteredEnds =
+          if endsArray == defaultConnection && not keepDefault then Nil
+          else List.fromFoldable endsArray
+      in
+        nodeId /\ (node /\ filteredEnds)
+
+    nodesInOrder
+      ∷ Array (BlockId /\ (AudioNode /\ List BlockId))
+    nodesInOrder = Map.toUnfoldable graphMap
+
+    graphMap ∷ Map BlockId (AudioNode /\ List BlockId)
+    graphMap = Graph.toMap (AudioNodes.toGraph audioNodes)
+
+    firstDefault ∷ Maybe BlockId
+    firstDefault = Array.head
+      (Array.mapMaybe defaultOnly nodesInOrder)
+
+    defaultOnly
+      ∷ BlockId /\ (AudioNode /\ List BlockId)
+      → Maybe BlockId
+    defaultOnly (nodeId /\ (_ /\ ends)) =
+      let
+        endsArray ∷ Array BlockId
+        endsArray = Array.fromFoldable ends
+      in
+        if endsArray == defaultConnection then Just nodeId
+        else Nothing
+
+    defaultConnection ∷ Array BlockId
+    defaultConnection = [ AudioNodeId.output ]
+
+  renderNode
+    ∷ AudioNode /\ List BlockId
+    → (String /\ List BlockId)
+  renderNode (node /\ ends) = renderNodeLabel node /\ ends
+
+  renderNodeLabel ∷ AudioNode → String
+  renderNodeLabel (Oscillator { frequency, gain, wave }) =
+    "osc{f="
+      <> Codec.encoder Frequency.codec unit frequency
+      <> ",g="
+      <> Codec.encoder Gain.codec unit gain
+      <> ",w="
+      <> Codec.encoder Wave.codec unit wave
+      <> "}"
+
+decodeBlocks
+  ∷ Map BlockId.BlockId (String /\ List BlockId)
+  → AudioNodesDecoder DiagramDef
 decodeBlocks blocks =
   case runParser codeText (Codec.decoder Code.codec) of
     Right audioNodes →
@@ -75,12 +132,37 @@ decodeBlocks blocks =
     Left err →
       fail (parseErrorMessage err)
   where
-  codeText =
-    joinWith "\n"
-      (map renderBlock (Map.toUnfoldable blocks))
+  codeText ∷ String
+  codeText = joinWith "\n" (nodeLines <> connectionLines)
 
-renderBlock ∷ BlockId.BlockId /\ String → String
-renderBlock (blockId /\ contents) =
-  Codec.encoder BlockId.codec unit blockId
+  nodeLines ∷ Array String
+  nodeLines = map renderBlock (Map.toUnfoldable blocks)
+
+  connectionLines ∷ Array String
+  connectionLines = map renderConnection connections
+
+  connections ∷ Array (BlockId /\ BlockId)
+  connections = Array.concatMap renderEdges (Map.toUnfoldable blocks)
+
+  renderEdges
+    ∷ BlockId /\ (String /\ List BlockId)
+    → Array (BlockId /\ BlockId)
+  renderEdges (start /\ (_ /\ ends)) =
+    (\end → start /\ end) <$> Array.fromFoldable ends
+
+renderBlock
+  ∷ BlockId.BlockId /\ (String /\ List BlockId)
+  → String
+renderBlock (blockId /\ (contents /\ _)) =
+  renderAudioNodeId blockId
     <> " "
     <> contents
+
+renderConnection ∷ BlockId /\ BlockId → String
+renderConnection (start /\ end) =
+  renderAudioNodeId start <> "->" <> renderAudioNodeId end
+
+renderAudioNodeId ∷ BlockId → String
+renderAudioNodeId blockId =
+  if blockId == BlockId.reserved then "output"
+  else Codec.encoder BlockId.codec unit blockId

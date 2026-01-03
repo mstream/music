@@ -15,6 +15,7 @@ import Music.Message (Message(..))
 import Music.Model.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes (AudioNode(..), OscillatorConf)
+import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.Frequency as Frequency
 import Music.Model.AudioNodes.Gain as Gain
 import Music.Model.Perspective (ControlsPerspective)
@@ -55,7 +56,7 @@ view model dispatch =
     ( \nodeId node →
         { contents: renderItemContents nodeId node, open: false }
     )
-    model.audioNodes
+    (AudioNodes.nodesById model.audioNodes)
 
   renderItemContents ∷ AudioNodeId → AudioNode → ReactElement
   renderItemContents nodeId node = case node of
