@@ -1,5 +1,7 @@
 module Music.View.Diagram (view) where
 
+import Prelude
+
 import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
 import Music.Model.Perspective (DiagramPerspective, DiagramState(..))
@@ -14,3 +16,5 @@ view model = case model.state of
       ""
       { dangerouslySetInnerHTML: { __html: renderedDiagramHtml } }
       ([] ∷ Array ReactElement)
+  Invalid errorMessage →
+    H.text $ "Error: " <> errorMessage

@@ -21,7 +21,6 @@ package:
     - foldable-traversable
     - gen
     - gesso
-    - graphs
     - integers
     - lists
     - maybe

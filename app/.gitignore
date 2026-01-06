@@ -1,3 +1,5 @@
+.psci_modules
+.purs-repl
 .spago
 .spec-results
 index.js

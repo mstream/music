@@ -12,10 +12,10 @@ import Elmish.Dispatch (handleEffect, (<|))
 import Elmish.HTML.Events (InputChangeEvent, inputText)
 import Elmish.HTML.Styled as H
 import Music.Message (Message(..))
-import Music.Model.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes (AudioNode(..), OscillatorConf)
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes.Frequency as Frequency
 import Music.Model.AudioNodes.Gain as Gain
 import Music.Model.Perspective (ControlsPerspective)

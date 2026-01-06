@@ -28,5 +28,8 @@ type DiagramPerspective =
   , state ∷ DiagramState
   }
 
-data DiagramState = Generated String | Generating DiagramDef
+data DiagramState
+  = Generated String
+  | Generating DiagramDef
+  | Invalid String
 

@@ -1,8 +1,8 @@
 module Music.Message (Message(..), PerspectiveChange) where
 
 import Audio.WebAudio.Types (AudioContext)
-import Music.Model.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes (AudioNode, AudioNodes)
+import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.PerspectiveName (PerspectiveName)
 import Music.Model.Playback (PlaybackControls)
 

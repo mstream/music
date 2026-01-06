@@ -17,7 +17,7 @@ import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Generic.Rep (class Generic)
 import Data.Graph (Edge, Graph)
 import Data.Graph as Graph
-import Data.List (List)
+import Data.List (List(..))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Show.Generic (genericShow)
@@ -25,8 +25,8 @@ import Data.Traversable (all)
 import Data.Tuple as Tuple
 import Data.Tuple.Nested (type (/\), (/\))
 import Gen as Gen
-import Music.Model.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodeId as AudioNodeId
+import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes.Frequency (Frequency)
 import Music.Model.AudioNodes.Gain (Gain)
 import Music.Model.AudioNodes.Wave (Wave)
@@ -78,7 +78,13 @@ nodesById (AudioNodes graph) = Tuple.fst <$> Graph.toMap graph
 instance Arbitrary AudioNodes where
   arbitrary = do
     nodes ← Gen.arbitraryMap
-    pure $ AudioNodes $ Graph.fromMap nodes
+    pure $ AudioNodes
+      $ Graph.fromMap (map withNoConnections nodes)
+    where
+    withNoConnections
+      ∷ AudioNode
+      → (AudioNode /\ List AudioNodeId)
+    withNoConnections node = node /\ Nil
 
 instance Eq AudioNodes where
   eq (AudioNodes graph1) (AudioNodes graph2) = eq
@@ -107,4 +113,3 @@ instance Show AudioNode where
 
 type OscillatorConf =
   { frequency ∷ Frequency, gain ∷ Gain, wave ∷ Wave }
-

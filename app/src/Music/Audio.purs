@@ -46,14 +46,14 @@ import Gesso.Geometry (Scalers, null) as Gesso
 import Gesso.State (States) as Gesso
 import Gesso.Time (Delta) as Gesso
 import Graphics.Canvas as Canvas
-import Music.Model.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes
   ( AudioNode(..)
   , AudioNodes
   , OscillatorConf
   )
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes.Frequency as Frequency
 import Music.Model.AudioNodes.Gain as Gain
 import Music.Model.Playback (PlaybackControls)
@@ -185,51 +185,3 @@ render ctx _ { canvas } { current: buffer } = do
   Canvas.stroke ctx
   pure unit
 
-{-
-updateAnalyserCanvas ∷ AnalyserNode → Aff Unit
-updateAnalyserCanvas analyserNode = liftEffect do
-  mbCanvasEl ← getCanvasElementById "analyser"
-  case mbCanvasEl of
-    Just canvasEl → do
-      bufferLength ← WebAudio.frequencyBinCount analyserNode
-      buffer ← ArrayBuffer.empty bufferLength
-      WebAudio.getByteTimeDomainData analyserNode buffer
-      dim ← getCanvasDimensions canvasEl
-      ctx ← getContext2D canvasEl
-      let
-        sliceWidth ∷ Number
-        sliceWidth = dim.width / Int.toNumber bufferLength
-      setFillStyle ctx "#111"
-      fillRect ctx
-        { height: dim.height, width: dim.width, x: zero, y: zero }
-      setStrokeStyle ctx "#EEE"
-      setLineWidth ctx 2.0
-      beginPath ctx
-      tailRecM
-        ( \i →
-            if i < bufferLength then do
-              mbByte ← ArrayBuffer.at buffer i
-              v ← case mbByte of
-                Just byte →
-                  pure $ Int.toNumber (UInt.toInt byte) / 128.0
-                Nothing →
-                  throw $ "buffer index out of bound: " <> show i
-              let
-                x ∷ Number
-                x = Int.toNumber i * sliceWidth
-
-                y ∷ Number
-                y = v * dim.height / 2.0
-              if i == 0 then moveTo ctx x y
-              else lineTo ctx x y
-              pure (Loop (i + 1))
-            else
-              pure (Done unit)
-        )
-        0
-      lineTo ctx dim.width (dim.height / 2.0)
-      stroke ctx
-      pure unit
-    Nothing →
-      throw "no analyser canvas found"
--}

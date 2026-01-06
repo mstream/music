@@ -5,22 +5,21 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Codec as Codec
-import Data.Foldable (class Foldable, foldl)
 import Data.Either (Either(..))
+import Data.Foldable (class Foldable, foldl)
 import Data.Graph (Edge)
 import Data.Graph as Graph
 import Data.List (List(..))
-import Data.List.NonEmpty (toList) as NEL
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Maybe as Maybe
-import Data.Tuple.Nested (type (/\), (/\))
 import Data.String.Common (joinWith)
-import Music.Model.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodeId as AudioNodeId
+import Data.Tuple.Nested (type (/\), (/\))
 import Music.Model.AudioNodes (AudioNode(..), AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes.Codec
   ( AudioNodesCodec
   , AudioNodesDecoder
@@ -42,12 +41,15 @@ codec = Codec.codec decoder encoder
 
 decoder ∷ AudioNodesDecoder String
 decoder = do
-  entries ← PC.many1 entryLine
-  case buildAudioNodes (Array.fromFoldable (NEL.toList entries)) of
-    Left err →
-      P.fail err
-    Right audioNodes →
-      pure audioNodes
+  entries ← PC.many entryLine
+  case entries of
+    Nil →
+      pure AudioNodes.empty
+    _ → case buildAudioNodes (Array.fromFoldable entries) of
+      Left err →
+        P.fail err
+      Right audioNodes →
+        pure audioNodes
 
 entryLine ∷ P.Parser String Entry
 entryLine = do
@@ -88,22 +90,25 @@ buildAudioNodes entries = do
   graphMap ← foldEither addConnection
     (map addEmptyConnections collected.nodes)
     collected.connections
-  case AudioNodes.fromGraph
-      (Graph.fromMap graphMap) of
+  case
+    AudioNodes.fromGraph
+      (Graph.fromMap graphMap)
+    of
     Left err →
       Left err
     Right audioNodes →
       Right audioNodes
   where
-  initState ∷ { nodes ∷ Map AudioNodeId AudioNode
-  , connections ∷ List (Edge AudioNodeId)
-  }
+  initState
+    ∷ { nodes ∷ Map AudioNodeId AudioNode
+      , connections ∷ List (Edge AudioNodeId)
+      }
   initState = { nodes: Map.empty, connections: Nil }
 
   collect
     ∷ { nodes ∷ Map AudioNodeId AudioNode
-    , connections ∷ List (Edge AudioNodeId)
-    }
+      , connections ∷ List (Edge AudioNodeId)
+      }
     → Entry
     → Either String
         { nodes ∷ Map AudioNodeId AudioNode
@@ -136,8 +141,9 @@ buildAudioNodes entries = do
         $ Map.insert start (node /\ Cons end ends) acc
 
   foldEither
-    ∷ ∀ f a b. Foldable f ⇒
-    (b → a → Either String b)
+    ∷ ∀ f a b
+    . Foldable f
+    ⇒ (b → a → Either String b)
     → b
     → f a
     → Either String b
