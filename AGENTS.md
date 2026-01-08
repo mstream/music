@@ -7,6 +7,7 @@ that the default shell may lack.
 
 - run `nix develop -c run app-test` to execute unit tests
 - do not write any tests, this is human developers responsibility
+- do not modify existing test cases
 
 ## Code conventions
 - do not use functions from PureScript `Partial.Unsafe` module in implementation code.
@@ -25,5 +26,6 @@ that the default shell may lack.
 
 ## Workflow
 
+- do not modify any file inside `app/test` directory
 - make sure that `nix develop -c run app-build` command does not produce any warning messages 
 - use conventional commit messages

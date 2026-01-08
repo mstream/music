@@ -8,13 +8,17 @@ async function getRender() {
 }
 
 async function renderDiagramSvg(diagramDef) {
-  const elId = "mermaid-dummy"
-  const el = document.createElement('pre');
-  el.setAttribute("id", elId);
-  const render = await getRender()
-  const { svg } = await render(elId, diagramDef);
-  el.remove()
-  return svg
+  try {
+    const elId = "mermaid-dummy"
+    const el = document.createElement('pre');
+    el.setAttribute("id", elId);
+    const render = await getRender()
+    const { svg } = await render(elId, diagramDef);
+    el.remove()
+    return svg
+  } catch (error) {
+    throw error
+  }
 }
 
 export function renderImpl(diagramDef) {
@@ -22,4 +26,3 @@ export function renderImpl(diagramDef) {
     return renderDiagramSvg(diagramDef)
   };
 }
-

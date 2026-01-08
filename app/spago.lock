@@ -803,6 +803,7 @@
           "effect",
           "maybe",
           "prelude",
+          "quickcheck-laws",
           "web-events"
         ]
       }
@@ -2391,6 +2392,7 @@
         "effect",
         "maybe",
         "prelude",
+        "quickcheck-laws",
         "web-events"
       ]
     }

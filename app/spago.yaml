@@ -53,6 +53,7 @@ workspace:
         - effect
         - maybe
         - prelude
+        - quickcheck-laws
         - web-events
       git: https://github.com/mstream/purescript-webaudio.git
       ref: f6b537a55f77a2e3dd5c797fd5be3bf087b7c66a
