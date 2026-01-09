@@ -13,7 +13,6 @@ import Data.List (List(..))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Maybe as Maybe
 import Data.String.Common (joinWith)
 import Data.Tuple.Nested (type (/\), (/\))
 import Music.Model.AudioNodes (AudioNode(..), AudioNodes)
@@ -62,11 +61,11 @@ nodeLine = do
   nodeId ← audioNodeId
   _ ← PS.char ' '
   _ ← PS.string "osc{f="
-  frequency ← Codec.decoder Frequency.codec
+  frequency ← Codec.decoder Frequency.stringCodec
   _ ← PS.string ",g="
-  gain ← Codec.decoder Gain.codec
+  gain ← Codec.decoder Gain.stringCodec
   _ ← PS.string ",w="
-  wave ← Codec.decoder Wave.codec
+  wave ← Codec.decoder Wave.stringCodec
   _ ← PS.char '}'
   pure $ NodeEntry
     ( nodeId
@@ -169,48 +168,16 @@ encoder _ audioNodes = joinWith "\n" (nodeLines <> connectionLines)
 
   connectionLines ∷ Array String
   connectionLines = renderConnection
-    <$> Array.sortWith edgeKey filteredConnections
+    <$> Array.sortWith edgeKey connections
 
-  filteredConnections ∷ Array (Edge AudioNodeId)
-  filteredConnections = Array.concatMap renderEdges nodesInOrder
+  connections ∷ Array (Edge AudioNodeId)
+  connections = Array.concatMap renderEdges nodesInOrder
     where
     renderEdges
       ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
       → Array (Edge AudioNodeId)
     renderEdges (nodeId /\ (_ /\ ends)) =
-      let
-        endsArray ∷ Array AudioNodeId
-        endsArray = Array.fromFoldable ends
-
-        keepDefault ∷ Boolean
-        keepDefault = eqDefault endsArray &&
-          Maybe.fromMaybe false (eq nodeId <$> firstDefaultOutput)
-
-        filteredEnds ∷ Array AudioNodeId
-        filteredEnds =
-          if eqDefault endsArray && not keepDefault then []
-          else endsArray
-      in
-        (\end → { start: nodeId, end }) <$> filteredEnds
-
-    eqDefault ∷ Array AudioNodeId → Boolean
-    eqDefault ends =
-      ends == [ AudioNodeId.output ]
-
-    firstDefaultOutput ∷ Maybe AudioNodeId
-    firstDefaultOutput = Array.head
-      (Array.mapMaybe defaultOnly nodesInOrder)
-
-    defaultOnly
-      ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
-      → Maybe AudioNodeId
-    defaultOnly (nodeId /\ (_ /\ ends)) =
-      let
-        endsArray ∷ Array AudioNodeId
-        endsArray = Array.fromFoldable ends
-      in
-        if endsArray == [ AudioNodeId.output ] then Just nodeId
-        else Nothing
+      (\end → { start: nodeId, end }) <$> Array.fromFoldable ends
 
   renderConnection ∷ Edge AudioNodeId → String
   renderConnection { end, start } =
@@ -225,11 +192,11 @@ renderEntry (nodeId /\ node) = case node of
   Oscillator { frequency, gain, wave } →
     Codec.encoder AudioNodeId.codec unit nodeId <> " osc"
       <> "{f="
-      <> Codec.encoder Frequency.codec unit frequency
+      <> Codec.encoder Frequency.stringCodec false frequency
       <> ",g="
-      <> Codec.encoder Gain.codec unit gain
+      <> Codec.encoder Gain.stringCodec unit gain
       <> ",w="
-      <> Codec.encoder Wave.codec unit wave
+      <> Codec.encoder Wave.stringCodec unit wave
       <> "}"
 
 audioNodeId ∷ P.Parser String AudioNodeId

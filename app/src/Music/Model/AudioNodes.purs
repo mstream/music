@@ -7,10 +7,12 @@ module Music.Model.AudioNodes
   , fromGraph
   , nodesById
   , toGraph
+  , updateAudioNode
   ) where
 
 import Prelude
 
+import Data.Codec as Codec
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.FoldableWithIndex (foldlWithIndex)
@@ -18,6 +20,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Graph (Edge, Graph)
 import Data.Graph as Graph
 import Data.List (List(..))
+import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Show.Generic (genericShow)
@@ -36,6 +39,21 @@ newtype AudioNodes = AudioNodes (Graph AudioNodeId AudioNode)
 
 empty ∷ AudioNodes
 empty = AudioNodes $ Graph.fromMap Map.empty
+
+updateAudioNode
+  ∷ AudioNodes → AudioNodeId → AudioNode → String \/ AudioNodes
+updateAudioNode (AudioNodes graph) nodeId node =
+  if nodeId `Map.member` nodes then fromGraph $ Graph.fromMap $
+    Map.insertWith
+      (\(_ /\ connectionEnds) _ → node /\ connectionEnds)
+      nodeId
+      (node /\ Nil)
+      nodes
+  else Left $ "no such node: "
+    <> Codec.encoder AudioNodeId.codec unit nodeId
+  where
+  nodes ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId)
+  nodes = Graph.toMap graph
 
 fromGraph ∷ Graph AudioNodeId AudioNode → String \/ AudioNodes
 fromGraph graph =
@@ -88,13 +106,13 @@ instance Arbitrary AudioNodes where
 
 instance Eq AudioNodes where
   eq (AudioNodes graph1) (AudioNodes graph2) = eq
-    (Graph.toMap graph1)
-    (Graph.toMap graph2)
+    (normalizeGraph graph1)
+    (normalizeGraph graph2)
 
 instance Ord AudioNodes where
   compare (AudioNodes graph1) (AudioNodes graph2) = compare
-    (Graph.toMap graph1)
-    (Graph.toMap graph2)
+    (normalizeGraph graph1)
+    (normalizeGraph graph2)
 
 instance Show AudioNodes where
   show (AudioNodes graph) = show $ Graph.toMap graph
@@ -113,3 +131,15 @@ instance Show AudioNode where
 
 type OscillatorConf =
   { frequency ∷ Frequency, gain ∷ Gain, wave ∷ Wave }
+
+normalizeGraph
+  ∷ Graph AudioNodeId AudioNode
+  → Map AudioNodeId (AudioNode /\ List AudioNodeId)
+normalizeGraph =
+  map normalizeEntry <<< Graph.toMap
+  where
+  normalizeEntry
+    ∷ AudioNode /\ List AudioNodeId
+    → AudioNode /\ List AudioNodeId
+  normalizeEntry (node /\ ends) =
+    node /\ List.filter (not <<< eq AudioNodeId.output) ends

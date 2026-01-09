@@ -16,4 +16,4 @@ on:
     paths:
       - .github/settings.yml
   schedule:
-    - cron: "* 4 * * *"
+    - cron: "0 4 * * *"

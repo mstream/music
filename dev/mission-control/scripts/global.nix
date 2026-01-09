@@ -11,7 +11,7 @@
     description = "Check all files";
     exec = script ''
       run app-test
-      ${treefmt} --ci --verbose
+      ${treefmt} --ci -vv
     '';
   };
   format-all = {

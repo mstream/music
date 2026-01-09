@@ -1,4 +1,4 @@
-module Music.Model.AudioNodes.Wave (Wave(..), codec) where
+module Music.Model.AudioNodes.Wave (Wave(..), stringCodec) where
 
 import Prelude
 
@@ -23,11 +23,11 @@ instance Arbitrary Wave where
 instance Show Wave where
   show = genericShow
 
-codec ∷ Codec Wave String Unit
-codec = Codec.codec decoder encoder
+stringCodec ∷ Codec Wave String Unit
+stringCodec = Codec.codec stringDecoder stringEncoder
 
-decoder ∷ Decoder Wave String
-decoder = do
+stringDecoder ∷ Decoder Wave String
+stringDecoder = do
   waveText ← takeWhile1 isAlphaNum
   case waveText of
     "sine" →
@@ -37,8 +37,8 @@ decoder = do
     _ →
       fail $ "Unrecognized wave type: " <> waveText
 
-encoder ∷ Encoder Wave String Unit
-encoder _ = case _ of
+stringEncoder ∷ Encoder Wave String Unit
+stringEncoder _ = case _ of
   Sine →
     "sine"
   Square →

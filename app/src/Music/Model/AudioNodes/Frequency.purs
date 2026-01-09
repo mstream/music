@@ -1,10 +1,6 @@
 module Music.Model.AudioNodes.Frequency
   ( Frequency
-  , codec
-  , fromNumber
-  , htmlInputCodec
-  , htmlInputMaxVal
-  , htmlInputMinVal
+  , stringCodec
   , toNumber
   ) where
 
@@ -12,57 +8,49 @@ import Prelude
 
 import Data.Codec (Codec, Decoder, Encoder)
 import Data.Codec as Codec
-import Data.Number (exp, log)
-import Parsing (fail)
-import Parsing.String.Basic (number)
+import Data.Number as Number
+import Parsing (fail) as P
+import Parsing.String.Basic (number) as P
 import Test.QuickCheck.Arbitrary (class Arbitrary)
+import Test.QuickCheck.Gen as Gen
 
 newtype Frequency = Frequency Number
 
 derive instance Eq Frequency
 derive instance Ord Frequency
-derive newtype instance Arbitrary Frequency
 derive newtype instance Show Frequency
 
-fromNumber ∷ Partial ⇒ Number → Frequency
-fromNumber = Frequency
+instance Arbitrary Frequency where
+  arbitrary = Frequency <$> Gen.choose minValue maxValue
+
+instance Bounded Frequency where
+  bottom ∷ Frequency
+  bottom = Frequency 10.0
+  top ∷ Frequency
+  top = Frequency 10000.0
+
+stringCodec ∷ Codec Frequency String Boolean
+stringCodec = Codec.codec stringDecoder stringEncoder
+
+stringDecoder ∷ Decoder Frequency String
+stringDecoder = Frequency <$> do
+  x ← P.number
+  if x >= minValue && x <= maxValue then pure x
+  else P.fail $ show x
+    <> " is out of bound: "
+    <> show minValue
+    <> " - "
+    <> show maxValue
+
+stringEncoder ∷ Encoder Frequency String Boolean
+stringEncoder round (Frequency x) = show
+  if round then Number.round x else x
+
+maxValue ∷ Number
+maxValue = toNumber top
+
+minValue ∷ Number
+minValue = toNumber bottom
 
 toNumber ∷ Frequency → Number
 toNumber (Frequency x) = x
-
-codec ∷ Codec Frequency String Unit
-codec = Codec.codec decoder encoder
-
-decoder ∷ Decoder Frequency String
-decoder = Frequency <$> number
-
-encoder ∷ Encoder Frequency String Unit
-encoder _ (Frequency x) = show x
-
-htmlInputMaxVal ∷ Number
-htmlInputMaxVal = 10.0
-
-htmlInputMinVal ∷ Number
-htmlInputMinVal = 3.0
-
-htmlInputCodec ∷ Codec Frequency String Unit
-htmlInputCodec = Codec.codec htmlInputDecoder htmlInputEncoder
-
-htmlInputDecoder ∷ Decoder Frequency String
-htmlInputDecoder = do
-  x ← number
-  if isWithinRange x then pure $ Frequency $ exp x
-  else fail outOfRangeErrorMessage
-  where
-  isWithinRange ∷ Number → Boolean
-  isWithinRange x = x >= htmlInputMinVal && x <= htmlInputMaxVal
-
-  outOfRangeErrorMessage ∷ String
-  outOfRangeErrorMessage =
-    "HTML input form of frequency should be a number between "
-      <> show htmlInputMinVal
-      <> " and "
-      <> show htmlInputMaxVal
-
-htmlInputEncoder ∷ Encoder Frequency String Unit
-htmlInputEncoder _ (Frequency x) = show $ log x

@@ -1,28 +1,18 @@
 module Music.View.Controls (view) where
 
-import Prelude
-
-import Data.Codec as Codec
-import Data.Either (Either(..))
 import Data.FunctorWithIndex (mapWithIndex)
-import Effect (Effect)
-import Effect.Class.Console as Console
 import Elmish (ReactElement)
-import Elmish.Dispatch (handleEffect, (<|))
-import Elmish.HTML.Events (InputChangeEvent, inputText)
+import Elmish.Dispatch ((<|))
 import Elmish.HTML.Styled as H
 import Music.Message (Message(..))
-import Music.Model.AudioNodes (AudioNode(..), OscillatorConf)
+import Music.Model.AudioNodes (AudioNode(..))
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
-import Music.Model.AudioNodes.Frequency as Frequency
-import Music.Model.AudioNodes.Gain as Gain
 import Music.Model.Perspective (ControlsPerspective)
 import Music.Model.Playback (Playback(..))
 import Music.View.Components.Accordion as Accordion
+import Music.View.Controls.Oscillator as Oscillator
 import Music.View.Types (ViewModel)
-import Parsing (parseErrorMessage, runParser)
 
 view ∷ ViewModel ControlsPerspective Message
 view model dispatch =
@@ -59,89 +49,7 @@ view model dispatch =
     (AudioNodes.nodesById model.audioNodes)
 
   renderItemContents ∷ AudioNodeId → AudioNode → ReactElement
-  renderItemContents nodeId node = case node of
+  renderItemContents id = case _ of
     Oscillator conf →
       H.div ""
-        [ renderOscillator nodeId conf
-        ]
-
-  renderOscillator ∷ AudioNodeId → OscillatorConf → ReactElement
-  renderOscillator oscillatorId conf =
-    let
-      id ∷ String
-      id = elementId "controls"
-    in
-      H.div_ "" { id } [ gainElement, frequencyElement ]
-    where
-    gainElement ∷ ReactElement
-    gainElement =
-      let
-        id ∷ String
-        id = elementId "gain"
-
-        onChangeHandler ∷ InputChangeEvent → Effect Unit
-        onChangeHandler onChangeEvent =
-          case
-            runParser (inputText onChangeEvent)
-              (Codec.decoder Gain.htmlInputCodec)
-            of
-            Left parseError →
-              Console.error $ "Invalid gain input: " <>
-                parseErrorMessage parseError
-            Right newGain →
-              dispatch $ ControlsAdjusted oscillatorId
-                (Oscillator conf { gain = newGain })
-      in
-        H.div ""
-          [ H.label_ "" { htmlFor: id } "gain"
-          , H.text $ show conf.gain
-          , H.input_ ""
-              { id
-              , min: "0"
-              , max: "1"
-              , onChange: handleEffect onChangeHandler
-              , step: "0.01"
-              , type: "range"
-              }
-          ]
-
-    frequencyElement ∷ ReactElement
-    frequencyElement =
-      let
-        id ∷ String
-        id = elementId "frequency"
-
-        onChangeHandler ∷ InputChangeEvent → Effect Unit
-        onChangeHandler onChangeEvent =
-          case
-            runParser (inputText onChangeEvent)
-              (Codec.decoder Frequency.htmlInputCodec)
-            of
-            Left parseError →
-              Console.error $ "Invalid frequency input: " <>
-                parseErrorMessage parseError
-            Right newFrequency →
-              dispatch $ ControlsAdjusted oscillatorId
-                (Oscillator conf { frequency = newFrequency })
-
-      in
-        H.div ""
-          [ H.label_ "" { htmlFor: id } "frequency"
-          , H.text $ show conf.frequency
-          , H.input_ ""
-              { id
-              , min: "1.75"
-              , max: "4.25"
-              , onChange: handleEffect onChangeHandler
-              , step: "0.05"
-              , type: "range"
-              }
-          , H.text $ "wave: " <> show conf.wave
-          ]
-
-    elementId ∷ String → String
-    elementId suffix = "oscillator-"
-      <> Codec.encoder AudioNodeId.codec unit oscillatorId
-      <> "-"
-      <>
-        suffix
+        [ Oscillator.view { conf, id } dispatch ]

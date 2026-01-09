@@ -5,7 +5,6 @@ import Prelude
 import Data.Array as Array
 import Data.Codec as Codec
 import Data.Either (Either(..), note)
-import Data.Graph (Graph)
 import Data.Graph as Graph
 import Data.List (List(..))
 import Data.Map (Map)
@@ -63,10 +62,11 @@ groupBlockEncoder _ audioNodes =
     ∷ Map BlockId (BlockDef /\ List BlockId)
   oscillatorChildren = Map.fromFoldable
     ( renderNode
-        <$> ( Map.toUnfoldable graphMap
+        <$>
+          ( Map.toUnfoldable graphMap
               ∷ Array
                   (AudioNodeId /\ (AudioNode /\ List AudioNodeId))
-            )
+          )
     )
 
   hasOscillators ∷ Boolean
@@ -81,14 +81,15 @@ groupBlockEncoder _ audioNodes =
 
   topChildren ∷ Map BlockId (BlockDef /\ List BlockId)
   topChildren = Map.fromFoldable
-    ( oscillatorsEntry <> [ outputEntry ] )
+    (oscillatorsEntry <> [ outputEntry ])
 
   oscillatorsEntry
     ∷ Array (BlockId /\ (BlockDef /\ List BlockId))
-  oscillatorsEntry = if hasOscillators then
-    [ AudioNodeId.oscillators /\ (Group oscillatorGroup /\ Nil) ]
-  else
-    []
+  oscillatorsEntry =
+    if hasOscillators then
+      [ AudioNodeId.oscillators /\ (Group oscillatorGroup /\ Nil) ]
+    else
+      []
 
   outputEntry ∷ BlockId /\ (BlockDef /\ List BlockId)
   outputEntry = output /\ (Node "output" /\ Nil)
@@ -103,19 +104,19 @@ groupBlockEncoder _ audioNodes =
     Oscillator conf →
       nodeId /\ (Node (renderOscillator conf) /\ ends)
 
-renderOscillator ∷
-  { frequency ∷ Frequency.Frequency
-  , gain ∷ Gain.Gain
-  , wave ∷ Wave.Wave
-  }
+renderOscillator
+  ∷ { frequency ∷ Frequency.Frequency
+    , gain ∷ Gain.Gain
+    , wave ∷ Wave.Wave
+    }
   → String
 renderOscillator { frequency, gain, wave } =
   "f="
-    <> Codec.encoder Frequency.codec unit frequency
+    <> Codec.encoder Frequency.stringCodec false frequency
     <> " g="
-    <> Codec.encoder Gain.codec unit gain
+    <> Codec.encoder Gain.stringCodec unit gain
     <> " s="
-    <> Codec.encoder Wave.codec unit wave
+    <> Codec.encoder Wave.stringCodec unit wave
 
 toAudioNodes ∷ GroupBlock → Either String AudioNodes
 toAudioNodes groupBlock = do
@@ -146,16 +147,18 @@ toAudioNodes groupBlock = do
   extractOscillators
     ∷ Either String
         (Map AudioNodeId (BlockDef /\ List BlockId))
-  extractOscillators = case
-    Map.lookup AudioNodeId.oscillators topChildren of
-    Just (Group oscGroup /\ _) →
-      Right $ Graph.toMap oscGroup.children
-    Just _ →
-      Left "Oscillators entry must be a group"
-    Nothing →
-      Right $ Map.filterWithKey
-        (\key _ → key /= AudioNodeId.output)
-        (Map.filter isNode topChildren)
+  extractOscillators =
+    case
+      Map.lookup AudioNodeId.oscillators topChildren
+      of
+      Just (Group oscGroup /\ _) →
+        Right $ Graph.toMap oscGroup.children
+      Just _ →
+        Left "Oscillators entry must be a group"
+      Nothing →
+        Right $ Map.filterWithKey
+          (\key _ → key /= AudioNodeId.output)
+          (Map.filter isNode topChildren)
 
   isNode ∷ BlockDef /\ List BlockId → Boolean
   isNode = case _ of
@@ -178,14 +181,14 @@ toAudioNodes groupBlock = do
 parseOscillator ∷ String → Either String AudioNode
 parseOscillator text = do
   parts ← splitParts text
-  frequency ← decode Frequency.codec =<< expectPrefix "f=" parts.f
-  gain ← decode Gain.codec =<< expectPrefix "g=" parts.g
-  wave ← decode Wave.codec =<< expectPrefix "s=" parts.s
+  frequency ← decode Frequency.stringCodec =<< expectPrefix "f=" parts.f
+  gain ← decode Gain.stringCodec =<< expectPrefix "g=" parts.g
+  wave ← decode Wave.stringCodec =<< expectPrefix "s=" parts.s
   Right $ Oscillator { frequency, gain, wave }
   where
   decode
-    ∷ ∀ a
-    . Codec.Codec a String Unit
+    ∷ ∀ a o
+    . Codec.Codec a String o
     → String
     → Either String a
   decode codec value = case runParser value (Codec.decoder codec) of
@@ -195,23 +198,28 @@ parseOscillator text = do
       Right parsed
 
   expectPrefix ∷ String → String → Either String String
-  expectPrefix prefix value = case
-    String.stripPrefix (Pattern prefix) value of
-    Just remainder →
-      Right remainder
-    Nothing →
-      Left $ "Missing " <> prefix
+  expectPrefix prefix value =
+    case
+      String.stripPrefix (Pattern prefix) value
+      of
+      Just remainder →
+        Right remainder
+      Nothing →
+        Left $ "Missing " <> prefix
 
   splitParts
     ∷ String
     → Either String { f ∷ String, g ∷ String, s ∷ String }
-  splitParts raw = case Array.filter
-    (not <<< String.null)
-    tokens of
-    [ fPart, gPart, sPart ] →
-      Right { f: fPart, g: gPart, s: sPart }
-    _ →
-      Left "Oscillator line malformed"
+  splitParts raw =
+    case
+      Array.filter
+        (not <<< String.null)
+        tokens
+      of
+      [ fPart, gPart, sPart ] →
+        Right { f: fPart, g: gPart, s: sPart }
+      _ →
+        Left "Oscillator line malformed"
     where
     tokens ∷ Array String
     tokens = String.split (Pattern " ") raw
