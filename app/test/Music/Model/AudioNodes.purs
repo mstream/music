@@ -45,7 +45,9 @@ spec = do
         , parsedAudioNodesExample /\ lines
             [ "osc1 osc{f=100.0,g=0.25,w=sine}"
             , "osc2 osc{f=200.0,g=0.75,w=square}"
+            , "osc3 osc{f=400.0,g=0.5,w=sine}"
             , "osc1->output"
+            , "osc3->output"
             ]
         ]
     , name: "audioNode/string"
@@ -118,6 +120,7 @@ parsedBlocksDiagramDefExample =
       { children: Graph.fromMap $ Map.fromFoldable
           [ oscId1 /\ oscNode1
           , oscId2 /\ oscNode2
+          , oscId3 /\ oscNode3
           ]
       , properties: { columns: Nothing }
       , spacedOut: false
@@ -129,6 +132,9 @@ parsedBlocksDiagramDefExample =
 
   oscNode2 ∷ BlockDef /\ List BlockId
   oscNode2 = Node "f=200.0 g=0.75 s=square" /\ Nil
+
+  oscNode3 ∷ BlockDef /\ List BlockId
+  oscNode3 = Node "f=400.0 g=0.5 s=sine" /\ outputNodeId : Nil
 
   outputNode ∷ BlockDef /\ List BlockId
   outputNode = Node "output" /\ Nil
@@ -145,6 +151,9 @@ parsedBlocksDiagramDefExample =
   oscId2 ∷ BlockId
   oscId2 = unsafeBlockId "osc2"
 
+  oscId3 ∷ BlockId
+  oscId3 = unsafeBlockId "osc3"
+
 parsedEmptyAudioNodesExample ∷ AudioNodes
 parsedEmptyAudioNodesExample = unsafeAudioNodes Graph.empty
 
@@ -153,6 +162,7 @@ parsedAudioNodesExample = unsafeAudioNodes $ Graph.fromMap $
   Map.fromFoldable
     [ parsedOscillatorExample1
     , parsedOscillatorExample2
+    , parsedOscillatorExample3
     ]
 
 parsedOscillatorExample1
@@ -177,6 +187,17 @@ parsedOscillatorExample2 =
         } /\ Nil
     )
 
+parsedOscillatorExample3
+  ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
+parsedOscillatorExample3 =
+  unsafeAudioNodeId "osc3" /\
+    ( Oscillator
+        { frequency: unsafeFrequency "400"
+        , gain: unsafeGain "0.5"
+        , wave: Sine
+        } /\ Nil
+    )
+
 unsafeAudioNodes ∷ Graph AudioNodeId AudioNode → AudioNodes
 unsafeAudioNodes graph = unsafePartial $
   case AudioNodes.fromGraph graph of
@@ -187,8 +208,8 @@ unsafeAudioNodeId ∷ String → AudioNodeId
 unsafeAudioNodeId = unsafeDecoded AudioNodeId.codec
 
 unsafeFrequency ∷ String → Frequency
-unsafeFrequency = unsafeDecoded Frequency.codec
+unsafeFrequency = unsafeDecoded Frequency.stringCodec
 
 unsafeGain ∷ String → Gain
-unsafeGain = unsafeDecoded Gain.codec
+unsafeGain = unsafeDecoded Gain.stringCodec
 

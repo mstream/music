@@ -19,6 +19,7 @@ view ∷ ViewModel CodePerspective Message
 view { code } dispatch = H.div ""
   [ H.textarea_ ""
       { defaultValue: code
+      , id: "editor"
       , onChange: dispatch <| CodeChanged <<< E.textareaText
       }
   , H.text case audioNodesParsingResult of

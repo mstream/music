@@ -479,12 +479,14 @@ toColumns = case _ of
     Left $ "Unsupported column count: " <> other
 
 stripPrefix ∷ String → String → Either String String
-stripPrefix prefix text = case
-  String.stripPrefix (Pattern prefix) text of
-  Just remainder →
-    Right remainder
-  Nothing →
-    Left $ "Expected prefix: " <> prefix
+stripPrefix prefix text =
+  case
+    String.stripPrefix (Pattern prefix) text
+    of
+    Just remainder →
+      Right remainder
+    Nothing →
+      Left $ "Expected prefix: " <> prefix
 
 trimIndent ∷ String → String
 trimIndent = String.trim
