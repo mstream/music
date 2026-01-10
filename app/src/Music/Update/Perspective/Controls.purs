@@ -17,12 +17,12 @@ import Music.Init.Perspective.Diagram as Diagram
 import Music.Init.Types (Init)
 import Music.Message (Message(..))
 import Music.Model (Model)
-import Music.Model.AudioNodes (AudioNode(..))
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNode (AudioNode(..))
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.Perspective (ControlsPerspective)
 import Music.Model.Perspective as Perspective
-import Music.Model.PerspectiveName (PerspectiveName(..))
+import Music.Model.Perspective.PerspectiveName (PerspectiveName(..))
 import Music.Model.Playback (Playback(..))
 import Music.Update.Types (Update)
 

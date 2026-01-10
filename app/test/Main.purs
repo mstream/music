@@ -3,7 +3,8 @@ module Test.Main (main) where
 import Prelude
 
 import Effect (Effect)
-import Music.Model.PerspectiveName (PerspectiveName)
+import Music.Model.AudioNodes.AudioNodeName (AudioNodeName)
+import Music.Model.Perspective.PerspectiveName (PerspectiveName)
 import Test.Laws (lawsTestSuite)
 import Test.Mermaid.DiagramDef as DiagramDef
 import Test.Music.Model.AudioNodes (spec) as AudioNodes
@@ -24,9 +25,9 @@ spec ∷ Spec Unit
 spec = do
   AudioNodes.spec
   DiagramDef.spec
+  lawsTestSuite "AudioNodeName" do
+    checkEq (Proxy ∷ Proxy AudioNodeName)
+    checkOrd (Proxy ∷ Proxy AudioNodeName)
   lawsTestSuite "PerspectiveName" do
-    let
-      proxy ∷ Proxy PerspectiveName
-      proxy = Proxy
-    checkEq proxy
-    checkOrd proxy
+    checkEq (Proxy ∷ Proxy PerspectiveName)
+    checkOrd (Proxy ∷ Proxy PerspectiveName)

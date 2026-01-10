@@ -1,4 +1,4 @@
-module Music.Model.PerspectiveName (PerspectiveName(..)) where
+module Music.Model.Perspective.PerspectiveName (PerspectiveName(..)) where
 
 import Prelude
 

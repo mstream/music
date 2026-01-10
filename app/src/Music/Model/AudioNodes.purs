@@ -1,7 +1,5 @@
 module Music.Model.AudioNodes
-  ( AudioNode(..)
-  , AudioNodes
-  , OscillatorConf
+  ( AudioNodes
   , connections
   , empty
   , fromGraph
@@ -16,24 +14,20 @@ import Data.Codec as Codec
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.FoldableWithIndex (foldlWithIndex)
-import Data.Generic.Rep (class Generic)
 import Data.Graph (Edge, Graph)
 import Data.Graph as Graph
 import Data.List (List(..))
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Show.Generic (genericShow)
 import Data.Traversable (all)
 import Data.Tuple as Tuple
 import Data.Tuple.Nested (type (/\), (/\))
 import Gen as Gen
+import Music.Model.AudioNodes.AudioNode (AudioNode)
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
-import Music.Model.AudioNodes.Frequency (Frequency)
-import Music.Model.AudioNodes.Gain (Gain)
-import Music.Model.AudioNodes.Wave (Wave)
-import Test.QuickCheck.Arbitrary (class Arbitrary, genericArbitrary)
+import Test.QuickCheck.Arbitrary (class Arbitrary)
 
 newtype AudioNodes = AudioNodes (Graph AudioNodeId AudioNode)
 
@@ -116,21 +110,6 @@ instance Ord AudioNodes where
 
 instance Show AudioNodes where
   show (AudioNodes graph) = show $ Graph.toMap graph
-
-data AudioNode = Oscillator OscillatorConf
-
-derive instance Eq AudioNode
-derive instance Generic AudioNode _
-derive instance Ord AudioNode
-
-instance Arbitrary AudioNode where
-  arbitrary = genericArbitrary
-
-instance Show AudioNode where
-  show = genericShow
-
-type OscillatorConf =
-  { frequency ∷ Frequency, gain ∷ Gain, wave ∷ Wave }
 
 normalizeGraph
   ∷ Graph AudioNodeId AudioNode

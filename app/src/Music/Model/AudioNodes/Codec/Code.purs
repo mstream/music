@@ -15,8 +15,12 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String.Common (joinWith)
 import Data.Tuple.Nested (type (/\), (/\))
-import Music.Model.AudioNodes (AudioNode(..), AudioNodes)
+import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNode (AudioNode(..))
+import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
+import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
+import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes.Codec
@@ -24,12 +28,9 @@ import Music.Model.AudioNodes.Codec
   , AudioNodesDecoder
   , AudioNodesEncoder
   )
-import Music.Model.AudioNodes.Frequency as Frequency
-import Music.Model.AudioNodes.Gain as Gain
-import Music.Model.AudioNodes.Wave as Wave
-import Parsing as P
-import Parsing.Combinators as PC
-import Parsing.String as PS
+import Parsing (Parser, fail) as P
+import Parsing.Combinators (many, optional, try) as P
+import Parsing.String (char, string) as P
 
 data Entry
   = NodeEntry (AudioNodeId /\ AudioNode)
@@ -40,7 +41,7 @@ codec = Codec.codec decoder encoder
 
 decoder ∷ AudioNodesDecoder String
 decoder = do
-  entries ← PC.many entryLine
+  entries ← P.many entryLine
   case entries of
     Nil →
       pure AudioNodes.empty
@@ -52,21 +53,21 @@ decoder = do
 
 entryLine ∷ P.Parser String Entry
 entryLine = do
-  entry ← PC.try nodeLine <|> connectionLine
-  _ ← PC.optional (PS.char '\n')
+  entry ← P.try nodeLine <|> connectionLine
+  _ ← P.optional (P.char '\n')
   pure entry
 
 nodeLine ∷ P.Parser String Entry
 nodeLine = do
   nodeId ← audioNodeId
-  _ ← PS.char ' '
-  _ ← PS.string "osc{f="
+  _ ← P.char ' '
+  _ ← P.string "osc{"
   frequency ← Codec.decoder Frequency.stringCodec
-  _ ← PS.string ",g="
+  _ ← P.char ','
   gain ← Codec.decoder Gain.stringCodec
-  _ ← PS.string ",w="
+  _ ← P.char ','
   wave ← Codec.decoder Wave.stringCodec
-  _ ← PS.char '}'
+  _ ← P.char '}'
   pure $ NodeEntry
     ( nodeId
         /\ Oscillator
@@ -79,7 +80,7 @@ nodeLine = do
 connectionLine ∷ P.Parser String Entry
 connectionLine = do
   start ← audioNodeId
-  _ ← PS.string "->"
+  _ ← P.string "->"
   end ← audioNodeId
   pure $ ConnectionEntry { start, end }
 
@@ -191,17 +192,17 @@ renderEntry ∷ AudioNodeId /\ AudioNode → String
 renderEntry (nodeId /\ node) = case node of
   Oscillator { frequency, gain, wave } →
     Codec.encoder AudioNodeId.codec unit nodeId <> " osc"
-      <> "{f="
-      <> Codec.encoder Frequency.stringCodec false frequency
-      <> ",g="
+      <> "{"
+      <> Codec.encoder Frequency.stringCodec unit frequency
+      <> ","
       <> Codec.encoder Gain.stringCodec unit gain
-      <> ",w="
+      <> ","
       <> Codec.encoder Wave.stringCodec unit wave
       <> "}"
 
 audioNodeId ∷ P.Parser String AudioNodeId
 audioNodeId =
-  (PS.string "output" $> AudioNodeId.output)
+  (P.string "output" $> AudioNodeId.output)
     <|> Codec.decoder AudioNodeId.codec
 
 renderAudioNodeId ∷ AudioNodeId → String

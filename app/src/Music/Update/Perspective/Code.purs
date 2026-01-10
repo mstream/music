@@ -9,7 +9,7 @@ import Music.Message (Message(..))
 import Music.Model (Model)
 import Music.Model.Perspective (CodePerspective)
 import Music.Model.Perspective as Perspective
-import Music.Model.PerspectiveName (PerspectiveName(..))
+import Music.Model.Perspective.PerspectiveName (PerspectiveName(..))
 import Music.Update.Types (Update)
 
 update ∷ Update CodePerspective

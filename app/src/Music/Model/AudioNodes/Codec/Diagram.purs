@@ -2,7 +2,7 @@ module Music.Model.AudioNodes.Codec.Diagram (groupBlockCodec) where
 
 import Prelude
 
-import Data.Array as Array
+import Control.Alt ((<|>))
 import Data.Codec as Codec
 import Data.Either (Either(..), note)
 import Data.Graph as Graph
@@ -11,7 +11,6 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String as String
-import Data.String.Pattern (Pattern(..))
 import Data.Traversable (traverse)
 import Data.Tuple (fst)
 import Data.Tuple.Nested (type (/\), (/\))
@@ -21,8 +20,12 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   , GroupBlock
   )
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
-import Music.Model.AudioNodes (AudioNode(..), AudioNodes)
+import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNode (AudioNode(..))
+import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
+import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
+import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId, output)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes.Codec
@@ -30,11 +33,10 @@ import Music.Model.AudioNodes.Codec
   , AudioNodesDecoder
   , AudioNodesEncoder
   )
-import Music.Model.AudioNodes.Frequency as Frequency
-import Music.Model.AudioNodes.Gain as Gain
-import Music.Model.AudioNodes.Wave as Wave
 import Parsing (ParseState(..), parseErrorMessage, runParser)
 import Parsing as P
+import Parsing.Combinators (optional) as PC
+import Parsing.String (string) as PS
 
 groupBlockCodec ∷ AudioNodesCodec GroupBlock Unit
 groupBlockCodec = Codec.codec groupBlockDecoder groupBlockEncoder
@@ -110,13 +112,11 @@ renderOscillator
     , wave ∷ Wave.Wave
     }
   → String
-renderOscillator { frequency, gain, wave } =
-  "f="
-    <> Codec.encoder Frequency.stringCodec false frequency
-    <> " g="
-    <> Codec.encoder Gain.stringCodec unit gain
-    <> " s="
-    <> Codec.encoder Wave.stringCodec unit wave
+renderOscillator { frequency, gain, wave } = String.joinWith " "
+  [ Codec.encoder Frequency.stringCodec unit frequency
+  , Codec.encoder Gain.stringCodec unit gain
+  , Codec.encoder Wave.stringCodec unit wave
+  ]
 
 toAudioNodes ∷ GroupBlock → Either String AudioNodes
 toAudioNodes groupBlock = do
@@ -170,56 +170,31 @@ toAudioNodes groupBlock = do
   parseEntry
     ∷ AudioNodeId /\ (BlockDef /\ List BlockId)
     → Either String (AudioNodeId /\ (AudioNode /\ List AudioNodeId))
-  parseEntry (nodeId /\ (blockDef /\ ends)) = do
-    oscillator ← case blockDef of
-      Node label →
-        parseOscillator label
-      Group _ →
-        Left "Nested groups are not audio nodes"
-    Right (nodeId /\ (oscillator /\ ends))
+  parseEntry (nodeId /\ (blockDef /\ ends)) = case blockDef of
+    Node contents →
+      parseOscillator contents
+        >>= \node →
+          Right $ nodeId /\ (node /\ ends)
+    Group _ →
+      Left "Oscillator must be a node"
 
 parseOscillator ∷ String → Either String AudioNode
-parseOscillator text = do
-  parts ← splitParts text
-  frequency ← decode Frequency.stringCodec =<< expectPrefix "f=" parts.f
-  gain ← decode Gain.stringCodec =<< expectPrefix "g=" parts.g
-  wave ← decode Wave.stringCodec =<< expectPrefix "s=" parts.s
-  Right $ Oscillator { frequency, gain, wave }
-  where
-  decode
-    ∷ ∀ a o
-    . Codec.Codec a String o
-    → String
-    → Either String a
-  decode codec value = case runParser value (Codec.decoder codec) of
-    Left parseError →
-      Left $ parseErrorMessage parseError
-    Right parsed →
-      Right parsed
+parseOscillator contents = case runParser contents oscillatorParser of
+  Left err →
+    Left $ parseErrorMessage err
+  Right node →
+    Right node
 
-  expectPrefix ∷ String → String → Either String String
-  expectPrefix prefix value =
-    case
-      String.stripPrefix (Pattern prefix) value
-      of
-      Just remainder →
-        Right remainder
-      Nothing →
-        Left $ "Missing " <> prefix
+oscillatorParser ∷ P.Parser String AudioNode
+oscillatorParser = do
+  frequency ← Codec.decoder Frequency.stringCodec
+  _ ← PS.string " "
+  gain ← Codec.decoder Gain.stringCodec
+  _ ← PS.string " "
+  wave ← Codec.decoder Wave.stringCodec
+  pure $ Oscillator { frequency, gain, wave }
 
-  splitParts
-    ∷ String
-    → Either String { f ∷ String, g ∷ String, s ∷ String }
-  splitParts raw =
-    case
-      Array.filter
-        (not <<< String.null)
-        tokens
-      of
-      [ fPart, gPart, sPart ] →
-        Right { f: fPart, g: gPart, s: sPart }
-      _ →
-        Left "Oscillator line malformed"
-    where
-    tokens ∷ Array String
-    tokens = String.split (Pattern " ") raw
+waveValue ∷ P.Parser String Wave.Wave
+waveValue =
+  PS.string "sine" $> Wave.Sine
+    <|> PS.string "square" $> Wave.Square
