@@ -15,17 +15,18 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   , GroupBlock
   )
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
-import Music.Model.AudioNodes (AudioNode(..), AudioNodes)
+import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNode (AudioNode(..))
+import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency (Frequency)
+import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
+import Music.Model.AudioNodes.AudioNode.Oscillator.Gain (Gain)
+import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
+import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.AudioNodes.Codec.Code as Code
 import Music.Model.AudioNodes.Codec.Diagram as Diagram
-import Music.Model.AudioNodes.Frequency (Frequency)
-import Music.Model.AudioNodes.Frequency as Frequency
-import Music.Model.AudioNodes.Gain (Gain)
-import Music.Model.AudioNodes.Gain as Gain
-import Music.Model.AudioNodes.Wave (Wave(..))
 import Partial.Unsafe (unsafePartial)
 import Test.Codec (codecTestSuite, unsafeDecoded)
 import Test.Laws (lawsTestSuite)
@@ -128,13 +129,13 @@ parsedBlocksDiagramDefExample =
       /\ Nil
 
   oscNode1 ∷ BlockDef /\ List BlockId
-  oscNode1 = Node "f=100.0 g=0.25 s=sine" /\ outputNodeId : Nil
+  oscNode1 = Node "f=100.0 g=0.25 w=sine" /\ outputNodeId : Nil
 
   oscNode2 ∷ BlockDef /\ List BlockId
-  oscNode2 = Node "f=200.0 g=0.75 s=square" /\ Nil
+  oscNode2 = Node "f=200.0 g=0.75 w=square" /\ Nil
 
   oscNode3 ∷ BlockDef /\ List BlockId
-  oscNode3 = Node "f=400.0 g=0.5 s=sine" /\ outputNodeId : Nil
+  oscNode3 = Node "f=400.0 g=0.5 w=sine" /\ outputNodeId : Nil
 
   outputNode ∷ BlockDef /\ List BlockId
   outputNode = Node "output" /\ Nil

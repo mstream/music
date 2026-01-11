@@ -12,7 +12,7 @@ import Music.Message (Message(..))
 import Music.Model (Model)
 import Music.Model.AudioNodes.Codec.Code (codec) as Code
 import Music.Model.Perspective as Perspective
-import Music.Model.PerspectiveName (PerspectiveName(..))
+import Music.Model.Perspective.PerspectiveName (PerspectiveName(..))
 import Music.View.Code (view) as Code
 import Music.View.Components.NavBar as NavBar
 import Music.View.Controls (view) as Controls

@@ -17,20 +17,21 @@ import Elmish.HTML.Events
 import Elmish.HTML.Events (handleEffect, inputText, selectSelectedValue) as E
 import Elmish.HTML.Styled as H
 import Music.Message (Message(..))
-import Music.Model.AudioNodes (AudioNode(..), OscillatorConf)
+import Music.Model.AudioNodes.AudioNode (AudioNode(..))
+import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
+import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency (Frequency)
+import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
+import Music.Model.AudioNodes.AudioNode.Oscillator.Gain (Gain)
+import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
+import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
+import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
-import Music.Model.AudioNodes.Frequency (Frequency)
-import Music.Model.AudioNodes.Frequency as Frequency
-import Music.Model.AudioNodes.Gain (Gain)
-import Music.Model.AudioNodes.Gain as Gain
-import Music.Model.AudioNodes.Wave (Wave(..))
-import Music.Model.AudioNodes.Wave as Wave
 import Music.View.Types (ViewModel)
 import Parsing (ParseError)
 import Parsing (parseErrorMessage, runParser) as P
 
-type OscillatorControls = { conf ∷ OscillatorConf, id ∷ AudioNodeId }
+type OscillatorControls = { conf ∷ Oscillator, id ∷ AudioNodeId }
 
 view ∷ ViewModel OscillatorControls Message
 view model dispatch =
@@ -87,7 +88,9 @@ view model dispatch =
   frequencyElement ∷ ReactElement
   frequencyElement = H.div ""
     [ H.label_ "" { htmlFor: id } "frequency"
-    , H.text $ Codec.encoder Frequency.stringCodec true
+    , H.text $ Codec.encoder
+        Frequency.stringCodec
+        unit
         model.conf.frequency
     , H.input_ ""
         { id
@@ -113,7 +116,7 @@ view model dispatch =
       parsingResult = P.runParser
         ( case Number.fromString $ E.inputText event of
             Just x →
-              show $ Number.exp x
+              show $ Number.round $ Number.exp x
             Nothing →
               (E.inputText event)
         )
@@ -169,4 +172,3 @@ view model dispatch =
     <> "-"
     <>
       suffix
-

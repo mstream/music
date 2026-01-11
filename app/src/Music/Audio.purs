@@ -57,17 +57,15 @@ import Gesso.Geometry (Scalers, null) as Gesso
 import Gesso.State (States) as Gesso
 import Gesso.Time (Delta) as Gesso
 import Graphics.Canvas as Canvas
-import Music.Model.AudioNodes
-  ( AudioNode(..)
-  , AudioNodes
-  , OscillatorConf
-  )
+import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNode (AudioNode(..))
+import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
+import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
+import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
+import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
-import Music.Model.AudioNodes.Frequency as Frequency
-import Music.Model.AudioNodes.Gain as Gain
-import Music.Model.AudioNodes.Wave as Wave
 import Music.Model.Playback (PlaybackControls)
 
 play ∷ AudioNodes → Aff PlaybackControls
@@ -107,7 +105,7 @@ createOutput audioContext = do
 createOscillator
   ∷ AudioContext
   → AnalyserNode
-  → OscillatorConf
+  → Oscillator
   → List AudioNodeId
   → Effect (GainNode /\ OscillatorNode)
 createOscillator audioContext analyser conf connectionEnds = do
@@ -122,7 +120,7 @@ createOscillator audioContext analyser conf connectionEnds = do
   pure $ gain /\ oscillator
 
 updateOscillator
-  ∷ GainNode → OscillatorNode → OscillatorConf → Effect Unit
+  ∷ GainNode → OscillatorNode → Oscillator → Effect Unit
 updateOscillator gain oscillator conf = do
   WebAudio.setOscillatorType oscillatorType oscillator
   WebAudio.setFrequency (Frequency.toNumber conf.frequency) oscillator
@@ -209,4 +207,3 @@ render ctx _ { canvas } { current: buffer } = do
   Canvas.lineTo ctx canvas.rect.width (canvas.rect.height / 2.0)
   Canvas.stroke ctx
   pure unit
-

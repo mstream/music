@@ -5,8 +5,8 @@ import Elmish (ReactElement)
 import Elmish.Dispatch ((<|))
 import Elmish.HTML.Styled as H
 import Music.Message (Message(..))
-import Music.Model.AudioNodes (AudioNode(..))
 import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNode (AudioNode(..))
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.Perspective (ControlsPerspective)
 import Music.Model.Playback (Playback(..))
