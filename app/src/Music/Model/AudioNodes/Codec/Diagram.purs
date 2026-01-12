@@ -2,7 +2,6 @@ module Music.Model.AudioNodes.Codec.Diagram (groupBlockCodec) where
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Data.Codec as Codec
 import Data.Either (Either(..), note)
 import Data.Graph as Graph
@@ -35,7 +34,6 @@ import Music.Model.AudioNodes.Codec
   )
 import Parsing (ParseState(..), parseErrorMessage, runParser)
 import Parsing as P
-import Parsing.Combinators (optional) as PC
 import Parsing.String (string) as PS
 
 groupBlockCodec ∷ AudioNodesCodec GroupBlock Unit
@@ -194,7 +192,3 @@ oscillatorParser = do
   wave ← Codec.decoder Wave.stringCodec
   pure $ Oscillator { frequency, gain, wave }
 
-waveValue ∷ P.Parser String Wave.Wave
-waveValue =
-  PS.string "sine" $> Wave.Sine
-    <|> PS.string "square" $> Wave.Square

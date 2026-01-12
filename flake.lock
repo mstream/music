@@ -16,32 +16,16 @@
         "type": "github"
       }
     },
-    "flake-compat_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1765121682,
-        "narHash": "sha256-4VBOP18BFeiPkyhy9o4ssBNQEvfvv1kXkasAYd0+rrA=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "65f23138d8d09a92e30f1e5c87611b23ef451bf3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
       },
       "locked": {
-        "lastModified": 1767609335,
-        "narHash": "sha256-feveD98mQpptwrAEggBQKJTYbvwwglSbOv53uCfH9PY=",
+        "lastModified": 1768135262,
+        "narHash": "sha256-PVvu7OqHBGWN16zSi6tEmPwwHQ4rLPU9Plvs8/1TUBY=",
         "owner": "hercules-ci",
         "repo": "flake-parts",
-        "rev": "250481aafeb741edfe23d29195671c19b36b6dca",
+        "rev": "80daad04eddbbf5a4d883996a73f3f542fa437ac",
         "type": "github"
       },
       "original": {
@@ -75,16 +59,18 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "ps-overlay": "ps-overlay",
+        "ps-overlay": [
+          "ps-overlay"
+        ],
         "registry": "registry",
         "registry-index": "registry-index"
       },
       "locked": {
-        "lastModified": 1767493951,
-        "narHash": "sha256-uZ3BWPNPpSuZpgiXsH8nQ8CalI1KKU8Bq6dEtSV8Kgo=",
+        "lastModified": 1768098738,
+        "narHash": "sha256-9vSS0Fc+hPM5q6j03OFN0EI1T5+6WzQ/hcQLNz345HA=",
         "owner": "jeslie0",
         "repo": "mkSpagoDerivation",
-        "rev": "82e2c6206a325e25c58fe3471f5d1a174fb0d652",
+        "rev": "38277f8756abc12a93ba4895bce7c4ff4c6f6903",
         "type": "github"
       },
       "original": {
@@ -95,16 +81,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1765762245,
-        "narHash": "sha256-3iXM/zTqEskWtmZs3gqNiVtRTsEjYAedIaLL0mSBsrk=",
+        "lastModified": 1767962478,
+        "narHash": "sha256-7ywwapHmJ2/dtP0j1t9fV9KQc+byL9W9X9oG3aDS4qg=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "c8cfcd6ccd422e41cc631a0b73ed4d5a925c393d",
+        "rev": "35588f29848c57ea8ac86699278d2a410dab0adb",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-25.11",
+        "ref": "nixpkgs-25.11-darwin",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -124,59 +110,25 @@
         "type": "github"
       }
     },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1767804066,
-        "narHash": "sha256-2iG6J0FOFsR2neULR2kDZADWYpZAAT574G9m2SH/pDg=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "a1418d0c2fd6ea9dd9e14926d9edbffaae88a2cb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixpkgs-25.11-darwin",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "ps-overlay": {
       "inputs": {
         "flake-compat": "flake-compat",
-        "nixpkgs": "nixpkgs"
-      },
-      "locked": {
-        "lastModified": 1765940228,
-        "narHash": "sha256-G21SwmQsdMLfBIyhLtlPiAHkqOSJzNXTqnFGtMYGxAU=",
-        "owner": "thomashoneyman",
-        "repo": "purescript-overlay",
-        "rev": "acca6cfb1b9605b8755b238285fe69ee4090a510",
-        "type": "github"
-      },
-      "original": {
-        "owner": "thomashoneyman",
-        "repo": "purescript-overlay",
-        "type": "github"
-      }
-    },
-    "purescript-overlay": {
-      "inputs": {
-        "flake-compat": "flake-compat_2",
         "nixpkgs": [
           "nixpkgs"
-        ]
+        ],
+        "slimlock": "slimlock"
       },
       "locked": {
-        "lastModified": 1765940228,
-        "narHash": "sha256-G21SwmQsdMLfBIyhLtlPiAHkqOSJzNXTqnFGtMYGxAU=",
+        "lastModified": 1765847829,
+        "narHash": "sha256-okJHJiw4/A2nsJQuvloTNSdfYfeamlSD/BViR2PGgzo=",
         "owner": "thomashoneyman",
         "repo": "purescript-overlay",
-        "rev": "acca6cfb1b9605b8755b238285fe69ee4090a510",
+        "rev": "83335b3796ea1874a324d78253bc15db481c3a55",
         "type": "github"
       },
       "original": {
         "owner": "thomashoneyman",
-        "ref": "main",
+        "ref": "83335b3796ea1874a324d78253bc15db481c3a55",
         "repo": "purescript-overlay",
         "type": "github"
       }
@@ -184,11 +136,11 @@
     "registry": {
       "flake": false,
       "locked": {
-        "lastModified": 1767475819,
-        "narHash": "sha256-weXYpyFZ+5/d0SE4K+l0uqMYfqbRhDGT05DujOzhNAs=",
+        "lastModified": 1768034502,
+        "narHash": "sha256-LXs0WrmjKN5juklJSoIdBr8R4UI0Y0rkmI2IP2kvbYI=",
         "owner": "purescript",
         "repo": "registry",
-        "rev": "a0420ed48eae5477e3899e1e9d944d8baa1f696a",
+        "rev": "135d944c7ebe0c863edfc5cf5238440dd64fd446",
         "type": "github"
       },
       "original": {
@@ -200,11 +152,11 @@
     "registry-index": {
       "flake": false,
       "locked": {
-        "lastModified": 1767475820,
-        "narHash": "sha256-jxD7myTaxbY5/X1ctDXtakJ2AMcaNAA2i+na8B4hE4A=",
+        "lastModified": 1768031402,
+        "narHash": "sha256-SKvS23JnEJiMfI/iKVTfd1pQB9bDvIfANXyqp3lcm1Y=",
         "owner": "purescript",
         "repo": "registry-index",
-        "rev": "5c6b82aabdf190f0352b35cd1f430702c6262fab",
+        "rev": "b3b48799335c02156f31cffda06906d8effecbcf",
         "type": "github"
       },
       "original": {
@@ -218,8 +170,29 @@
         "flake-parts": "flake-parts",
         "flake-utils": "flake-utils",
         "mk-spago-derivation": "mk-spago-derivation",
-        "nixpkgs": "nixpkgs_2",
-        "purescript-overlay": "purescript-overlay"
+        "nixpkgs": "nixpkgs",
+        "ps-overlay": "ps-overlay"
+      }
+    },
+    "slimlock": {
+      "inputs": {
+        "nixpkgs": [
+          "ps-overlay",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1746029857,
+        "narHash": "sha256-431slzM10HQixP4oQlCwGxUPD8wo4DWVGnIcttqyeEs=",
+        "owner": "thomashoneyman",
+        "repo": "slimlock",
+        "rev": "c49740738a026a00ab6be19300e8cf7b6de03fd7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "thomashoneyman",
+        "repo": "slimlock",
+        "type": "github"
       }
     },
     "systems": {

@@ -5,13 +5,16 @@
     flake-parts.url = "github:hercules-ci/flake-parts/main";
     flake-utils.url = "github:numtide/flake-utils?ref=main";
     mk-spago-derivation = {
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        ps-overlay.follows = "ps-overlay";
+      };
       url = "github:jeslie0/mkSpagoDerivation";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixpkgs-25.11-darwin";
-    purescript-overlay = {
-      url = "github:thomashoneyman/purescript-overlay?ref=main";
+    ps-overlay = {
       inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:thomashoneyman/purescript-overlay?ref=83335b3796ea1874a324d78253bc15db481c3a55";
     };
   };
 
@@ -20,7 +23,7 @@
       flake-parts,
       flake-utils,
       mk-spago-derivation,
-      purescript-overlay,
+      ps-overlay,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
@@ -46,7 +49,7 @@
             inherit system;
             overlays = [
               mk-spago-derivation.overlays.default
-              purescript-overlay.overlays.default
+              ps-overlay.overlays.default
             ];
           };
 
