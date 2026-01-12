@@ -2,14 +2,14 @@
   description = "A very basic flake";
 
   inputs = {
-    flake-parts.url = "github:hercules-ci/flake-parts/main";
+    flake-parts.url = "github:hercules-ci/flake-parts?ref=main";
     flake-utils.url = "github:numtide/flake-utils?ref=main";
     mk-spago-derivation = {
       inputs = {
         nixpkgs.follows = "nixpkgs";
         ps-overlay.follows = "ps-overlay";
       };
-      url = "github:jeslie0/mkSpagoDerivation";
+      url = "github:jeslie0/mkSpagoDerivation?ref=main";
     };
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixpkgs-25.11-darwin";
     ps-overlay = {
@@ -52,7 +52,6 @@
               ps-overlay.overlays.default
             ];
           };
-
           packages = rec {
             default = music;
             music = pkgs.callPackage ./app/package.nix {

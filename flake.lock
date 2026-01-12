@@ -75,6 +75,7 @@
       },
       "original": {
         "owner": "jeslie0",
+        "ref": "main",
         "repo": "mkSpagoDerivation",
         "type": "github"
       }

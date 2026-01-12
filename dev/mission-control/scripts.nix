@@ -1,10 +1,10 @@
 {
   categories,
   http-server,
+  nix,
   npm,
   script,
   spago,
-  treefmt,
   watchexec,
   ...
 }:
@@ -20,7 +20,7 @@ let
     script = script "app";
   };
   global = import ./scripts/global.nix {
-    inherit categories npm treefmt;
+    inherit categories nix npm;
     script = script ".";
   };
 in
