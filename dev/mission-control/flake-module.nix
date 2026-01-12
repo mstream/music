@@ -1,7 +1,6 @@
 {
   perSystem =
     {
-      config,
       lib,
       pkgs,
       ...
@@ -18,10 +17,10 @@
             script
             ;
           mktemp = "${pkgs.coreutils}/bin/mktemp";
+          nix = lib.getExe pkgs.nix;
           npm = "${pkgs.nodejs}/bin/npm";
           http-server = lib.getExe pkgs.http-server;
           spago = lib.getExe pkgs.spago-unstable;
-          treefmt = lib.getExe config.treefmt.build.wrapper;
           watchexec = lib.getExe pkgs.watchexec;
         };
         wrapperName = "run";

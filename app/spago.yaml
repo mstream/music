@@ -9,7 +9,9 @@ package:
     - arraybuffer
     - arraybuffer-types
     - arrays
+    - bifunctors
     - canvas
+    - catenable-lists
     - console
     - control
     - effect
@@ -31,6 +33,7 @@ package:
     - quickcheck
     - strings
     - tailrec
+    - typelevel-prelude
     - tuples
     - uint
     - unicode
@@ -41,6 +44,7 @@ package:
       - lcg
       - parsing
       - partial
+      - quickcheck-laws
       - spec
       - spec-node
 workspace:

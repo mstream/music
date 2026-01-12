@@ -1,8 +1,8 @@
 {
   categories,
+  nix,
   npm,
   script,
-  treefmt,
   ...
 }:
 {
@@ -11,16 +11,16 @@
     description = "Check all files";
     exec = script ''
       run app-test
-      ${treefmt} --ci -vv
+      ${nix} flake check
     '';
   };
   format-all = {
     category = categories.formats;
     description = "Format all files";
     exec = script ''
-      ${treefmt}
       cd app
       ${npm} exec purescript-psa@0.9.0 --censor-lib --json-errors --stash 2>&1 | ${npm} exec purescript-suggest@2.2.0 --apply
+      ${nix} fmt
     '';
   };
 }
