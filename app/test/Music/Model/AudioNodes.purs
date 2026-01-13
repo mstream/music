@@ -18,10 +18,6 @@ import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
-import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency (Frequency)
-import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
-import Music.Model.AudioNodes.AudioNode.Oscillator.Gain (Gain)
-import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
@@ -31,6 +27,15 @@ import Partial.Unsafe (unsafePartial)
 import Test.Codec (codecTestSuite, unsafeDecoded)
 import Test.Laws (lawsTestSuite)
 import Test.Mermaid.DiagramDef.Blocks.BlockId (unsafeBlockId)
+import Test.Music.Model.AudioNodes.AudioNode.Oscillator.Frequency
+  ( spec
+  , unsafeFrequency
+  ) as Frequency
+import Test.Music.Model.AudioNodes.AudioNode.Oscillator.Gain
+  ( spec
+  , unsafeGain
+  ) as Gain
+import Test.Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Test.QuickCheck.Laws.Data (checkEq, checkOrd)
 import Test.Spec (Spec)
 import Test.Utils (lines)
@@ -38,6 +43,9 @@ import Type.Proxy (Proxy(..))
 
 spec ∷ Spec Unit
 spec = do
+  Frequency.spec
+  Gain.spec
+  Wave.spec
   codecTestSuite
     { codec: Code.codec
     , encoderOpts: unit
@@ -65,29 +73,8 @@ spec = do
     , name: "audioNode/groupBlock"
     }
   lawsTestSuite "AudioNode" do
-    let
-      proxy ∷ Proxy AudioNode
-      proxy = Proxy
-    checkEq proxy
-    checkOrd proxy
-  lawsTestSuite "Frequency" do
-    let
-      proxy ∷ Proxy Frequency
-      proxy = Proxy
-    checkEq proxy
-    checkOrd proxy
-  lawsTestSuite "Gain" do
-    let
-      proxy ∷ Proxy Gain
-      proxy = Proxy
-    checkEq proxy
-    checkOrd proxy
-  lawsTestSuite "Wave" do
-    let
-      proxy ∷ Proxy Wave
-      proxy = Proxy
-    checkEq proxy
-    checkOrd proxy
+    checkEq (Proxy ∷ Proxy AudioNode)
+    checkOrd (Proxy ∷ Proxy AudioNode)
 
 parsedEmptyBlocksDiagramDefExample ∷ GroupBlock
 parsedEmptyBlocksDiagramDefExample =
@@ -171,8 +158,8 @@ parsedOscillatorExample1
 parsedOscillatorExample1 =
   unsafeAudioNodeId "osc1" /\
     ( Oscillator
-        { frequency: unsafeFrequency "100.0"
-        , gain: unsafeGain "0.25"
+        { frequency: Frequency.unsafeFrequency "100.0"
+        , gain: Gain.unsafeGain "0.25"
         , wave: Sine
         } /\ Cons AudioNodeId.output Nil
     )
@@ -182,8 +169,8 @@ parsedOscillatorExample2
 parsedOscillatorExample2 =
   unsafeAudioNodeId "osc2" /\
     ( Oscillator
-        { frequency: unsafeFrequency "200.0"
-        , gain: unsafeGain "0.75"
+        { frequency: Frequency.unsafeFrequency "200.0"
+        , gain: Gain.unsafeGain "0.75"
         , wave: Square
         } /\ Nil
     )
@@ -193,8 +180,8 @@ parsedOscillatorExample3
 parsedOscillatorExample3 =
   unsafeAudioNodeId "osc3" /\
     ( Oscillator
-        { frequency: unsafeFrequency "400"
-        , gain: unsafeGain "0.5"
+        { frequency: Frequency.unsafeFrequency "400"
+        , gain: Gain.unsafeGain "0.5"
         , wave: Sine
         } /\ Nil
     )
@@ -207,10 +194,3 @@ unsafeAudioNodes graph = unsafePartial $
 
 unsafeAudioNodeId ∷ String → AudioNodeId
 unsafeAudioNodeId = unsafeDecoded AudioNodeId.codec
-
-unsafeFrequency ∷ String → Frequency
-unsafeFrequency = unsafeDecoded Frequency.stringCodec
-
-unsafeGain ∷ String → Gain
-unsafeGain = unsafeDecoded Gain.stringCodec
-
