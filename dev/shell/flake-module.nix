@@ -8,6 +8,7 @@
           inherit inputsFrom packages;
           shellHook = ''
             PS1="music-${shellName}-shell \\w > "
+            shopt -s globstar
           '';
         };
     in

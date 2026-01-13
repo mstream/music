@@ -19,6 +19,27 @@
         --platform browser
     '';
   };
+  app-check = {
+    category = categories.checks;
+    description = "Check all files";
+    exec = script ''
+      rm -rf output
+      ${spago} build --ensure-ranges --pedantic-packages --pure --strict
+      run app-test
+    '';
+  };
+  app-format = {
+    category = categories.formats;
+    description = "Format application source code";
+    exec =
+      let
+        psSuggest = "${npm} exec --package=purescript-suggest@2.2.0 -- ps-suggest";
+      in
+      script ''
+        rm -rf output
+        ${spago} build --json-errors | ${psSuggest} --apply
+      '';
+  };
   app-preview = {
     category = categories.previews;
     description = "Preview website";

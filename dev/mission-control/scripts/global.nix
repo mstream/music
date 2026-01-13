@@ -1,7 +1,6 @@
 {
   categories,
   nix,
-  npm,
   script,
   ...
 }:
@@ -10,7 +9,7 @@
     category = categories.checks;
     description = "Check all files";
     exec = script ''
-      run app-test
+      run app-check
       ${nix} flake check
     '';
   };
@@ -18,8 +17,7 @@
     category = categories.formats;
     description = "Format all files";
     exec = script ''
-      cd app
-      ${npm} exec purescript-psa@0.9.0 --censor-lib --json-errors --stash 2>&1 | ${npm} exec purescript-suggest@2.2.0 --apply
+      run app-format
       ${nix} fmt
     '';
   };

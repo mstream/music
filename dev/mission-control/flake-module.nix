@@ -1,10 +1,6 @@
 {
   perSystem =
-    {
-      lib,
-      pkgs,
-      ...
-    }:
+    { lib, pkgs, ... }:
     {
       mission-control = {
         scripts = import ./scripts.nix {

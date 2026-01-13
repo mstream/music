@@ -1,5 +1,6 @@
 module Music.Model.AudioNodes.AudioNode.Oscillator.Frequency
   ( Frequency
+  , fromNote
   , stringCodec
   , toNumber
   ) where
@@ -8,7 +9,14 @@ import Prelude
 
 import Data.Codec (Codec)
 import Data.Either (Either(..))
+import Data.Int as Int
+import Data.Number as Number
 import Data.Set as Set
+import Music.Model.AudioNodes.AudioNode.Note
+  ( Name(..)
+  , Note(..)
+  , Octave(..)
+  )
 import Music.Model.AudioNodes.Codec.Code.Parameter
   ( class Codeable
   , class Documentable
@@ -60,6 +68,59 @@ instance Documentable Frequency Number where
     , valueConstraints: Set.empty
 
     }
+
+fromNote ∷ Note → Frequency
+fromNote (Note name octave) = Frequency $ 440.0 *
+  (2.0 `Number.pow` ((Int.toNumber $ midiNoteIndex - 69) / 12.0))
+  where
+  midiNoteIndex ∷ Int
+  midiNoteIndex = midiOctaveIndex + midiNameIndex
+
+  midiNameIndex ∷ Int
+  midiNameIndex = case name of
+    C →
+      0
+    Cs →
+      1
+    D →
+      2
+    Ds →
+      3
+    E →
+      4
+    F →
+      5
+    Fs →
+      6
+    G →
+      7
+    Gs →
+      8
+    A →
+      9
+    As →
+      10
+    B →
+      11
+
+  midiOctaveIndex ∷ Int
+  midiOctaveIndex = 12 * case octave of
+    O1 →
+      2
+    O2 →
+      3
+    O3 →
+      4
+    O4 →
+      5
+    O5 →
+      6
+    O6 →
+      7
+    O7 →
+      8
+    O8 →
+      9
 
 stringCodec ∷ Codec Frequency String Unit
 stringCodec = Parameter.stringCodec (Proxy ∷ Proxy Frequency)

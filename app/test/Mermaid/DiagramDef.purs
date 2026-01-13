@@ -3,6 +3,7 @@ module Test.Mermaid.DiagramDef (spec) where
 import Prelude
 
 import Data.Array as Array
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either(..))
 import Data.Graph (Graph)
 import Data.Graph as Graph
@@ -31,7 +32,7 @@ import Test.Mermaid.DiagramDef.Blocks.BlockId (unsafeBlockId)
 import Test.QuickCheck.Arbitrary (arbitrary)
 import Test.QuickCheck.Gen (evalGen, vectorOf) as Gen
 import Test.Spec (Spec, describe, it)
-import Test.Utils (lines, orderTestSuite)
+import Test.Utils (lines, orderedTestSuite)
 
 spec ∷ Spec Unit
 spec = do
@@ -114,8 +115,10 @@ spec = do
         ]
     , name: "Mermaid.DiagramDef/string/without indentation"
     }
-  orderTestSuite
-    { examples: Set.empty ∷ Set (Array DiagramDef), name: "DiagramDef" }
+  orderedTestSuite
+    { examples: Set.empty ∷ Set (NonEmptyArray DiagramDef)
+    , name: "DiagramDef"
+    }
   renderingTestSuite 20
 
 renderingTestSuite ∷ Int → Spec Unit
