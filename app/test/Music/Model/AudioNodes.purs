@@ -2,10 +2,13 @@ module Test.Music.Model.AudioNodes (spec) where
 
 import Prelude
 
+import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Graph (Graph)
+import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Graph as Graph
-import Data.List (List(..), (:))
+import Data.List (List)
+import Data.List as List
+import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
@@ -14,183 +17,197 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   , Columns(..)
   , GroupBlock
   )
-import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
-import Music.Model.AudioNodes.Codec.Code as Code
-import Music.Model.AudioNodes.Codec.Diagram as Diagram
-import Partial.Unsafe (unsafePartial)
-import Test.Codec (codecTestSuite, unsafeDecoded)
-import Test.Laws (lawsTestSuite)
-import Test.Mermaid.DiagramDef.Blocks.BlockId (unsafeBlockId)
-import Test.Music.Model.AudioNodes.AudioNode.Oscillator.Frequency
-  ( spec
-  , unsafeFrequency
-  ) as Frequency
-import Test.Music.Model.AudioNodes.AudioNode.Oscillator.Gain
-  ( spec
-  , unsafeGain
-  ) as Gain
-import Test.Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
-import Test.QuickCheck.Laws.Data (checkEq, checkOrd)
+import Partial.Unsafe (unsafeCrashWith)
+import Test.Codec (codecTestSuite)
+import Test.Mermaid.DiagramDef.Blocks.BlockDef as BlockDef
+import Test.Mermaid.DiagramDef.Blocks.BlockId as BlockId
+import Test.Music.Model.AudioNodes.AudioNode as AudioNode
+import Test.Music.Model.AudioNodes.AudioNodeName as AudioNodeName
 import Test.Spec (Spec)
 import Test.Utils (lines)
-import Type.Proxy (Proxy(..))
 
 spec ∷ Spec Unit
 spec = do
-  Frequency.spec
-  Gain.spec
-  Wave.spec
-  codecTestSuite
-    { codec: Code.codec
-    , encoderOpts: unit
-    , examples: Map.fromFoldable
-        [ parsedEmptyAudioNodesExample /\ lines [ "" ]
-        , parsedAudioNodesExample /\ lines
-            [ "osc1 osc{f=100.0,g=0.25,w=sine}"
-            , "osc2 osc{f=200.0,g=0.75,w=square}"
-            , "osc3 osc{f=400.0,g=0.5,w=sine}"
-            , "osc1->output"
-            , "osc3->output"
+  AudioNode.spec
+  AudioNodeName.spec
+  codecsTestSuite $ Map.fromFoldable
+    [ unsafeAudioNodes [] /\
+        { groupBlock:
+            { children: BlockDef.unsafeGroupBlockChildren
+                [ "output" /\ (Node "output" /\ []) ]
+            , properties: { columns: Just C1 }
+            , spacedOut: false
+            }
+        , lines: [ "" ]
+        }
+    , unsafeAudioNodes
+        [ "def-seq-freq" /\
+            ( AudioNode.unsafeFrequencySequencer 1
+                [ 100.0, 200.0, 300.0 ]
+                /\ []
+            )
+        , "def-seq-gain" /\
+            (AudioNode.unsafeGainSequencer 2 [ 0.0, 0.5 ] /\ [])
+        , "def-osc-sine" /\ (Oscillator { wave: Sine } /\ [ "output" ])
+        , "def-osc-square" /\ (Oscillator { wave: Square } /\ [])
+        ] /\
+        { groupBlock:
+            { children: BlockDef.unsafeGroupBlockChildren
+                [ "oscillators" /\
+                    ( Group
+                        { children: BlockDef.unsafeGroupBlockChildren
+                            [ "def-osc-sine" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-osc-sine-frequency" /\
+                                              (Node "f" /\ [])
+                                          , "def-osc-sine-gain" /\
+                                              (Node "g" /\ [])
+                                          , "def-osc-sine-wave" /\
+                                              (Node "w=sine" /\ [])
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\ [ "output" ]
+                                )
+                            , "def-osc-square" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-osc-square-frequency"
+                                              /\
+                                                (Node "f" /\ [])
+                                          , "def-osc-square-gain" /\
+                                              (Node "g" /\ [])
+                                          , "def-osc-square-wave" /\
+                                              (Node "w=square" /\ [])
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\ []
+                                )
+                            ]
+                        , properties: { columns: Nothing }
+                        , spacedOut: false
+                        } /\ []
+                    )
+                , "sequencers" /\
+                    ( Group
+                        { children: BlockDef.unsafeGroupBlockChildren
+                            [ "def-seq-freq" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-seq-freq-duration" /\
+                                              (Node "d=1" /\ [])
+                                          , "def-seq-freq-sequence" /\
+                                              ( Node
+                                                  "s=[100.0 200.0 300.0]"
+                                                  /\ []
+                                              )
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\ []
+                                )
+                            , "def-seq-gain" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-seq-gain-duration" /\
+                                              (Node "d=2" /\ [])
+                                          , "def-seq-gain-sequence" /\
+                                              (Node "s=[0.0 0.5]" /\ [])
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\ []
+                                )
+                            ]
+                        , properties: { columns: Nothing }
+                        , spacedOut: false
+                        } /\ []
+                    )
+                , "output" /\ (Node "output" /\ [])
+                ]
+            , properties: { columns: Just C1 }
+            , spacedOut: true
+            }
+        , lines:
+            [ "osc-sine osc{w=sine}"
+            , "osc-square osc{w=square}"
+            , "seq-freq fsec{d=1,s=[100.0 200.0 300.0]}"
+            , "seq-gain gsec{d=2,s=[0.0 0.5]}"
+            , "osc-sine->output"
             ]
-        ]
-    , name: "audioNode/string"
-    }
-  codecTestSuite
-    { codec: Diagram.groupBlockCodec
-    , encoderOpts: unit
-    , examples: Map.fromFoldable
-        [ parsedEmptyAudioNodesExample /\
-            parsedEmptyBlocksDiagramDefExample
-        , parsedAudioNodesExample /\
-            parsedBlocksDiagramDefExample
-        ]
-    , name: "audioNode/groupBlock"
-    }
-  lawsTestSuite "AudioNode" do
-    checkEq (Proxy ∷ Proxy AudioNode)
-    checkOrd (Proxy ∷ Proxy AudioNode)
-
-parsedEmptyBlocksDiagramDefExample ∷ GroupBlock
-parsedEmptyBlocksDiagramDefExample =
-  { children: Graph.fromMap $ Map.fromFoldable
-      [ outputNodeId /\ outputNode
-      ]
-  , properties: { columns: Just C1 }
-  , spacedOut: false
-  }
-  where
-
-  outputNode ∷ BlockDef /\ List BlockId
-  outputNode = Node "output" /\ Nil
-
-  outputNodeId ∷ BlockId
-  outputNodeId = unsafeBlockId "output"
-
-parsedBlocksDiagramDefExample ∷ GroupBlock
-parsedBlocksDiagramDefExample =
-  { children: Graph.fromMap $ Map.fromFoldable
-      [ oscillatorsGroupId /\ oscillatorsGroup
-      , outputNodeId /\ outputNode
-      ]
-  , properties: { columns: Just C1 }
-  , spacedOut: true
-  }
-  where
-  oscillatorsGroup ∷ BlockDef /\ List BlockId
-  oscillatorsGroup =
-    Group
-      { children: Graph.fromMap $ Map.fromFoldable
-          [ oscId1 /\ oscNode1
-          , oscId2 /\ oscNode2
-          , oscId3 /\ oscNode3
-          ]
-      , properties: { columns: Nothing }
-      , spacedOut: false
-      }
-      /\ Nil
-
-  oscNode1 ∷ BlockDef /\ List BlockId
-  oscNode1 = Node "f=100.0 g=0.25 w=sine" /\ outputNodeId : Nil
-
-  oscNode2 ∷ BlockDef /\ List BlockId
-  oscNode2 = Node "f=200.0 g=0.75 w=square" /\ Nil
-
-  oscNode3 ∷ BlockDef /\ List BlockId
-  oscNode3 = Node "f=400.0 g=0.5 w=sine" /\ outputNodeId : Nil
-
-  outputNode ∷ BlockDef /\ List BlockId
-  outputNode = Node "output" /\ Nil
-
-  oscillatorsGroupId ∷ BlockId
-  oscillatorsGroupId = unsafeBlockId "oscillators"
-
-  outputNodeId ∷ BlockId
-  outputNodeId = unsafeBlockId "output"
-
-  oscId1 ∷ BlockId
-  oscId1 = unsafeBlockId "osc1"
-
-  oscId2 ∷ BlockId
-  oscId2 = unsafeBlockId "osc2"
-
-  oscId3 ∷ BlockId
-  oscId3 = unsafeBlockId "osc3"
-
-parsedEmptyAudioNodesExample ∷ AudioNodes
-parsedEmptyAudioNodesExample = unsafeAudioNodes Graph.empty
-
-parsedAudioNodesExample ∷ AudioNodes
-parsedAudioNodesExample = unsafeAudioNodes $ Graph.fromMap $
-  Map.fromFoldable
-    [ parsedOscillatorExample1
-    , parsedOscillatorExample2
-    , parsedOscillatorExample3
+        }
     ]
 
-parsedOscillatorExample1
-  ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
-parsedOscillatorExample1 =
-  unsafeAudioNodeId "osc1" /\
-    ( Oscillator
-        { frequency: Frequency.unsafeFrequency "100.0"
-        , gain: Gain.unsafeGain "0.25"
-        , wave: Sine
-        } /\ Cons AudioNodeId.output Nil
+type CodecsTestSuiteConf = Map AudioNodes
+  { groupBlock ∷ GroupBlock
+  , lines ∷ Array String
+  }
+
+codecsTestSuite ∷ CodecsTestSuiteConf → Spec Unit
+codecsTestSuite examples = do
+  groupBlockCodecTestSuite
+    ((_.groupBlock) <$> examples)
+  stringCodecTestSuite ((_.lines) <$> examples)
+
+groupBlockCodecTestSuite
+  ∷ Map AudioNodes GroupBlock → Spec Unit
+groupBlockCodecTestSuite examples = codecTestSuite
+  { codec: AudioNodes.groupBlockCodec
+  , encoderOpts: unit
+  , examples
+  , name: "audioNodes/groupBlock"
+  }
+
+stringCodecTestSuite ∷ Map AudioNodes (Array String) → Spec Unit
+stringCodecTestSuite examples = codecTestSuite
+  { codec: AudioNodes.stringCodec
+  , encoderOpts: unit
+  , examples: lines <$> examples
+  , name: "audioNodes/string"
+  }
+
+unsafeAudioNodes
+  ∷ Array (String /\ (AudioNode /\ Array String)) → AudioNodes
+unsafeAudioNodes audioNodeEntries =
+  if Array.length audioNodeEntries == Map.size audioNodesById then
+    case AudioNodes.fromGraph $ Graph.fromMap audioNodesById of
+      Left errorMessage →
+        unsafeCrashWith $
+          "audio node entires violate integrity constraints: " <>
+            errorMessage
+      Right audioNodes →
+        audioNodes
+  else unsafeCrashWith $
+    "there are some duplicate identifiers in the audio node entries:"
+      <> "\n  input entries: "
+      <> show audioNodeEntries
+      <> "\n  output audio nodes: "
+      <> show audioNodesById
+  where
+  audioNodesById ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId)
+  audioNodesById = foldlWithIndex f Map.empty
+    (Map.fromFoldable audioNodeEntries)
+
+  f
+    ∷ String
+    → Map AudioNodeId (AudioNode /\ List AudioNodeId)
+    → (AudioNode /\ Array String)
+    → Map AudioNodeId (AudioNode /\ List AudioNodeId)
+  f idStr acc (audioNode /\ connectionEnds) = Map.insert
+    (BlockId.unsafeBlockId idStr)
+    ( audioNode /\
+        (List.fromFoldable $ BlockId.unsafeBlockId <$> connectionEnds)
     )
+    acc
 
-parsedOscillatorExample2
-  ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
-parsedOscillatorExample2 =
-  unsafeAudioNodeId "osc2" /\
-    ( Oscillator
-        { frequency: Frequency.unsafeFrequency "200.0"
-        , gain: Gain.unsafeGain "0.75"
-        , wave: Square
-        } /\ Nil
-    )
-
-parsedOscillatorExample3
-  ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
-parsedOscillatorExample3 =
-  unsafeAudioNodeId "osc3" /\
-    ( Oscillator
-        { frequency: Frequency.unsafeFrequency "400"
-        , gain: Gain.unsafeGain "0.5"
-        , wave: Sine
-        } /\ Nil
-    )
-
-unsafeAudioNodes ∷ Graph AudioNodeId AudioNode → AudioNodes
-unsafeAudioNodes graph = unsafePartial $
-  case AudioNodes.fromGraph graph of
-    Right audioNodes →
-      audioNodes
-
-unsafeAudioNodeId ∷ String → AudioNodeId
-unsafeAudioNodeId = unsafeDecoded AudioNodeId.codec

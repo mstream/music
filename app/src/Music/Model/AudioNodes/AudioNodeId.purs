@@ -1,52 +1,54 @@
 module Music.Model.AudioNodes.AudioNodeId
   ( AudioNodeId
-  , codec
+  , duration
+  , frequency
+  , gain
   , oscillators
   , output
+  , sequence
+  , sequencers
   , userDefined
+  , wave
   ) where
 
 import Prelude
 
-import Data.Codec (Codec)
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
+import Mermaid.DiagramDef.Blocks.BlockId.AlphaChar (AlphaChar(..))
 
 type AudioNodeId = BlockId
 
-userDefined ∷ BlockId → BlockId
-userDefined suffix = prefix <> suffix
+userDefined ∷ AudioNodeId → AudioNodeId
+userDefined id = prefix <> id
   where
-  prefix ∷ BlockId
-  prefix = BlockId.make BlockId.U
-    [ BlockId.S
-    , BlockId.E
-    , BlockId.R
-    ]
+  prefix ∷ AudioNodeId
+  prefix = make D [ E, F ]
+
+duration ∷ AudioNodeId
+duration = make D [ U, R, A, T, I, O, N ]
+
+frequency ∷ AudioNodeId
+frequency = make F
+  [ R, E, Q, U, E, N, C, Y ]
+
+gain ∷ AudioNodeId
+gain = make G [ A, I, N ]
 
 oscillators ∷ AudioNodeId
-oscillators = BlockId.make BlockId.O
-  [ BlockId.S
-  , BlockId.C
-  , BlockId.I
-  , BlockId.L
-  , BlockId.L
-  , BlockId.A
-  , BlockId.T
-  , BlockId.O
-  , BlockId.R
-  , BlockId.S
-  ]
+oscillators = make O [ S, C, I, L, L, A, T, O, R, S ]
 
 output ∷ AudioNodeId
-output = BlockId.make BlockId.O
-  [ BlockId.U
-  , BlockId.T
-  , BlockId.P
-  , BlockId.U
-  , BlockId.T
-  ]
+output = make O [ U, T, P, U, T ]
 
-codec ∷ Codec AudioNodeId String Unit
-codec = BlockId.stringCodec
+sequence ∷ AudioNodeId
+sequence = make S [ E, Q, U, E, N, C, E ]
 
+sequencers ∷ AudioNodeId
+sequencers = make S [ E, Q, U, E, N, C, E, R, S ]
+
+wave ∷ AudioNodeId
+wave = make W [ A, V, E ]
+
+make ∷ AlphaChar → Array AlphaChar → AudioNodeId
+make firstChar otherChars = BlockId.make firstChar otherChars []

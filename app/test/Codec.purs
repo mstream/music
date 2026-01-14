@@ -68,11 +68,12 @@ codecTestSuite { codec, encoderOpts, examples, name } =
       rendered ∷ e
       rendered = render decoded
 
-unsafeDecoded ∷ ∀ d e o. Codec d e o → e → d
+unsafeDecoded ∷ ∀ d e o. Show e ⇒ Codec d e o → e → d
 unsafeDecoded codec encoded =
   case runParser encoded (Codec.decoder codec) of
     Left parseError →
-      unsafeCrashWith $ parseErrorMessage parseError
+      unsafeCrashWith $ "Could not parse '" <> show encoded <> "': " <>
+        parseErrorMessage parseError
     Right decoded →
       decoded
 

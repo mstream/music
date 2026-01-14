@@ -1,5 +1,5 @@
 module Music.Model.AudioNodes.AudioNode.Oscillator.Frequency
-  ( Frequency
+  ( Frequency(..)
   , fromNote
   , stringCodec
   , toNumber
@@ -12,18 +12,20 @@ import Data.Either (Either(..))
 import Data.Int as Int
 import Data.Number as Number
 import Data.Set as Set
+import Music.Model.AudioNodes.AudioNode.Code.Documentable
+  ( class Documentable
+  , Documentation
+  )
+import Music.Model.AudioNodes.AudioNode.Code.Value
+  ( class Codeable
+  , CodecConf
+  )
+import Music.Model.AudioNodes.AudioNode.Code.Value as Value
 import Music.Model.AudioNodes.AudioNode.Note
   ( Name(..)
   , Note(..)
   , Octave(..)
   )
-import Music.Model.AudioNodes.Codec.Code.Parameter
-  ( class Codeable
-  , class Documentable
-  , CodecConf
-  , Documentation
-  )
-import Music.Model.AudioNodes.Codec.Code.Parameter as Parameter
 import Parsing.String.Basic (number) as P
 import Test.QuickCheck.Arbitrary (class Arbitrary)
 import Test.QuickCheck.Gen as Gen
@@ -40,16 +42,15 @@ instance Arbitrary Frequency where
 
 instance Bounded Frequency where
   bottom ∷ Frequency
-  bottom = Frequency 10.0
+  bottom = Frequency minValue
   top ∷ Frequency
-  top = Frequency 10000.0
+  top = Frequency maxValue
 
 instance Codeable Frequency Number Unit where
   codecConf ∷ CodecConf Frequency Number Unit
   codecConf =
-    { name: "f"
-    , parser: P.number
-    , render: const show
+    { internalValueParser: P.number
+    , renderInternalValue: const show
     , unwrap: toNumber
     , wrap: \x →
         if x >= minValue && x <= maxValue then Right $ Frequency x
@@ -65,8 +66,6 @@ instance Documentable Frequency Number where
   documentation =
     { description: "frequency"
     , examples: Set.fromFoldable [ minValue, maxValue / 2.0, maxValue ]
-    , valueConstraints: Set.empty
-
     }
 
 fromNote ∷ Note → Frequency
@@ -123,13 +122,13 @@ fromNote (Note name octave) = Frequency $ 440.0 *
       9
 
 stringCodec ∷ Codec Frequency String Unit
-stringCodec = Parameter.stringCodec (Proxy ∷ Proxy Frequency)
+stringCodec = Value.stringCodec (Proxy ∷ Proxy Frequency)
 
 maxValue ∷ Number
-maxValue = toNumber top
+maxValue = 10000.0
 
 minValue ∷ Number
-minValue = toNumber bottom
+minValue = 10.0
 
 toNumber ∷ Frequency → Number
 toNumber (Frequency x) = x

@@ -15,8 +15,8 @@ type Model t = Map t Item
 
 type Item = { contents ∷ ReactElement, open ∷ Boolean }
 
-view ∷ ∀ t. Show t ⇒ ViewModelPure (Model t)
-view model =
+view ∷ ∀ t. (t → String) → ViewModelPure (Model t)
+view showTitle model =
   H.div "" renderedElements
   where
   renderedElements ∷ Array ReactElement
@@ -32,6 +32,6 @@ view model =
       [ H.summary_
           "contrast outline"
           { role: "button" }
-          (show title)
+          (showTitle title)
       , contents
       ]

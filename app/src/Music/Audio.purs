@@ -22,13 +22,8 @@ import Audio.WebAudio.BaseAudioContext
   , resume
   , suspend
   ) as WebAudio
-import Audio.WebAudio.GainNode (setGain) as WebAudio
 import Audio.WebAudio.Oscillator (OscillatorType(..))
-import Audio.WebAudio.Oscillator
-  ( setFrequency
-  , setOscillatorType
-  , startOscillator
-  ) as WebAudio
+import Audio.WebAudio.Oscillator (setOscillatorType, startOscillator) as WebAudio
 import Audio.WebAudio.Types
   ( AnalyserNode
   , AudioContext
@@ -40,9 +35,12 @@ import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.ArrayBuffer.Typed as ArrayBuffer
 import Data.ArrayBuffer.Types (Uint8Array)
 import Data.Foldable (any)
+import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Graph as Graph
 import Data.Int as Int
 import Data.List (List)
+import Data.Map (Map)
+import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
@@ -61,8 +59,6 @@ import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
-import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
-import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
@@ -73,10 +69,13 @@ play audioNodes = liftEffect do
   audioContext ← createAudioContext
   analyser ← createOutput audioContext
   oscillators ← traverse
-    (createNode audioContext analyser)
-    (Graph.toMap $ AudioNodes.toGraph audioNodes)
+    ( \(conf /\ connectionEnds) → createOscillator audioContext analyser
+        conf
+        connectionEnds
+    )
+    oscillatorConfigs
   WebAudio.resume audioContext
-  pure { analyser, audioContext, oscillators }
+  pure { analyser, audioContext, oscillators: oscillators }
   where
   createAudioContext ∷ Effect AudioContext
   createAudioContext = do
@@ -84,15 +83,16 @@ play audioNodes = liftEffect do
     WebAudio.suspend audioContext
     pure audioContext
 
-  createNode
-    ∷ AudioContext
-    → AnalyserNode
-    → AudioNode /\ List (AudioNodeId)
-    → Effect (GainNode /\ OscillatorNode)
-  createNode audioContext analyser (node /\ connectionEnds) =
-    case node of
-      Oscillator conf →
-        createOscillator audioContext analyser conf connectionEnds
+  oscillatorConfigs ∷ Map AudioNodeId (Oscillator /\ List AudioNodeId)
+  oscillatorConfigs = foldlWithIndex
+    ( \nodeId acc → case _ of
+        Oscillator conf /\ connectionEnds →
+          Map.insert nodeId (conf /\ connectionEnds) acc
+        _ →
+          acc
+    )
+    Map.empty
+    (Graph.toMap $ AudioNodes.toGraph audioNodes)
 
 createOutput ∷ AudioContext → Effect AnalyserNode
 createOutput audioContext = do
@@ -121,10 +121,10 @@ createOscillator audioContext analyser conf connectionEnds = do
 
 updateOscillator
   ∷ GainNode → OscillatorNode → Oscillator → Effect Unit
-updateOscillator gain oscillator conf = do
+updateOscillator _ oscillator conf = do
   WebAudio.setOscillatorType oscillatorType oscillator
-  WebAudio.setFrequency (Frequency.toNumber conf.frequency) oscillator
-  WebAudio.setGain (Gain.toNumber conf.gain) gain
+  --WebAudio.setFrequency (Frequency.toNumber conf.frequency) oscillator
+  --WebAudio.setGain (Gain.toNumber conf.gain) gain
   where
   oscillatorType ∷ OscillatorType
   oscillatorType = case conf.wave of

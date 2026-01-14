@@ -13,6 +13,7 @@ let
     inherit
       categories
       http-server
+      nix
       npm
       spago
       watchexec

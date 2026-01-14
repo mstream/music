@@ -16,18 +16,15 @@ import Elmish.HTML.Events as E
 import Elmish.HTML.Styled as H
 import Music.Message (Message(..))
 import Music.Model.AudioNodes (AudioNodes)
+import Music.Model.AudioNodes as AudioNodes
+import Music.Model.AudioNodes.AudioNode.Code.Documentable
+  ( class Documentable
+  , Documentation
+  )
+import Music.Model.AudioNodes.AudioNode.Code.Documentable as Documentable
+import Music.Model.AudioNodes.AudioNode.Code.Parameter as Parameter
 import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
 import Music.Model.AudioNodes.AudioNodeName (AudioNodeName(..))
-import Music.Model.AudioNodes.Codec.Code (codec) as Code
-import Music.Model.AudioNodes.Codec.Code.Parameter
-  ( class Codeable
-  , class Documentable
-  , class Typed
-  , CodecConf
-  , Documentation
-  , ValueType(..)
-  )
-import Music.Model.AudioNodes.Codec.Code.Parameter as Parameter
 import Music.Model.Perspective (CodePerspective)
 import Music.View.Components.Accordion as Accordion
 import Music.View.Types (ViewModel)
@@ -50,12 +47,18 @@ view { code } dispatch = H.div "grid"
             "☑"
 
       ]
-  , Accordion.view documentationItems
+  , Accordion.view showAudioNodeName documentationItems
   ]
 
   where
+  showAudioNodeName ∷ AudioNodeName → String
+  showAudioNodeName = case _ of
+    Oscillator →
+      "Oscillator"
+
   audioNodesParsingResult ∷ ParseError \/ AudioNodes
-  audioNodesParsingResult = runParser code (Codec.decoder Code.codec)
+  audioNodesParsingResult = runParser code
+    (Codec.decoder AudioNodes.stringCodec)
 
   documentationItems ∷ Accordion.Model AudioNodeName
   documentationItems =
@@ -92,10 +95,9 @@ instance ViewDocumentationFields Nil where
   viewDocumentationFields _ = Nil
 
 instance
-  ( Codeable v i a
+  ( Parameter.Codeable v i a
   , Documentable v i
   , IsSymbol k
-  , Typed i
   , ViewDocumentationFields t
   ) ⇒
   ViewDocumentationFields (Cons k v t) where
@@ -103,26 +105,15 @@ instance
     where
     fieldElements ∷ List ReactElement
     fieldElements = List.singleton $ H.tr ""
-      [ H.th "" codecConf.name
+      [ H.th "" parameterName
       , H.td "" documentation.description
-      , H.td "" (showValueType valueType)
       ]
 
-    showValueType ∷ ValueType → String
-    showValueType = case _ of
-      Number →
-        "number"
-      String →
-        "string"
-
-    codecConf ∷ CodecConf v i a
-    codecConf = Parameter.codecConf @v
+    parameterName ∷ String
+    parameterName = Parameter.name @v @i @a
 
     documentation ∷ Documentation i
-    documentation = Parameter.documentation @v
-
-    valueType ∷ ValueType
-    valueType = Parameter.valueType (Proxy ∷ Proxy i)
+    documentation = Documentable.documentation @v
 
     rest ∷ List ReactElement
     rest = viewDocumentationFields (Proxy ∷ Proxy t)

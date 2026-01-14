@@ -9,11 +9,13 @@ import Data.Set as Set
 import Data.Tuple.Nested ((/\))
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
+import Mermaid.DiagramDef.Blocks.BlockId.AlphaChar (AlphaChar(..))
+import Mermaid.DiagramDef.Blocks.BlockId.NumChar (NumChar(..))
 import Test.Codec (codecTestSuite, unsafeDecoded)
 import Test.Laws (lawsTestSuite)
 import Test.QuickCheck.Laws.Data (checkSemigroup)
 import Test.Spec (Spec)
-import Test.Utils (orderedTestSuite)
+import Test.Utils (codeValueTestSuite, orderedTestSuite)
 import Type.Proxy (Proxy(..))
 
 spec ∷ Spec Unit
@@ -22,9 +24,19 @@ spec = do
     { codec: BlockId.stringCodec
     , encoderOpts: unit
     , examples: Map.fromFoldable
-        [ unsafeBlockId "abc" /\ "abc" ]
+        [ BlockId.make A [ B, C ] [] /\ "abc"
+        , BlockId.make A [ B, C ] [ N1, N2 ] /\ "abc12"
+        , (BlockId.make A [ B, C ] [ N1, N2 ] <> BlockId.make D [] [])
+            /\
+              "abc12-d"
+        , ( BlockId.make A [ B, C ] [ N1, N2 ] <> BlockId.make D []
+              [ N4 ]
+          )
+            /\ "abc12-d4"
+        ]
     , name: "BlockId/String"
     }
+  codeValueTestSuite (Proxy ∷ Proxy BlockId) "BlockId"
   orderedTestSuite
     { examples: Set.fromFoldable
         [ orderedExamples
@@ -35,17 +47,8 @@ spec = do
     checkSemigroup (Proxy ∷ Proxy BlockId)
 
 orderedExamples ∷ NonEmptyArray BlockId
-orderedExamples = ArrayNE.cons' exampleA
-  [ exampleB, exampleC ]
-
-exampleA ∷ BlockId
-exampleA = unsafeBlockId "a"
-
-exampleB ∷ BlockId
-exampleB = unsafeBlockId "b"
-
-exampleC ∷ BlockId
-exampleC = unsafeBlockId "c"
+orderedExamples = ArrayNE.cons' (unsafeBlockId "a")
+  [ unsafeBlockId "b", unsafeBlockId "c" ]
 
 unsafeBlockId ∷ String → BlockId
 unsafeBlockId = unsafeDecoded BlockId.stringCodec
