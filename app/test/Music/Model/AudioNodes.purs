@@ -46,7 +46,17 @@ spec = do
         , lines: [ "" ]
         }
     , unsafeAudioNodes
-        [ "def-seq-freq" /\
+        [ "def-seq-freq-connected-multiple" /\
+            ( AudioNode.unsafeFrequencySequencer 1
+                [ 100.0, 200.0, 300.0 ]
+                /\ [ "def-osc-sine", "def-osc-square" ]
+            )
+        , "def-seq-freq-connected-single" /\
+            ( AudioNode.unsafeFrequencySequencer 1
+                [ 100.0, 200.0, 300.0 ]
+                /\ [ "def-osc-sine" ]
+            )
+        , "def-seq-freq-disconnected" /\
             ( AudioNode.unsafeFrequencySequencer 1
                 [ 100.0, 200.0, 300.0 ]
                 /\ []
@@ -100,21 +110,64 @@ spec = do
                 , "sequencers" /\
                     ( Group
                         { children: BlockDef.unsafeGroupBlockChildren
-                            [ "def-seq-freq" /\
+                            [ "def-seq-freq-connected-multiple" /\
                                 ( Group
                                     { children:
                                         BlockDef.unsafeGroupBlockChildren
-                                          [ "def-seq-freq-duration" /\
-                                              (Node "d=1" /\ [])
-                                          , "def-seq-freq-sequence" /\
-                                              ( Node
-                                                  "s=[100.0 200.0 300.0]"
-                                                  /\ []
-                                              )
+                                          [ "def-seq-freq-connected-multiple-duration"
+                                              /\
+                                                (Node "d=1" /\ [])
+                                          , "def-seq-freq-connected-multiple-sequence"
+                                              /\
+                                                ( Node
+                                                    "s=[100.0 200.0 300.0]"
+                                                    /\ []
+                                                )
                                           ]
                                     , properties: { columns: Just C2 }
                                     , spacedOut: false
-                                    } /\ []
+                                    } /\
+                                    [ "def-osc-sine-frequency"
+                                    , "def-osc-square-frequency"
+                                    ]
+                                )
+                            , "def-seq-freq-connected-single" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-seq-freq-connected-single-duration"
+                                              /\
+                                                (Node "d=1" /\ [])
+                                          , "def-seq-freq-connected-single-sequence"
+                                              /\
+                                                ( Node
+                                                    "s=[100.0 200.0 300.0]"
+                                                    /\ []
+                                                )
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\
+                                    [ "def-osc-sine-frequency" ]
+                                )
+                            , "def-seq-freq-connected-disconnected" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-seq-freq-connected-disconnected-duration"
+                                              /\
+                                                (Node "d=1" /\ [])
+                                          , "def-seq-freq-connected-disconnected-sequence"
+                                              /\
+                                                ( Node
+                                                    "s=[100.0 200.0 300.0]"
+                                                    /\ []
+                                                )
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\
+                                    []
                                 )
                             , "def-seq-gain" /\
                                 ( Group
@@ -142,9 +195,14 @@ spec = do
         , lines:
             [ "osc-sine osc{w=sine}"
             , "osc-square osc{w=square}"
-            , "seq-freq fsec{d=1,s=[100.0 200.0 300.0]}"
+            , "seq-freq-connected-single fsec{d=1,s=[100.0 200.0 300.0]}"
+            , "seq-freq-connected-multiple fsec{d=1,s=[100.0 200.0 300.0]}"
+            , "seq-freq-disconnected fsec{d=1,s=[100.0 200.0 300.0]}"
             , "seq-gain gsec{d=2,s=[0.0 0.5]}"
             , "osc-sine->output"
+            , "seq-freq-connected-single->osc-sine"
+            , "seq-freq-connected-multiple->osc-sine"
+            , "seq-freq-connected-multiple->osc-square"
             ]
         }
     ]
@@ -182,10 +240,10 @@ unsafeAudioNodes
 unsafeAudioNodes audioNodeEntries =
   if Array.length audioNodeEntries == Map.size audioNodesById then
     case AudioNodes.fromGraph $ Graph.fromMap audioNodesById of
-      Left errorMessage →
+      Left violationsById →
         unsafeCrashWith $
-          "audio node entires violate integrity constraints: " <>
-            errorMessage
+          "audio node entries violate integrity constraints: " <>
+            show violationsById
       Right audioNodes →
         audioNodes
   else unsafeCrashWith $

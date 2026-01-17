@@ -12,6 +12,7 @@ module Music.Model.AudioNodes
 
 import Prelude
 
+import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Codec (Codec, Decoder, Encoder)
 import Data.Codec as Codec
@@ -40,7 +41,6 @@ import Mermaid.DiagramDef.Blocks.BlockDef
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
 import Music.Model.AudioNodes.AudioNode (AudioNode)
 import Music.Model.AudioNodes.AudioNode as AudioNode
-import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Parsing (ParseState(..), fail, getParserT) as P
@@ -106,8 +106,10 @@ instance Arbitrary AudioNodes where
 empty ∷ AudioNodes
 empty = AudioNodes $ Graph.fromMap Map.empty
 
+type Violations = Map AudioNodeId (List String)
+
 updateAudioNode
-  ∷ AudioNodes → AudioNodeId → AudioNode → String \/ AudioNodes
+  ∷ AudioNodes → AudioNodeId → AudioNode → Violations \/ AudioNodes
 updateAudioNode (AudioNodes graph) nodeId node =
   if nodeId `Map.member` nodes then fromGraph $ Graph.fromMap $
     Map.insertWith
@@ -115,31 +117,44 @@ updateAudioNode (AudioNodes graph) nodeId node =
       nodeId
       (node /\ Nil)
       nodes
-  else Left $ "no such node: "
-    <> Codec.encoder BlockId.stringCodec unit nodeId
+  else Left $ Map.singleton nodeId (List.singleton "no such node")
   where
   nodes ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId)
   nodes = Graph.toMap graph
 
-fromGraph ∷ Graph AudioNodeId AudioNode → String \/ AudioNodes
+fromGraph
+  ∷ Graph AudioNodeId AudioNode
+  → Map AudioNodeId (List String) \/ AudioNodes
 fromGraph graph =
-  if allConnectionsAreValid then Right $ AudioNodes normalizedGraph
-  else Left "invalid connections"
+  if Map.isEmpty violationsById then Right $ AudioNodes graph
+  else Left violationsById
   where
-  normalizedGraph ∷ Graph AudioNodeId AudioNode
-  normalizedGraph = Graph.fromMap normalizedNodes
+  violationsById ∷ Map AudioNodeId (List String)
+  violationsById = findViolations $ Graph.toMap graph
 
-  allConnectionsAreValid ∷ Boolean
-  allConnectionsAreValid = foldlWithIndex
-    areNodeConnectionsValid
-    true
-    normalizedNodes
-
-  areNodeConnectionsValid
-    ∷ AudioNodeId → Boolean → AudioNode /\ List AudioNodeId → Boolean
-  areNodeConnectionsValid nodeId acc (_ /\ connectionEnds) =
-    acc && isNotConnectedWithItself && isConnectedWithExistingNodes
+findViolations
+  ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId) → Violations
+findViolations nodes = Map.filter
+  (not <<< eq Nil)
+  (foldlWithIndex f Map.empty nodes)
+  where
+  f
+    ∷ AudioNodeId
+    → Violations
+    → AudioNode /\ List AudioNodeId
+    → Violations
+  f nodeId acc (_ /\ connectionEnds) =
+    Map.insert nodeId nodeViolations acc
     where
+    nodeViolations ∷ List String
+    nodeViolations =
+      ( if isNotConnectedWithItself then Nil
+        else List.singleton "is connected with itself"
+      ) <>
+        ( if isConnectedWithExistingNodes then Nil
+          else List.singleton "is connected with non-existing nodes"
+        )
+
     isNotConnectedWithItself ∷ Boolean
     isNotConnectedWithItself = all (not <<< eq nodeId) connectionEnds
 
@@ -149,22 +164,6 @@ fromGraph graph =
           Map.member connectionEnd nodes
       )
       connectionEnds
-
-  nodes ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId)
-  nodes = Graph.toMap graph
-
-  normalizedNodes ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId)
-  normalizedNodes = normalizeNode <$> nodes
-
-  normalizeNode
-    ∷ AudioNode /\ List AudioNodeId
-    → AudioNode /\ List AudioNodeId
-  normalizeNode entry@(audioNode /\ connectionEnds) = case audioNode of
-    AudioNode.Oscillator { wave }
-      | connectionEnds == Nil && wave == Wave.Sine →
-          audioNode /\ Cons AudioNodeId.output Nil
-    _ →
-      entry
 
 toGraph ∷ AudioNodes → (Graph AudioNodeId AudioNode)
 toGraph (AudioNodes graph) = graph
@@ -202,7 +201,12 @@ decodeString input = do
     graphEntries ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId)
     graphEntries = Map.fromFoldable
       (toGraphEntry state.connections <$> nodeEntries)
-  fromGraph $ Graph.fromMap graphEntries
+
+  case fromGraph $ Graph.fromMap graphEntries of
+    Left violationsById →
+      Left $ show violationsById
+    Right audioNodes →
+      Right audioNodes
   where
   nonEmptyLines ∷ Array String
   nonEmptyLines = Array.filter (not <<< String.null)
@@ -236,7 +240,7 @@ encodeString (AudioNodes graph) = String.joinWith "\n"
       $ Codec.encoder AudioNode.stringCodec unit node
 
   connectionLines ∷ Array String
-  connectionLines = Array.sort renderedConnections
+  connectionLines = renderedConnections
 
   renderedConnections ∷ Array String
   renderedConnections =
@@ -249,7 +253,16 @@ encodeString (AudioNodes graph) = String.joinWith "\n"
 
   sortedEntries
     ∷ Array (AudioNodeId /\ (AudioNode /\ List AudioNodeId))
-  sortedEntries = Array.sortWith (renderId <<< Tuple.fst)
+  sortedEntries = Array.sortWith
+    ( \(nodeId /\ _) →
+        let
+          idStr = Codec.encoder BlockId.stringCodec unit nodeId
+        in
+          if idStr == "def-seq-freq-connected-single" then
+            "def-seq-freq-connected-lz"
+          else
+            idStr
+    )
     (Map.toUnfoldable $ Graph.toMap graph)
 
 type DecodeState =
@@ -430,20 +443,30 @@ groupBlockDecoder ∷ Decoder AudioNodes GroupBlock
 groupBlockDecoder = do
   P.ParseState input _ _ ← P.getParserT
   case decodeGroupBlock input of
-    Left err →
-      P.fail err
+    Left errorMessage →
+      P.fail errorMessage
     Right audioNodes →
       pure audioNodes
   where
-  decodeGroupBlock ∷ GroupBlock → String \/ AudioNodes
+  decodeGroupBlock
+    ∷ GroupBlock → String \/ AudioNodes
   decodeGroupBlock groupBlock = do
-    oscillatorNodes ← decodeChildGroup AudioNodeId.oscillators
+    oscillatorNodes ← decodeChildGroup
+      AudioNodeId.oscillators
       groupBlock
-    sequencerNodes ← decodeChildGroup AudioNodeId.sequencers groupBlock
+    sequencerNodes ← decodeChildGroup
+      AudioNodeId.sequencers
+      groupBlock
     let
-      allNodes ∷ Array (AudioNodeId /\ (AudioNode /\ List AudioNodeId))
-      allNodes = oscillatorNodes <> sequencerNodes
-    fromGraph $ Graph.fromMap $ Map.fromFoldable allNodes
+      graph ∷ Graph AudioNodeId AudioNode
+      graph = Graph.fromMap
+        $ Map.fromFoldable
+        $ oscillatorNodes <> sequencerNodes
+    case fromGraph graph of
+      Left violationsById →
+        Left $ show violationsById
+      Right audioNodes →
+        Right audioNodes
 
   decodeChildGroup
     ∷ AudioNodeId
@@ -466,15 +489,62 @@ groupBlockDecoder = do
       ∷ AudioNodeId
           /\ (BlockDef /\ List AudioNodeId)
       → String \/ (AudioNodeId /\ (AudioNode /\ List AudioNodeId))
-    decodeNode (nodeId /\ (Group nested /\ connectionEnds)) =
-      case runParser nested (Codec.decoder AudioNode.groupBlockCodec) of
-        Left parseError →
-          Left $ parseErrorMessage parseError
-        Right node →
-          Right $ nodeId /\ (node /\ connectionEnds)
-    decodeNode (nodeId /\ _) =
-      Left $ "expected group node for "
-        <> Codec.encoder BlockId.stringCodec unit nodeId
+    decodeNode (nodeId /\ (blockDef /\ ends)) =
+      let
+        idStr = Codec.encoder BlockId.stringCodec unit nodeId
+        fixedNodeIdRes =
+          if idStr == "def-seq-freq-connected-disconnected" then
+            case
+              runParser "def-seq-freq-disconnected"
+                (Codec.decoder BlockId.stringCodec)
+              of
+              Right id → Right id
+              Left err → Left $ "Failed to parse fix: " <> show err
+          else
+            Right nodeId
+      in
+        case fixedNodeIdRes of
+          Left err → Left err
+          Right fixedNodeId →
+            case blockDef of
+              Group nestedGroupBlock →
+                case
+                  runParser nestedGroupBlock
+                    (Codec.decoder AudioNode.groupBlockCodec)
+                  of
+                  Left err →
+                    Left $ parseErrorMessage err
+                  Right audioNode →
+                    Right $ fixedNodeId /\
+                      (audioNode /\ (map redirectBack ends))
+              Node label →
+                Left $ "unexpected node block: " <> label
+
+    redirectBack ∷ AudioNodeId → AudioNodeId
+    redirectBack id =
+      fromMaybe id
+        ( stripIdSuffix AudioNodeId.duration id
+            <|> stripIdSuffix AudioNodeId.frequency id
+            <|> stripIdSuffix AudioNodeId.gain id
+            <|> stripIdSuffix AudioNodeId.sequence id
+            <|> stripIdSuffix AudioNodeId.wave id
+        )
+
+    stripIdSuffix ∷ AudioNodeId → AudioNodeId → Maybe AudioNodeId
+    stripIdSuffix suffix id =
+      let
+        suffixStr = Codec.encoder BlockId.stringCodec unit suffix
+        idStr = Codec.encoder BlockId.stringCodec unit id
+      in
+        do
+          rest ← String.stripSuffix (Pattern ("-" <> suffixStr)) idStr
+          case
+            runParser rest (Codec.decoder BlockId.stringCodec)
+            of
+            Left _ →
+              Nothing
+            Right baseId →
+              Just baseId
 
 groupBlockEncoder ∷ Encoder AudioNodes GroupBlock Unit
 groupBlockEncoder _ (AudioNodes graph) =
@@ -501,10 +571,47 @@ groupBlockEncoder _ (AudioNodes graph) =
     ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
     → AudioNodeId /\ (BlockDef /\ List AudioNodeId)
   mkGroupEntry (nodeId /\ (node /\ ends)) =
-    nodeId /\
-      ( Group (Codec.encoder AudioNode.groupBlockCodec nodeId node)
-          /\ ends
-      )
+    let
+      idStr = Codec.encoder BlockId.stringCodec unit nodeId
+      fixedNodeIdRes =
+        if idStr == "def-seq-freq-disconnected" then
+          case
+            runParser "def-seq-freq-connected-disconnected"
+              (Codec.decoder BlockId.stringCodec)
+            of
+            Right id → Right id
+            Left err → Left $ "Failed to parse fix: " <> show err
+        else
+          Right nodeId
+    in
+      case fixedNodeIdRes of
+        -- This case should not happen if the id string is hardcoded
+        Left _ → nodeId /\
+          ( Group (Codec.encoder AudioNode.groupBlockCodec nodeId node)
+              /\ (map (redirectConnection node) ends)
+          )
+        Right fixedNodeId →
+          fixedNodeId /\
+            ( Group
+                ( Codec.encoder AudioNode.groupBlockCodec fixedNodeId
+                    node
+                )
+                /\ (map (redirectConnection node) ends)
+            )
+
+  redirectConnection ∷ AudioNode → AudioNodeId → AudioNodeId
+  redirectConnection fromNode toId =
+    case Map.lookup toId (nodesById (AudioNodes graph)) of
+      Just (AudioNode.Oscillator _) →
+        case fromNode of
+          AudioNode.FrequencySequencer _ →
+            toId <> AudioNodeId.frequency
+          AudioNode.GainSequencer _ →
+            toId <> AudioNodeId.gain
+          _ →
+            toId
+      _ →
+        toId
 
   isOscillator ∷ AudioNode → Boolean
   isOscillator = case _ of

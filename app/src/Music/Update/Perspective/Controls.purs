@@ -30,10 +30,10 @@ update ∷ Update ControlsPerspective
 update model = case _ of
   ControlsAdjusted nodeId node →
     case AudioNodes.updateAudioNode model.audioNodes nodeId node of
-      Left errorMessage → do
+      Left violationsById → do
         E.forkVoid
           $ Console.error
-          $ "failed to update audio nodes: " <> errorMessage
+          $ "failed to update audio nodes: " <> show violationsById
         noop
       Right updatedAudioNodes → do
         E.forkVoid $ liftEffect case model.playback of

@@ -22,10 +22,6 @@
       is_ci="false"
     fi
 
-    # make caching local
-    #XDG_CACHE_HOME=.cache
-    #export XDG_CACHE_HOME 
-
     export is_ci
 
     # some command derivation expect other commands to be on the PATH
