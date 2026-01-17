@@ -1,6 +1,7 @@
 {
   categories,
   http-server,
+  nix,
   npm,
   script,
   spago,
@@ -26,6 +27,7 @@
       rm -rf output
       ${spago} build --ensure-ranges --pedantic-packages --pure --strict
       run app-test
+      ${nix} build .#music
     '';
   };
   app-format = {

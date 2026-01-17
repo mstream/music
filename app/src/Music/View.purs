@@ -10,7 +10,7 @@ import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
 import Music.Message (Message(..))
 import Music.Model (Model)
-import Music.Model.AudioNodes.Codec.Code (codec) as Code
+import Music.Model.AudioNodes as AudioNodes
 import Music.Model.Perspective as Perspective
 import Music.Model.Perspective.PerspectiveName (PerspectiveName(..))
 import Music.View.Code (view) as Code
@@ -62,7 +62,7 @@ view model dispatch = H.div ""
   controlsNavbarItem ∷ NavBar.Item Message
   controlsNavbarItem = case model.perspective of
     Perspective.Code { code } →
-      case runParser code (Codec.decoder Code.codec) of
+      case runParser code (Codec.decoder AudioNodes.stringCodec) of
         Left _ →
           NavBar.Unavailable "code error"
         Right audioNodes →
@@ -77,7 +77,7 @@ view model dispatch = H.div ""
   diagramNavbarItem ∷ NavBar.Item Message
   diagramNavbarItem = case model.perspective of
     Perspective.Code { code } →
-      case runParser code (Codec.decoder Code.codec) of
+      case runParser code (Codec.decoder AudioNodes.stringCodec) of
         Left _ →
           NavBar.Unavailable "code error"
         Right audioNodes →

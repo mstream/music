@@ -24,9 +24,9 @@ spec = do
     { codec: Frequency.stringCodec
     , encoderOpts: unit
     , examples: Map.fromFoldable
-        [ example10 /\ "f=10.0"
-        , example5000 /\ "f=5000.0"
-        , example10000 /\ "f=10000.0"
+        [ example10 /\ "10.0"
+        , example5000 /\ "5000.0"
+        , example10000 /\ "10000.0"
         ]
     , name: "frequency/string"
     }

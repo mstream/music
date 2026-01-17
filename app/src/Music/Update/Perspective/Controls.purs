@@ -11,6 +11,7 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
 import Elmish as E
+import Mermaid.DiagramDef.Blocks.BlockId as BlockId
 import Music.Audio as Audio
 import Music.Init.Perspective.Code (init) as Code
 import Music.Init.Perspective.Diagram as Diagram
@@ -19,7 +20,6 @@ import Music.Message (Message(..))
 import Music.Model (Model)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
-import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.Perspective (ControlsPerspective)
 import Music.Model.Perspective as Perspective
 import Music.Model.Perspective.PerspectiveName (PerspectiveName(..))
@@ -30,10 +30,10 @@ update ∷ Update ControlsPerspective
 update model = case _ of
   ControlsAdjusted nodeId node →
     case AudioNodes.updateAudioNode model.audioNodes nodeId node of
-      Left errorMessage → do
+      Left violationsById → do
         E.forkVoid
           $ Console.error
-          $ "failed to update audio nodes: " <> errorMessage
+          $ "failed to update audio nodes: " <> show violationsById
         noop
       Right updatedAudioNodes → do
         E.forkVoid $ liftEffect case model.playback of
@@ -48,7 +48,9 @@ update model = case _ of
                       oscillatorConf
                   Nothing →
                     Console.error $ "no such oscillator: "
-                      <> Codec.encoder AudioNodeId.codec unit nodeId
+                      <> Codec.encoder BlockId.stringCodec unit nodeId
+              _ →
+                pure unit
           _ →
             pure unit
         pure

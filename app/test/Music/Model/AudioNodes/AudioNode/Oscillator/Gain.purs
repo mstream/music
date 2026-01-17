@@ -23,9 +23,9 @@ spec = do
     { codec: Gain.stringCodec
     , encoderOpts: unit
     , examples: Map.fromFoldable
-        [ example00 /\ "g=0.0"
-        , example05 /\ "g=0.5"
-        , example10 /\ "g=1.0"
+        [ example00 /\ "0.0"
+        , example05 /\ "0.5"
+        , example10 /\ "1.0"
         ]
     , name: "gain/string"
     }

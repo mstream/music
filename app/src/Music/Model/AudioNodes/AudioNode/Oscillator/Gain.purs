@@ -1,5 +1,5 @@
 module Music.Model.AudioNodes.AudioNode.Oscillator.Gain
-  ( Gain
+  ( Gain(..)
   , stringCodec
   , toNumber
   ) where
@@ -9,14 +9,16 @@ import Prelude
 import Data.Codec (Codec)
 import Data.Either (Either(..))
 import Data.Set as Set
-import Music.Model.AudioNodes.Codec.Code.Parameter
-  ( class Codeable
-  , class Documentable
-  , CodecConf
+import Music.Model.AudioNodes.AudioNode.Code.Documentable
+  ( class Documentable
   , Documentation
   )
-import Music.Model.AudioNodes.Codec.Code.Parameter as Parameter
-import Parsing.String.Basic (number) as P
+import Music.Model.AudioNodes.AudioNode.Code.Value
+  ( class Codeable
+  , CodecConf
+  )
+import Music.Model.AudioNodes.AudioNode.Code.Value as Value
+import Parsing.String.Basic as P
 import Test.QuickCheck.Arbitrary (class Arbitrary)
 import Test.QuickCheck.Gen as Gen
 import Type.Proxy (Proxy(..))
@@ -32,16 +34,15 @@ instance Arbitrary Gain where
 
 instance Bounded Gain where
   bottom ∷ Gain
-  bottom = Gain zero
+  bottom = Gain minValue
   top ∷ Gain
-  top = Gain one
+  top = Gain maxValue
 
 instance Codeable Gain Number Unit where
   codecConf ∷ CodecConf Gain Number Unit
   codecConf =
-    { name: "g"
-    , parser: P.number
-    , render: const show
+    { internalValueParser: P.number
+    , renderInternalValue: const show
     , unwrap: toNumber
     , wrap: \x →
         if x >= minValue && x <= maxValue then Right $ Gain x
@@ -57,19 +58,16 @@ instance Documentable Gain Number where
   documentation =
     { description: "gain"
     , examples: Set.fromFoldable [ minValue, maxValue / 2.0, maxValue ]
-    , valueConstraints: Set.empty
-
     }
 
 stringCodec ∷ Codec Gain String Unit
-stringCodec = Parameter.stringCodec (Proxy ∷ Proxy Gain)
+stringCodec = Value.stringCodec (Proxy ∷ Proxy Gain)
 
 maxValue ∷ Number
-maxValue = toNumber top
+maxValue = one
 
 minValue ∷ Number
-minValue = toNumber bottom
+minValue = zero
 
 toNumber ∷ Gain → Number
 toNumber (Gain x) = x
-

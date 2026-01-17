@@ -1,6 +1,7 @@
 module Music.Model.AudioNodes.AudioNode.Oscillator.Wave
   ( Wave(..)
-  , stringCodec
+  , parameterStringCodec
+  , valueStringCodec
   ) where
 
 import Prelude
@@ -10,13 +11,12 @@ import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Set as Set
 import Data.Show.Generic (genericShow)
-import Music.Model.AudioNodes.Codec.Code.Parameter
-  ( class Codeable
-  , class Documentable
-  , CodecConf
+import Music.Model.AudioNodes.AudioNode.Code.Documentable
+  ( class Documentable
   , Documentation
   )
-import Music.Model.AudioNodes.Codec.Code.Parameter as Parameter
+import Music.Model.AudioNodes.AudioNode.Code.Parameter as Parameter
+import Music.Model.AudioNodes.AudioNode.Code.Value as Value
 import Parsing.Combinators (choice) as P
 import Parsing.String (string) as P
 import Test.QuickCheck.Arbitrary (class Arbitrary, genericArbitrary)
@@ -31,12 +31,16 @@ derive instance Ord Wave
 instance Arbitrary Wave where
   arbitrary = genericArbitrary
 
-instance Codeable Wave String Unit where
-  codecConf ∷ CodecConf Wave String Unit
+instance Parameter.Codeable Wave String Unit where
+  name ∷ String
+  name = "w"
+
+instance Value.Codeable Wave String Unit where
+  codecConf ∷ Value.CodecConf Wave String Unit
   codecConf =
-    { name: "w"
-    , parser: P.choice [ P.string "sine", P.string "square" ]
-    , render: const identity
+    { internalValueParser: P.choice
+        [ P.string "sine", P.string "square" ]
+    , renderInternalValue: const identity
     , unwrap: case _ of
         Sine →
           "sine"
@@ -56,11 +60,13 @@ instance Documentable Wave String where
   documentation =
     { description: "wave shape"
     , examples: Set.fromFoldable [ "sine", "square" ]
-    , valueConstraints: Set.empty
     }
 
 instance Show Wave where
   show = genericShow
 
-stringCodec ∷ Codec Wave String Unit
-stringCodec = Parameter.stringCodec (Proxy ∷ Proxy Wave)
+parameterStringCodec ∷ Codec Wave String Unit
+parameterStringCodec = Parameter.stringCodec (Proxy ∷ Proxy Wave)
+
+valueStringCodec ∷ Codec Wave String Unit
+valueStringCodec = Value.stringCodec (Proxy ∷ Proxy Wave)

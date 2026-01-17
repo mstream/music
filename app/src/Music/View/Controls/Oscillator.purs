@@ -5,28 +5,21 @@ import Prelude
 import Data.Codec as Codec
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
-import Data.Maybe (Maybe(..))
-import Data.Number as Number
 import Effect (Effect)
 import Effect.Class.Console as Console
 import Elmish (ReactElement)
 import Elmish.HTML.Events
-  ( InputChangeEvent
-  , SelectChangeEvent
+  ( SelectChangeEvent
   )
-import Elmish.HTML.Events (handleEffect, inputText, selectSelectedValue) as E
+import Elmish.HTML.Events (handleEffect, selectSelectedValue) as E
 import Elmish.HTML.Styled as H
+import Mermaid.DiagramDef.Blocks.BlockId as BlockId
 import Music.Message (Message(..))
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
-import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency (Frequency)
-import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency as Frequency
-import Music.Model.AudioNodes.AudioNode.Oscillator.Gain (Gain)
-import Music.Model.AudioNodes.AudioNode.Oscillator.Gain as Gain
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.View.Types (ViewModel)
 import Parsing (ParseError)
 import Parsing (parseErrorMessage, runParser) as P
@@ -39,8 +32,11 @@ view model dispatch =
     id ∷ String
     id = elementId "controls"
   in
-    H.div_ "" { id } [ gainElement, frequencyElement, waveElement ]
+    H.div_ "" { id }
+      [ {- gainElement, frequencyElement, -} waveElement ]
   where
+
+  {-
   gainElement ∷ ReactElement
   gainElement = H.div ""
     [ H.label_ "" { htmlFor: id } "gain"
@@ -84,7 +80,9 @@ view model dispatch =
 
     id ∷ String
     id = elementId "gain"
+  -}
 
+  {-
   frequencyElement ∷ ReactElement
   frequencyElement = H.div ""
     [ H.label_ "" { htmlFor: id } "frequency"
@@ -137,6 +135,8 @@ view model dispatch =
     id ∷ String
     id = elementId "frequency"
 
+-}
+
   waveElement ∷ ReactElement
   waveElement = H.div ""
     [ H.label_ "" { htmlFor: id } "wave shape"
@@ -158,17 +158,17 @@ view model dispatch =
       parsingResult ∷ ParseError \/ Wave
       parsingResult = P.runParser
         (E.selectSelectedValue event)
-        (Codec.decoder Wave.stringCodec)
+        (Codec.decoder Wave.valueStringCodec)
 
     option ∷ Wave → ReactElement
-    option = H.option "" <<< Codec.encoder Wave.stringCodec unit
+    option = H.option "" <<< Codec.encoder Wave.valueStringCodec unit
 
     id ∷ String
     id = elementId "wave"
 
   elementId ∷ String → String
   elementId suffix = "oscillator-"
-    <> Codec.encoder AudioNodeId.codec unit model.id
+    <> Codec.encoder BlockId.stringCodec unit model.id
     <> "-"
     <>
       suffix
