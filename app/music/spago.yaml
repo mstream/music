@@ -1,0 +1,47 @@
+package:
+  name: music
+  dependencies:
+    - aff
+    - arraybuffer
+    - arraybuffer-types
+    - arrays
+    - canvas
+    - codec
+    - console
+    - control
+    - effect
+    - either
+    - elmish
+    - elmish-html
+    - exceptions
+    - foldable-traversable
+    - gesso
+    - graph
+    - integers
+    - lcg
+    - lists
+    - maybe
+    - mermaid
+    - monad-logger
+    - numbers
+    - ordered-collections
+    - parsing
+    - prelude
+    - quickcheck
+    - strings
+    - tailrec
+    - transformers
+    - tuples
+    - typelevel-prelude
+    - uint
+    - webaudio
+  test:
+    main: Test.Music.Main
+    dependencies:
+      - codec-test
+      - mermaid
+      - mermaid-test
+      - partial
+      - spec
+      - spec-node
+      - utils-test

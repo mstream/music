@@ -15,6 +15,7 @@ mkSpagoDerivation {
       --ensure-ranges \
       --minify \
       --module Main\
+      --package app \
       --pedantic-packages \
       --platform browser \
       --pure \

@@ -1,0 +1,13 @@
+package:
+  name: codec-test
+  dependencies:
+    - codec
+    - effect
+    - either
+    - foldable-traversable
+    - ordered-collections
+    - partial
+    - prelude
+    - quickcheck
+    - spec
+    - parsing: ">=10.3.0 <11.0.0"

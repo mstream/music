@@ -1,0 +1,6 @@
+package:
+  name: codec
+  dependencies:
+    - either
+    - prelude
+    - parsing: ">=10.3.0 <11.0.0"

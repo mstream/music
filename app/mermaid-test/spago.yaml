@@ -1,0 +1,15 @@
+package:
+  name: mermaid-test
+  dependencies:
+    - arrays
+    - codec-test
+    - either
+    - foldable-traversable
+    - graph
+    - lists
+    - maybe
+    - mermaid
+    - ordered-collections
+    - partial
+    - prelude
+    - tuples
