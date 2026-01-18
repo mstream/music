@@ -3,6 +3,7 @@
 - use Nix dev shell for executing commands. It contains programs
 that the default shell may lack.
 - try to reuse already written code as much as possible
+- if you need to create temporary files, store them outside of the project
 
 ## Coding Style
 

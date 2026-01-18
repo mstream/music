@@ -61,7 +61,15 @@ spec = do
                 [ 100.0, 200.0, 300.0 ]
                 /\ []
             )
-        , "def-seq-gain" /\
+        , "def-seq-gain-connected-multiple" /\
+            ( AudioNode.unsafeGainSequencer 2 [ 0.0, 0.5 ] /\
+                [ "def-osc-sine", "def-osc-square" ]
+            )
+        , "def-seq-gain-connected-single" /\
+            ( AudioNode.unsafeGainSequencer 2 [ 0.0, 0.5 ] /\
+                [ "def-osc-square" ]
+            )
+        , "def-seq-gain-disconnected" /\
             (AudioNode.unsafeGainSequencer 2 [ 0.0, 0.5 ] /\ [])
         , "def-osc-sine" /\ (Oscillator { wave: Sine } /\ [ "output" ])
         , "def-osc-square" /\ (Oscillator { wave: Square } /\ [])
@@ -169,18 +177,61 @@ spec = do
                                     } /\
                                     []
                                 )
-                            , "def-seq-gain" /\
+                            , "def-seq-gain-connected-multiple" /\
                                 ( Group
                                     { children:
                                         BlockDef.unsafeGroupBlockChildren
-                                          [ "def-seq-gain-duration" /\
-                                              (Node "d=2" /\ [])
-                                          , "def-seq-gain-sequence" /\
-                                              (Node "s=[0.0 0.5]" /\ [])
+                                          [ "def-seq-gain-connected-multiple-duration"
+                                              /\
+                                                (Node "d=2" /\ [])
+                                          , "def-seq-gain-connected-multiple-sequence"
+                                              /\
+                                                ( Node "s=[0.0 0.5]" /\
+                                                    []
+                                                )
                                           ]
                                     , properties: { columns: Just C2 }
                                     , spacedOut: false
-                                    } /\ []
+                                    } /\
+                                    [ "def-osc-sine-gain"
+                                    , "def-osc-square-gain"
+                                    ]
+                                )
+                            , "def-seq-gain-connected-single" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-seq-gain-connected-single-duration"
+                                              /\
+                                                (Node "d=2" /\ [])
+                                          , "def-seq-gain-connected-single-sequence"
+                                              /\
+                                                ( Node "s=[0.0 0.5]" /\
+                                                    []
+                                                )
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\
+                                    [ "def-osc-square-gain" ]
+                                )
+                            , "def-seq-gain-disconnected" /\
+                                ( Group
+                                    { children:
+                                        BlockDef.unsafeGroupBlockChildren
+                                          [ "def-seq-gain-disconnected-duration"
+                                              /\
+                                                (Node "d=2" /\ [])
+                                          , "def-seq-gain-disconnected-sequence"
+                                              /\
+                                                ( Node "s=[0.0 0.5]" /\
+                                                    []
+                                                )
+                                          ]
+                                    , properties: { columns: Just C2 }
+                                    , spacedOut: false
+                                    } /\
+                                    []
                                 )
                             ]
                         , properties: { columns: Nothing }
@@ -195,14 +246,19 @@ spec = do
         , lines:
             [ "osc-sine osc{w=sine}"
             , "osc-square osc{w=square}"
-            , "seq-freq-connected-single fsec{d=1,s=[100.0 200.0 300.0]}"
             , "seq-freq-connected-multiple fsec{d=1,s=[100.0 200.0 300.0]}"
+            , "seq-freq-connected-single fsec{d=1,s=[100.0 200.0 300.0]}"
             , "seq-freq-disconnected fsec{d=1,s=[100.0 200.0 300.0]}"
-            , "seq-gain gsec{d=2,s=[0.0 0.5]}"
+            , "seq-gain-connected-multiple gsec{d=2,s=[0.0 0.5]}"
+            , "seq-gain-connected-single gsec{d=2,s=[0.0 0.5]}"
+            , "seq-gain-disconnected gsec{d=2,s=[0.0 0.5]}"
             , "osc-sine->output"
-            , "seq-freq-connected-single->osc-sine"
             , "seq-freq-connected-multiple->osc-sine"
             , "seq-freq-connected-multiple->osc-square"
+            , "seq-freq-connected-single->osc-sine"
+            , "seq-gain-connected-multiple->osc-sine"
+            , "seq-gain-connected-multiple->osc-square"
+            , "seq-gain-connected-single->osc-square"
             ]
         }
     ]

@@ -255,13 +255,7 @@ encodeString (AudioNodes graph) = String.joinWith "\n"
     ∷ Array (AudioNodeId /\ (AudioNode /\ List AudioNodeId))
   sortedEntries = Array.sortWith
     ( \(nodeId /\ _) →
-        let
-          idStr = Codec.encoder BlockId.stringCodec unit nodeId
-        in
-          if idStr == "def-seq-freq-connected-single" then
-            "def-seq-freq-connected-lz"
-          else
-            idStr
+        Codec.encoder BlockId.stringCodec unit nodeId
     )
     (Map.toUnfoldable $ Graph.toMap graph)
 
