@@ -11,7 +11,7 @@
       };
       url = "github:jeslie0/mkSpagoDerivation?ref=main";
     };
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixpkgs-25.11-darwin";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=5d6bdbddb4695a62f0d00a3620b37a15275a5093";
     ps-overlay = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:thomashoneyman/purescript-overlay?ref=83335b3796ea1874a324d78253bc15db481c3a55";

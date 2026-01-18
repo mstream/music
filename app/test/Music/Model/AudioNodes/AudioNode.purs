@@ -50,8 +50,8 @@ spec = do
           [ unsafeFrequencySequencer 1 [ 100.0, 200.0, 300.0 ] /\
               { groupBlock:
                   { children: BlockDef.unsafeGroupBlockChildren
-                      [ "parent-duration" /\ (Node "d=1" /\ [])
-                      , "parent-sequence" /\
+                      [ "parent_duration" /\ (Node "d=1" /\ [])
+                      , "parent_sequence" /\
                           (Node "s=[100.0 200.0 300.0]" /\ [])
                       ]
                   , properties: { columns: Just C2 }
@@ -62,8 +62,8 @@ spec = do
           , unsafeGainSequencer 2 [ 0.0, 0.5 ] /\
               { groupBlock:
                   { children: BlockDef.unsafeGroupBlockChildren
-                      [ "parent-duration" /\ (Node "d=2" /\ [])
-                      , "parent-sequence" /\ (Node "s=[0.0 0.5]" /\ [])
+                      [ "parent_duration" /\ (Node "d=2" /\ [])
+                      , "parent_sequence" /\ (Node "s=[0.0 0.5]" /\ [])
                       ]
                   , properties: { columns: Just C2 }
                   , spacedOut: false
@@ -73,9 +73,9 @@ spec = do
           , Oscillator { wave: Sine } /\
               { groupBlock:
                   { children: BlockDef.unsafeGroupBlockChildren
-                      [ "parent-frequency" /\ (Node "f" /\ [])
-                      , "parent-gain" /\ (Node "g" /\ [])
-                      , "parent-wave" /\ (Node "w=sine" /\ [])
+                      [ "parent_frequency" /\ (Node "f" /\ [])
+                      , "parent_gain" /\ (Node "g" /\ [])
+                      , "parent_wave" /\ (Node "w=sine" /\ [])
                       ]
                   , properties: { columns: Just C2 }
                   , spacedOut: false
@@ -85,9 +85,9 @@ spec = do
           , Oscillator { wave: Square } /\
               { groupBlock:
                   { children: BlockDef.unsafeGroupBlockChildren
-                      [ "parent-frequency" /\ (Node "f" /\ [])
-                      , "parent-gain" /\ (Node "g" /\ [])
-                      , "parent-wave" /\ (Node "w=square" /\ [])
+                      [ "parent_frequency" /\ (Node "f" /\ [])
+                      , "parent_gain" /\ (Node "g" /\ [])
+                      , "parent_wave" /\ (Node "w=square" /\ [])
                       ]
                   , properties: { columns: Just C2 }
                   , spacedOut: false

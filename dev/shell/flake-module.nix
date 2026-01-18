@@ -8,7 +8,6 @@
           inherit inputsFrom packages;
           shellHook = ''
             PS1="music-${shellName}-shell \\w > "
-            export SEATBELT_PROFILE=default
             shopt -s globstar
           '';
         };

@@ -12,10 +12,12 @@
             categories
             script
             ;
+          geminiCli = lib.getExe pkgs.gemini-cli;
+          git = lib.getExe pkgs.git;
           mktemp = "${pkgs.coreutils}/bin/mktemp";
           nix = lib.getExe pkgs.nix;
           npm = "${pkgs.nodejs}/bin/npm";
-          http-server = lib.getExe pkgs.http-server;
+          httpServer = lib.getExe pkgs.http-server;
           spago = lib.getExe pkgs.spago-unstable;
           watchexec = lib.getExe pkgs.watchexec;
         };

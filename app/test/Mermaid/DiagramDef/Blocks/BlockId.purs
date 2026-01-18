@@ -28,11 +28,11 @@ spec = do
         , BlockId.make A [ B, C ] [ N1, N2 ] /\ "abc12"
         , (BlockId.make A [ B, C ] [ N1, N2 ] <> BlockId.make D [] [])
             /\
-              "abc12-d"
+              "abc12_d"
         , ( BlockId.make A [ B, C ] [ N1, N2 ] <> BlockId.make D []
               [ N4 ]
           )
-            /\ "abc12-d4"
+            /\ "abc12_d4"
         ]
     , name: "BlockId/String"
     }

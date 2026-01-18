@@ -3,6 +3,13 @@ module Test.Utils
   , codeValueTestSuite
   , lines
   , orderedTestSuite
+  , unsafeGenSorted2
+  , unsafeGenSorted3
+  , unsafeGenSorted4
+  , unsafeGenSorted5
+  , unsafeGenSorted6
+  , unsafeGenSorted7
+  , unsafeGenSorted8
   , words
   ) where
 
@@ -12,18 +19,18 @@ import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as ArrayNE
 import Data.Either (Either(..))
 import Data.Set (Set)
+import Data.Set as Set
 import Data.String as String
 import Data.Traversable (traverse_)
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (liftEffect)
 import Music.Model.AudioNodes.AudioNode.Code.Value as Value
-import Test.QuickCheck
-  ( class Arbitrary
-  , Result
-  , (<=?)
-  , (>=?)
-  )
+import Partial.Unsafe (unsafePartial)
+import Test.QuickCheck (Result, (<=?), (>=?))
 import Test.QuickCheck as QC
+import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (Gen)
+import Test.QuickCheck.Gen (listOf) as Gen
 import Test.QuickCheck.Laws.Data (checkBounded, checkEq, checkOrd)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -137,4 +144,51 @@ orderedTestSuite { examples, name } = describe
         checkEq (Proxy ∷ Proxy a)
         checkOrd (Proxy ∷ Proxy a)
     )
+
+unsafeGenSorted2 ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Gen (a /\ a)
+unsafeGenSorted2 = unsafePartial do
+  [ x1, x2 ] ← genSorted 2
+  pure $ x1 /\ x2
+
+unsafeGenSorted3 ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Gen (a /\ a /\ a)
+unsafeGenSorted3 = unsafePartial do
+  [ x1, x2, x3 ] ← genSorted 3
+  pure $ x1 /\ x2 /\ x3
+
+unsafeGenSorted4 ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Gen (a /\ a /\ a /\ a)
+unsafeGenSorted4 = unsafePartial do
+  [ x1, x2, x3, x4 ] ← genSorted 4
+  pure $ x1 /\ x2 /\ x3 /\ x4
+
+unsafeGenSorted5
+  ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Gen (a /\ a /\ a /\ a /\ a)
+unsafeGenSorted5 = unsafePartial do
+  [ x1, x2, x3, x4, x5 ] ← genSorted 5
+  pure $ x1 /\ x2 /\ x3 /\ x4 /\ x5
+
+unsafeGenSorted6
+  ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Gen (a /\ a /\ a /\ a /\ a /\ a)
+unsafeGenSorted6 = unsafePartial do
+  [ x1, x2, x3, x4, x5, x6 ] ← genSorted 6
+  pure $ x1 /\ x2 /\ x3 /\ x4 /\ x5 /\ x6
+
+unsafeGenSorted7
+  ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Gen (a /\ a /\ a /\ a /\ a /\ a /\ a)
+unsafeGenSorted7 = unsafePartial do
+  [ x1, x2, x3, x4, x5, x6, x7 ] ← genSorted 7
+  pure $ x1 /\ x2 /\ x3 /\ x4 /\ x5 /\ x6 /\ x7
+
+unsafeGenSorted8
+  ∷ ∀ a
+  . Arbitrary a
+  ⇒ Ord a
+  ⇒ Gen (a /\ a /\ a /\ a /\ a /\ a /\ a /\ a)
+unsafeGenSorted8 = unsafePartial do
+  [ x1, x2, x3, x4, x5, x6, x7, x8 ] ← genSorted 8
+  pure $ x1 /\ x2 /\ x3 /\ x4 /\ x5 /\ x6 /\ x7 /\ x8
+
+genSorted ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Int → Gen (Array a)
+genSorted quantity = do
+  values ← Gen.listOf quantity arbitrary
+  pure $ Set.toUnfoldable $ Set.fromFoldable values
 
