@@ -66,11 +66,11 @@
         "registry-index": "registry-index"
       },
       "locked": {
-        "lastModified": 1768098738,
-        "narHash": "sha256-9vSS0Fc+hPM5q6j03OFN0EI1T5+6WzQ/hcQLNz345HA=",
+        "lastModified": 1768703448,
+        "narHash": "sha256-hD6WQZBmkzJUV6R7A+BYDG7cbKir2uRXUFXRE+AhqGo=",
         "owner": "jeslie0",
         "repo": "mkSpagoDerivation",
-        "rev": "38277f8756abc12a93ba4895bce7c4ff4c6f6903",
+        "rev": "58fa1e4366a45492798bbc628c110d75e68fc52b",
         "type": "github"
       },
       "original": {
@@ -82,16 +82,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1767962478,
-        "narHash": "sha256-7ywwapHmJ2/dtP0j1t9fV9KQc+byL9W9X9oG3aDS4qg=",
+        "lastModified": 1765425892,
+        "narHash": "sha256-jlQpSkg2sK6IJVzTQBDyRxQZgKADC2HKMRfGCSgNMHo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "35588f29848c57ea8ac86699278d2a410dab0adb",
+        "rev": "5d6bdbddb4695a62f0d00a3620b37a15275a5093",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixpkgs-25.11-darwin",
+        "ref": "5d6bdbddb4695a62f0d00a3620b37a15275a5093",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -137,11 +137,11 @@
     "registry": {
       "flake": false,
       "locked": {
-        "lastModified": 1768034502,
-        "narHash": "sha256-LXs0WrmjKN5juklJSoIdBr8R4UI0Y0rkmI2IP2kvbYI=",
+        "lastModified": 1768635607,
+        "narHash": "sha256-xiBpaSrXTb6SGnpXarBsIweoDtg1snmlijXf7tlRWvQ=",
         "owner": "purescript",
         "repo": "registry",
-        "rev": "135d944c7ebe0c863edfc5cf5238440dd64fd446",
+        "rev": "e637113a9d6ed186a1dda205f837faa2808a7767",
         "type": "github"
       },
       "original": {
@@ -153,11 +153,11 @@
     "registry-index": {
       "flake": false,
       "locked": {
-        "lastModified": 1768031402,
-        "narHash": "sha256-SKvS23JnEJiMfI/iKVTfd1pQB9bDvIfANXyqp3lcm1Y=",
+        "lastModified": 1768635416,
+        "narHash": "sha256-MeeDYXsYqriCZoiFCfzoy3dqKhHSBWERoqE3N1GqNBY=",
         "owner": "purescript",
         "repo": "registry-index",
-        "rev": "b3b48799335c02156f31cffda06906d8effecbcf",
+        "rev": "e155c6a4f42238c713a191955cf19d26478500a7",
         "type": "github"
       },
       "original": {

@@ -1,6 +1,6 @@
 {
   categories,
-  http-server,
+  httpServer,
   nix,
   npm,
   script,
@@ -46,7 +46,7 @@
     category = categories.previews;
     description = "Preview website";
     exec = script ''
-      ${http-server} . &
+      ${httpServer} . &
       trap "kill %1" EXIT
       ${watchexec} --exts html,js,purs,yaml --print-events -- "run app-build; echo Ctrl-C to exit"
     '';
@@ -58,13 +58,13 @@
       ${spago} test 
     '';
   };
-  update-npm-packages = {
+  app-update-npm-packages = {
     description = "Update NPM packages";
     exec = script ''
       ${npm} update
     '';
   };
-  update-spago-packages = {
+  app-update-spago-packages = {
     description = "Update Spago packages";
     exec = script ''
       ${spago} build
