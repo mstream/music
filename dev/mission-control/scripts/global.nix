@@ -1,5 +1,6 @@
 {
   categories,
+  git,
   nix,
   script,
   ...
@@ -19,6 +20,12 @@
     exec = script ''
       run app-format
       ${nix} fmt
+    '';
+  };
+  git-sync = {
+    description = "Synchronize with the remote default branch";
+    exec = script ''
+      ${git} fetch --all --tags && git checkout origin/main
     '';
   };
 }

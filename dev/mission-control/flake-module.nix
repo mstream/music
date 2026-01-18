@@ -12,6 +12,7 @@
             categories
             script
             ;
+          git = lib.getExe pkgs.git;
           mktemp = "${pkgs.coreutils}/bin/mktemp";
           nix = lib.getExe pkgs.nix;
           npm = "${pkgs.nodejs}/bin/npm";

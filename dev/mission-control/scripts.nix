@@ -1,28 +1,10 @@
-{
-  categories,
-  http-server,
-  nix,
-  npm,
-  script,
-  spago,
-  watchexec,
-  ...
-}:
+deps:
 let
-  app = import ./scripts/app.nix {
-    inherit
-      categories
-      http-server
-      nix
-      npm
-      spago
-      watchexec
-      ;
-    script = script "app";
-  };
-  global = import ./scripts/global.nix {
-    inherit categories nix npm;
-    script = script ".";
-  };
+  app = import ./scripts/app.nix (
+    deps // { script = deps.script "app"; }
+  );
+  global = import ./scripts/global.nix (
+    deps // { script = deps.script "."; }
+  );
 in
 global // app
