@@ -54,7 +54,7 @@ codecTestSuite { codec, encoderOpts, examples, name } =
     )
 
   generatedTestCase ∷ Spec Unit
-  generatedTestCase = it "roundtrips - generated"
+  generatedTestCase = it "roundtrips - random"
     (liftEffect $ quickCheck prop)
     where
     prop ∷ d → Result

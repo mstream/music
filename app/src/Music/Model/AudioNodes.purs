@@ -1,5 +1,6 @@
 module Music.Model.AudioNodes
   ( AudioNodes
+  , Violation(..)
   , connections
   , empty
   , fromGraph
@@ -20,13 +21,17 @@ import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Foldable (foldl)
 import Data.FoldableWithIndex (foldlWithIndex)
+import Data.Generic.Rep (class Generic)
 import Data.Graph (Edge, Graph)
 import Data.Graph as Graph
 import Data.List (List(..))
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Set (Set)
+import Data.Set as Set
+import Data.Show.Generic (genericShow)
 import Data.String as String
 import Data.String.Pattern (Pattern(..))
 import Data.Traversable (all, traverse)
@@ -79,7 +84,7 @@ instance Arbitrary AudioNodes where
     canonicalizeId nodeId = case prefixInfo of
       Nothing /\ true →
         case
-          runParser ("def-" <> idString)
+          runParser ("def_" <> idString)
             (Codec.decoder BlockId.stringCodec)
           of
           Right prefixed →
@@ -92,7 +97,7 @@ instance Arbitrary AudioNodes where
       prefixInfo
         ∷ Maybe String
             /\ Boolean
-      prefixInfo = String.stripPrefix (Pattern "def-") idString
+      prefixInfo = String.stripPrefix (Pattern "def_") idString
         /\ usesDefaultPrefix idString
 
       idString ∷ String
@@ -106,7 +111,20 @@ instance Arbitrary AudioNodes where
 empty ∷ AudioNodes
 empty = AudioNodes $ Graph.fromMap Map.empty
 
-type Violations = Map AudioNodeId (List String)
+type Violations = Map AudioNodeId (Set Violation)
+
+data Violation
+  = ConnectedWithItself
+  | ConnectedWithNonExistingNode AudioNodeId
+  | NoSuchNode
+
+derive instance Eq Violation
+derive instance Generic Violation _
+
+derive instance Ord Violation
+
+instance Show Violation where
+  show = genericShow
 
 updateAudioNode
   ∷ AudioNodes → AudioNodeId → AudioNode → Violations \/ AudioNodes
@@ -117,25 +135,23 @@ updateAudioNode (AudioNodes graph) nodeId node =
       nodeId
       (node /\ Nil)
       nodes
-  else Left $ Map.singleton nodeId (List.singleton "no such node")
+  else Left $ Map.singleton nodeId (Set.singleton NoSuchNode)
   where
   nodes ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId)
   nodes = Graph.toMap graph
 
-fromGraph
-  ∷ Graph AudioNodeId AudioNode
-  → Map AudioNodeId (List String) \/ AudioNodes
+fromGraph ∷ Graph AudioNodeId AudioNode → Violations \/ AudioNodes
 fromGraph graph =
   if Map.isEmpty violationsById then Right $ AudioNodes graph
   else Left violationsById
   where
-  violationsById ∷ Map AudioNodeId (List String)
+  violationsById ∷ Violations
   violationsById = findViolations $ Graph.toMap graph
 
 findViolations
   ∷ Map AudioNodeId (AudioNode /\ List AudioNodeId) → Violations
 findViolations nodes = Map.filter
-  (not <<< eq Nil)
+  (not <<< eq Set.empty)
   (foldlWithIndex f Map.empty nodes)
   where
   f
@@ -146,22 +162,22 @@ findViolations nodes = Map.filter
   f nodeId acc (_ /\ connectionEnds) =
     Map.insert nodeId nodeViolations acc
     where
-    nodeViolations ∷ List String
+    nodeViolations ∷ Set Violation
     nodeViolations =
-      ( if isNotConnectedWithItself then Nil
-        else List.singleton "is connected with itself"
+      ( if isNotConnectedWithItself then Set.empty
+        else Set.singleton ConnectedWithItself
       ) <>
-        ( if isConnectedWithExistingNodes then Nil
-          else List.singleton "is connected with non-existing nodes"
+        ( ConnectedWithNonExistingNode `Set.map`
+            nonExistingNodesReferences
         )
 
     isNotConnectedWithItself ∷ Boolean
     isNotConnectedWithItself = all (not <<< eq nodeId) connectionEnds
 
-    isConnectedWithExistingNodes ∷ Boolean
-    isConnectedWithExistingNodes = all
-      ( \connectionEnd → connectionEnd == AudioNodeId.output ||
-          Map.member connectionEnd nodes
+    nonExistingNodesReferences ∷ Set AudioNodeId
+    nonExistingNodesReferences = Set.fromFoldable $ List.filter
+      ( \connectionEnd → connectionEnd /= AudioNodeId.output &&
+          not (Map.member connectionEnd nodes)
       )
       connectionEnds
 
@@ -234,10 +250,7 @@ encodeString (AudioNodes graph) = String.joinWith "\n"
     renderId nodeId <> " " <> renderNodeConf node
 
   renderNodeConf ∷ AudioNode → String
-  renderNodeConf node =
-    replaceSeqPrefix "gseq" "gsec"
-      $ replaceSeqPrefix "fseq" "fsec"
-      $ Codec.encoder AudioNode.stringCodec unit node
+  renderNodeConf = Codec.encoder AudioNode.stringCodec unit
 
   connectionLines ∷ Array String
   connectionLines = renderedConnections
@@ -365,29 +378,19 @@ decodeAudioNode raw = case runParser normalized decoder of
     Right node
   where
   normalized ∷ String
-  normalized = normalizeNodeCode (String.trim raw)
+  normalized = String.trim raw
 
   decoder ∷ Decoder AudioNode String
   decoder = Codec.decoder AudioNode.stringCodec
 
 normalizeIdString ∷ String → String
-normalizeIdString raw = case String.stripPrefix (Pattern "def-") raw of
+normalizeIdString raw = case String.stripPrefix (Pattern "def_") raw of
   Just _ →
     raw
   Nothing | usesDefaultPrefix raw →
-    "def-" <> raw
+    "def_" <> raw
   _ →
     raw
-
-normalizeNodeCode ∷ String → String
-normalizeNodeCode raw = case String.stripPrefix (Pattern "fsec") raw of
-  Just rest →
-    "fseq" <> rest
-  Nothing → case String.stripPrefix (Pattern "gsec") raw of
-    Just rest →
-      "gseq" <> rest
-    Nothing →
-      raw
 
 renderId ∷ AudioNodeId → String
 renderId nodeId = case stripped of
@@ -400,19 +403,7 @@ renderId nodeId = case stripped of
   raw = Codec.encoder BlockId.stringCodec unit nodeId
 
   stripped ∷ Maybe String
-  stripped = String.stripPrefix (Pattern "def-") raw
-
-replaceSeqPrefix
-  ∷ String
-  → String
-  → String
-  → String
-replaceSeqPrefix oldPrefix newPrefix value =
-  case String.stripPrefix (Pattern oldPrefix) value of
-    Just rest →
-      newPrefix <> rest
-    Nothing →
-      value
+  stripped = String.stripPrefix (Pattern "def_") raw
 
 toGraphEntry
   ∷ Map AudioNodeId (Array AudioNodeId)
@@ -426,9 +417,7 @@ toGraphEntry connectionsMap (nodeId /\ node) =
     fromMaybe [] (Map.lookup nodeId connectionsMap)
 
 usesDefaultPrefix ∷ String → Boolean
-usesDefaultPrefix s =
-  isJust (String.stripPrefix (Pattern "osc-") s)
-    || isJust (String.stripPrefix (Pattern "seq-") s)
+usesDefaultPrefix s = s /= "output"
 
 groupBlockCodec ∷ Codec AudioNodes GroupBlock Unit
 groupBlockCodec = Codec.codec groupBlockDecoder groupBlockEncoder
@@ -484,35 +473,19 @@ groupBlockDecoder = do
           /\ (BlockDef /\ List AudioNodeId)
       → String \/ (AudioNodeId /\ (AudioNode /\ List AudioNodeId))
     decodeNode (nodeId /\ (blockDef /\ ends)) =
-      let
-        idStr = Codec.encoder BlockId.stringCodec unit nodeId
-        fixedNodeIdRes =
-          if idStr == "def-seq-freq-connected-disconnected" then
-            case
-              runParser "def-seq-freq-disconnected"
-                (Codec.decoder BlockId.stringCodec)
-              of
-              Right id → Right id
-              Left err → Left $ "Failed to parse fix: " <> show err
-          else
-            Right nodeId
-      in
-        case fixedNodeIdRes of
-          Left err → Left err
-          Right fixedNodeId →
-            case blockDef of
-              Group nestedGroupBlock →
-                case
-                  runParser nestedGroupBlock
-                    (Codec.decoder AudioNode.groupBlockCodec)
-                  of
-                  Left err →
-                    Left $ parseErrorMessage err
-                  Right audioNode →
-                    Right $ fixedNodeId /\
-                      (audioNode /\ (map redirectBack ends))
-              Node label →
-                Left $ "unexpected node block: " <> label
+      case blockDef of
+        Group nestedGroupBlock →
+          case
+            runParser nestedGroupBlock
+              (Codec.decoder AudioNode.groupBlockCodec)
+            of
+            Left err →
+              Left $ parseErrorMessage err
+            Right audioNode →
+              Right $ nodeId /\
+                (audioNode /\ (map redirectBack ends))
+        Node label →
+          Left $ "unexpected node block: " <> label
 
     redirectBack ∷ AudioNodeId → AudioNodeId
     redirectBack id =
@@ -531,7 +504,7 @@ groupBlockDecoder = do
         idStr = Codec.encoder BlockId.stringCodec unit id
       in
         do
-          rest ← String.stripSuffix (Pattern ("-" <> suffixStr)) idStr
+          rest ← String.stripSuffix (Pattern ("_" <> suffixStr)) idStr
           case
             runParser rest (Codec.decoder BlockId.stringCodec)
             of
@@ -565,33 +538,11 @@ groupBlockEncoder _ (AudioNodes graph) =
     ∷ AudioNodeId /\ (AudioNode /\ List AudioNodeId)
     → AudioNodeId /\ (BlockDef /\ List AudioNodeId)
   mkGroupEntry (nodeId /\ (node /\ ends)) =
-    let
-      idStr = Codec.encoder BlockId.stringCodec unit nodeId
-      fixedNodeIdRes =
-        if idStr == "def-seq-freq-disconnected" then
-          case
-            runParser "def-seq-freq-connected-disconnected"
-              (Codec.decoder BlockId.stringCodec)
-            of
-            Right id → Right id
-            Left err → Left $ "Failed to parse fix: " <> show err
-        else
-          Right nodeId
-    in
-      case fixedNodeIdRes of
-        -- This case should not happen if the id string is hardcoded
-        Left _ → nodeId /\
-          ( Group (Codec.encoder AudioNode.groupBlockCodec nodeId node)
-              /\ (map (redirectConnection node) ends)
-          )
-        Right fixedNodeId →
-          fixedNodeId /\
-            ( Group
-                ( Codec.encoder AudioNode.groupBlockCodec fixedNodeId
-                    node
-                )
-                /\ (map (redirectConnection node) ends)
-            )
+    nodeId /\
+      ( Group
+          (Codec.encoder AudioNode.groupBlockCodec nodeId node)
+          /\ (map (redirectConnection node) ends)
+      )
 
   redirectConnection ∷ AudioNode → AudioNodeId → AudioNodeId
   redirectConnection fromNode toId =

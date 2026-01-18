@@ -57,7 +57,7 @@ instance Value.Codeable BlockId NonEmptyString Unit where
             otherAlphaChars ← P.many alphaCharParser
             numChars ← P.many numCharParser
             P.choice
-              [ void $ P.char '-'
+              [ void $ P.char '_'
               , P.notFollowedBy $ P.choice $ P.char <$>
                   [ 'A'
                   , 'B'
@@ -89,7 +89,7 @@ instance Value.Codeable BlockId NonEmptyString Unit where
               ]
             pure $ nonEmptyString firstChar otherAlphaChars numChars
         in
-          StringNE.join1With "-" <$> P.many1 parseSegment
+          StringNE.join1With "_" <$> P.many1 parseSegment
     , renderInternalValue: const StringNE.toString
     , unwrap: \(BlockId s) → s
     , wrap: \s → Right $ BlockId s
@@ -97,7 +97,7 @@ instance Value.Codeable BlockId NonEmptyString Unit where
 
 instance Semigroup BlockId where
   append (BlockId s1) (BlockId s2) = BlockId
-    $ s1 <> StringNE.nes (Proxy ∷ Proxy "-") <> s2
+    $ s1 <> StringNE.nes (Proxy ∷ Proxy "_") <> s2
 
 numCharParser ∷ Parser String Char
 numCharParser = P.try $ toChar <$> parser
