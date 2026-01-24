@@ -1,0 +1,14 @@
+package:
+  name: utils-test
+  dependencies:
+    - arrays
+    - effect
+    - foldable-traversable
+    - ordered-collections
+    - partial
+    - prelude
+    - quickcheck
+    - quickcheck-laws
+    - spec
+    - strings
+    - tuples

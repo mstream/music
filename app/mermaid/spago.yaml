@@ -1,0 +1,30 @@
+package:
+  name: mermaid
+  dependencies:
+    - aff
+    - aff-promise
+    - arrays
+    - codec
+    - control
+    - effect
+    - either
+    - foldable-traversable
+    - generation
+    - graph
+    - lists
+    - maybe
+    - ordered-collections
+    - parsing
+    - prelude
+    - quickcheck
+    - strings
+    - tuples
+  test:
+    main: Test.Mermaid.Main
+    dependencies:
+      - codec-test
+      - lcg
+      - mermaid-test
+      - spec
+      - spec-node
+      - utils-test

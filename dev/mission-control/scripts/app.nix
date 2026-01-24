@@ -17,6 +17,7 @@
       ${spago} bundle \
         --bundle-type module \
         --module MainDebug \
+        --package app \
         --platform browser
     '';
   };

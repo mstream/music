@@ -1,0 +1,13 @@
+package:
+  name: graph
+  dependencies:
+    - arrays
+    - bifunctors
+    - catenable-lists
+    - foldable-traversable
+    - lists
+    - maybe
+    - ordered-collections
+    - prelude
+    - quickcheck
+    - tuples

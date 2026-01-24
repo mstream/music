@@ -1,0 +1,9 @@
+package:
+  name: generation
+  dependencies:
+    - arrays
+    - gen
+    - ordered-collections
+    - prelude
+    - quickcheck
+    - tailrec
