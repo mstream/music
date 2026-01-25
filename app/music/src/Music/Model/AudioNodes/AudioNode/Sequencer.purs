@@ -1,6 +1,4 @@
-module Music.Model.AudioNodes.AudioNode.Sequencer
-  ( Sequencer
-  ) where
+module Music.Model.AudioNodes.AudioNode.Sequencer (Sequencer) where
 
 import Music.Model.AudioNodes.AudioNode.Sequencer.Duration (Duration)
 import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence (Sequence)

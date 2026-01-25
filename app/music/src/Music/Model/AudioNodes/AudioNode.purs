@@ -1,5 +1,7 @@
 module Music.Model.AudioNodes.AudioNode
   ( AudioNode(..)
+  , frequencyBlockId
+  , gainBlockId
   , groupBlockCodec
   , stringCodec
   ) where
@@ -15,9 +17,9 @@ import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Graph as Graph
 import Data.Graph.NonEmpty as GraphNE
-import Data.List (List(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Set as Set
 import Data.Show.Generic (genericShow)
 import Data.Tuple.Nested ((/\))
 import Mermaid.DiagramDef.Blocks.BlockDef
@@ -26,6 +28,8 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   , GroupBlock
   )
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
+import Mermaid.DiagramDef.Blocks.BlockId as BlockId
+import Mermaid.DiagramDef.Blocks.BlockId.AlphaChar (AlphaChar(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
 import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency (Frequency)
 import Music.Model.AudioNodes.AudioNode.Oscillator.Gain (Gain)
@@ -35,8 +39,6 @@ import Music.Model.AudioNodes.AudioNode.Sequencer.Duration (Duration)
 import Music.Model.AudioNodes.AudioNode.Sequencer.Duration as Duration
 import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence (Sequence)
 import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence as Sequence
-import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
-import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Parsing (ParseState(..), Parser, getParserT)
 import Parsing (fail, runParser) as P
 import Parsing.Combinators (between, choice) as P
@@ -143,7 +145,7 @@ stringEncoder _ = case _ of
     <> Codec.encoder Wave.parameterStringCodec unit conf.wave
     <> "}"
 
-groupBlockCodec ∷ Codec AudioNode GroupBlock AudioNodeId
+groupBlockCodec ∷ Codec AudioNode GroupBlock BlockId
 groupBlockCodec = Codec.codec groupBlockDecoder groupBlockEncoder
 
 groupBlockDecoder ∷ Decoder AudioNode GroupBlock
@@ -219,46 +221,47 @@ groupBlockDecoder = do
       Right value →
         Just value
 
-groupBlockEncoder ∷ Encoder AudioNode GroupBlock AudioNodeId
-groupBlockEncoder nodeId = case _ of
+groupBlockEncoder ∷ Encoder AudioNode GroupBlock BlockId
+groupBlockEncoder parentBlockId = case _ of
   FrequencySequencer conf →
     sequencerGroupBlockEncoder Sequence.frequencyParameterStringCodec
-      nodeId
+      parentBlockId
       conf
   GainSequencer conf →
-    sequencerGroupBlockEncoder Sequence.gainParameterStringCodec nodeId
+    sequencerGroupBlockEncoder Sequence.gainParameterStringCodec
+      parentBlockId
       conf
   Oscillator conf →
-    oscillatorGroupBlockEncoder nodeId conf
+    oscillatorGroupBlockEncoder parentBlockId conf
 
 sequencerGroupBlockEncoder
   ∷ ∀ a
   . Codec (Sequence a) String Unit
-  → Encoder (Sequencer a) GroupBlock AudioNodeId
-sequencerGroupBlockEncoder sequenceStringCodec nodeId conf =
+  → Encoder (Sequencer a) GroupBlock BlockId
+sequencerGroupBlockEncoder sequenceStringCodec parentBlockId conf =
   { children: GraphNE.make dummyId
-      (dummy /\ Nil)
+      (dummy /\ Set.empty)
       ( Graph.fromMap $ Map.fromFoldable
-          [ parametersGroupId /\ (parametersGroup /\ Nil) ]
+          [ parametersGroupId /\ (parametersGroup /\ Set.empty) ]
       )
   , properties: { columns: Just C1 }
   , spacedOut: false
   }
   where
   dummyId ∷ BlockId
-  dummyId = nodeId <> AudioNodeId.dummy
+  dummyId = parentBlockId <> dummyBlockId
 
   dummy ∷ BlockDef
   dummy = Node " "
 
   parametersGroupId ∷ BlockId
-  parametersGroupId = nodeId <> AudioNodeId.parameters
+  parametersGroupId = parentBlockId <> parametersBlockId
 
   durationParameterId ∷ BlockId
-  durationParameterId = nodeId <> AudioNodeId.duration
+  durationParameterId = parentBlockId <> durationBlockId
 
   sequenceParameterId ∷ BlockId
-  sequenceParameterId = nodeId <> AudioNodeId.sequence
+  sequenceParameterId = parentBlockId <> sequenceBlockId
 
   durationParameter ∷ BlockDef
   durationParameter = Node $ Codec.encoder Duration.parameterStringCodec
@@ -272,58 +275,60 @@ sequencerGroupBlockEncoder sequenceStringCodec nodeId conf =
   parametersGroup ∷ BlockDef
   parametersGroup = Group
     { children: GraphNE.make durationParameterId
-        (durationParameter /\ Nil)
+        (durationParameter /\ Set.empty)
         ( Graph.fromMap $ Map.fromFoldable
-            [ sequenceParameterId /\ (sequenceParameter /\ Nil) ]
+            [ sequenceParameterId /\ (sequenceParameter /\ Set.empty) ]
         )
     , properties: { columns: Just C2 }
     , spacedOut: false
     }
 
-oscillatorGroupBlockEncoder ∷ Encoder Oscillator GroupBlock AudioNodeId
-oscillatorGroupBlockEncoder nodeId conf =
+oscillatorGroupBlockEncoder ∷ Encoder Oscillator GroupBlock BlockId
+oscillatorGroupBlockEncoder parentBlockId conf =
   { children:
       GraphNE.make inputsGroupId
-        (inputsGroup /\ Nil)
+        (inputsGroup /\ Set.empty)
         ( Graph.fromMap $ Map.fromFoldable
-            [ parametersGroupId /\ (parametersGroup /\ Nil) ]
+            [ parametersGroupId /\ (parametersGroup /\ Set.empty) ]
         )
   , properties: { columns: Just C1 }
   , spacedOut: false
   }
   where
   inputsGroupId ∷ BlockId
-  inputsGroupId = nodeId <> AudioNodeId.inputs
+  inputsGroupId = parentBlockId <> inputsBlockId
 
   inputsGroup ∷ BlockDef
   inputsGroup = Group
     { children: GraphNE.make frequencyInputId
-        (frequencyInput /\ Nil)
+        (frequencyInput /\ Set.empty)
         ( Graph.fromMap $ Map.fromFoldable
-            [ gainInputId /\ (gainInput /\ Nil) ]
+            [ gainInputId /\ (gainInput /\ Set.empty) ]
         )
     , properties: { columns: Just C2 }
     , spacedOut: false
     }
 
   parametersGroupId ∷ BlockId
-  parametersGroupId = nodeId <> AudioNodeId.parameters
+  parametersGroupId = parentBlockId <>
+    parametersBlockId
 
   parametersGroup ∷ BlockDef
   parametersGroup = Group
-    { children: GraphNE.singleton waveParameterId (waveParameter /\ Nil)
+    { children: GraphNE.singleton waveParameterId
+        (waveParameter /\ Set.empty)
     , properties: { columns: Just C1 }
     , spacedOut: false
     }
 
   frequencyInputId ∷ BlockId
-  frequencyInputId = nodeId <> AudioNodeId.frequency
+  frequencyInputId = parentBlockId <> frequencyBlockId
 
   gainInputId ∷ BlockId
-  gainInputId = nodeId <> AudioNodeId.gain
+  gainInputId = parentBlockId <> gainBlockId
 
   waveParameterId ∷ BlockId
-  waveParameterId = nodeId <> AudioNodeId.wave
+  waveParameterId = parentBlockId <> waveBlockId
 
   frequencyInput ∷ BlockDef
   frequencyInput = Node "f"
@@ -334,3 +339,30 @@ oscillatorGroupBlockEncoder nodeId conf =
   waveParameter ∷ BlockDef
   waveParameter = Node $ Codec.encoder Wave.parameterStringCodec unit
     conf.wave
+
+dummyBlockId ∷ BlockId
+dummyBlockId = BlockId.make D [ U, M, M, Y ] []
+
+durationBlockId ∷ BlockId
+durationBlockId = BlockId.make D [ U, R, A, T, I, O, N ] []
+
+frequencyBlockId ∷ BlockId
+frequencyBlockId = BlockId.make F
+  [ R, E, Q, U, E, N, C, Y ]
+  []
+
+gainBlockId ∷ BlockId
+gainBlockId = BlockId.make G [ A, I, N ] []
+
+inputsBlockId ∷ BlockId
+inputsBlockId = BlockId.make I [ N, P, U, T, S ] []
+
+parametersBlockId ∷ BlockId
+parametersBlockId = BlockId.make P [ A, R, A, M, E, T, E, R, S ] []
+
+sequenceBlockId ∷ BlockId
+sequenceBlockId = BlockId.make S [ E, Q, U, E, N, C, E ] []
+
+waveBlockId ∷ BlockId
+waveBlockId = BlockId.make W [ A, V, E ] []
+

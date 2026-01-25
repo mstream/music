@@ -1,5 +1,7 @@
 # Music
 
+[**Web Application**](https://mstream.github.io/music/)
+
 ## Contributing
 
 See [guidelines for AI agents](./AGENTS.md).

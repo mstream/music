@@ -15,8 +15,6 @@ import Data.Foldable (foldl)
 import Data.Generic.Rep (class Generic)
 import Data.Graph.NonEmpty (NonEmptyGraph)
 import Data.Graph.NonEmpty as GraphNE
-import Data.List (List(..))
-import Data.List as List
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set (Set)
@@ -120,7 +118,7 @@ genLabel = Gen.elements $ ArrayNE.cons'
 genBlockId ∷ Set BlockId → Gen BlockId
 genBlockId = Gen.genUnique
 
-genConnectionEnds ∷ Set BlockId → Gen (List BlockId)
+genConnectionEnds ∷ Set BlockId → Gen (Set BlockId)
 genConnectionEnds = SetNE.fromSet >>> case _ of
   Just nonEmptyExistingIds →
     let
@@ -128,10 +126,10 @@ genConnectionEnds = SetNE.fromSet >>> case _ of
       genExistingId = Gen.elements
         $ ArrayNE.fromFoldable1 nonEmptyExistingIds
     in
-      List.fromFoldable <$> Gen.genSet genExistingId
+      Gen.genSet genExistingId
 
   Nothing →
-    pure Nil
+    pure Set.empty
 
 type GroupProperties = { columns ∷ Maybe Columns }
 

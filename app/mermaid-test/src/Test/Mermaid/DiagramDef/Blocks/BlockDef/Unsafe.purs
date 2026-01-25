@@ -10,11 +10,11 @@ import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Graph as Graph
 import Data.Graph.NonEmpty (NonEmptyGraph)
 import Data.Graph.NonEmpty as GraphNE
-import Data.List (List)
-import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Tuple as Tuple
 import Data.Tuple.Nested (type (/\), (/\))
 import Mermaid.DiagramDef.Blocks.BlockDef
@@ -50,11 +50,11 @@ unsafeGroupBlockChildren = Array.uncons >>> case _ of
       firstChild ∷ BlockDef
       firstChild = Tuple.fst $ Tuple.snd head
 
-      firstChildConnectionEnds ∷ List BlockId
+      firstChildConnectionEnds ∷ Set BlockId
       firstChildConnectionEnds =
         unsafeConnectionEnds $ Tuple.snd $ Tuple.snd head
 
-      otherChildrenById ∷ Map BlockId (BlockDef /\ List BlockId)
+      otherChildrenById ∷ Map BlockId (BlockDef /\ Set BlockId)
       otherChildrenById = foldlWithIndex
         ( \idStr acc (blockDef /\ connectionEnds) → Map.insert
             (unsafeBlockId idStr)
@@ -70,5 +70,5 @@ unsafeGroupBlockChildren = Array.uncons >>> case _ of
     unsafeCrashWith
       "there should be at least one child in a group block"
   where
-  unsafeConnectionEnds ∷ Array String → List BlockId
-  unsafeConnectionEnds = List.fromFoldable <<< map unsafeBlockId
+  unsafeConnectionEnds ∷ Array String → Set BlockId
+  unsafeConnectionEnds = Set.fromFoldable <<< map unsafeBlockId

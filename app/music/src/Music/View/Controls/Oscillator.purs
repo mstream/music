@@ -20,11 +20,13 @@ import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave as Wave
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
+import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.View.Types (ViewModel)
 import Parsing (ParseError)
 import Parsing (parseErrorMessage, runParser) as P
 
-type OscillatorControls = { conf ∷ Oscillator, id ∷ AudioNodeId }
+type OscillatorControls =
+  { conf ∷ Oscillator, id ∷ AudioNodeId, isConnectedToOutput ∷ Boolean }
 
 view ∷ ViewModel OscillatorControls Message
 view model dispatch =
@@ -153,7 +155,9 @@ view model dispatch =
           P.parseErrorMessage parseError
       Right newWave →
         dispatch $ ControlsAdjusted model.id
-          (Oscillator model.conf { wave = newWave })
+          { audioNode: Oscillator model.conf { wave = newWave }
+          , isConnectedToOutput: model.isConnectedToOutput
+          }
       where
       parsingResult ∷ ParseError \/ Wave
       parsingResult = P.runParser
@@ -168,7 +172,8 @@ view model dispatch =
 
   elementId ∷ String → String
   elementId suffix = "oscillator-"
-    <> Codec.encoder BlockId.stringCodec unit model.id
+    <> Codec.encoder BlockId.stringCodec unit
+      (AudioNodeId.toBlockId model.id)
     <> "-"
     <>
       suffix
