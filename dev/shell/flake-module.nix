@@ -14,15 +14,23 @@
     in
     {
       devShells = rec {
-        build = makeShell "build" [ ] (with config; [ packages.music ]);
-        default = dev;
-        dev = makeShell "dev" (with pkgs; [ spago-unstable ]) (
-          with config;
-          [
-            mission-control.devShell
-            treefmt.build.devShell
-          ]
+        build = makeShell "build" (with pkgs; [ esbuild ]) (
+          with config; [ packages.music ]
         );
+        default = dev;
+        dev =
+          makeShell "dev"
+            (with pkgs; [
+              esbuild
+              spago-unstable
+            ])
+            (
+              with config;
+              [
+                mission-control.devShell
+                treefmt.build.devShell
+              ]
+            );
       };
     };
 }
