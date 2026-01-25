@@ -1,4 +1,4 @@
-module Test.Main (main) where
+module Test.MainLocal (main) where
 
 import Prelude
 
@@ -12,4 +12,4 @@ main ∷ Effect Unit
 main = do
   runSpecAndExitProcess
     [ consoleReporter ]
-    (AppSpec.spec $ URL "https://mstream.github.io/music/")
+    (AppSpec.spec $ URL "http://localhost:8080/")
