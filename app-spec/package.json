@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "playwright": "^1"
+  },
+  "scripts": {
+    "install-dependencies": "playwright install --with-deps --only-shell"
+  }
+}

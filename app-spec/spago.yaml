@@ -1,0 +1,42 @@
+package:
+  name: app-spec
+  dependencies: []
+  test:
+    main: Test.Main
+    dependencies:
+      - playwright
+      - prelude
+      - spec
+      - spec-node
+workspace:
+  extraPackages:
+    playwright:
+      dependencies:
+        - aff
+        - aff-promise
+        - argonaut-core
+        - console
+        - datetime
+        - effect
+        - either
+        - exceptions
+        - foreign
+        - foreign-object
+        - literals
+        - maybe
+        - node-buffer
+        - node-fs
+        - node-streams
+        - ordered-collections
+        - prelude
+        - psci-support
+        - refs
+        - strings
+        - test-unit
+        - transformers
+        - untagged-union
+        - literals
+      git: https://github.com/fetsorn/purescript-playwright.git
+      ref: b0eaf997a6121ba2a2fada4b6cc491fd5f14f228
+  packageSet:
+    registry: 69.3.0

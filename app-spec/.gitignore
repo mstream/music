@@ -1,0 +1,7 @@
+.psa-stash
+.psci_modules
+.purs-repl
+.spago
+.spec-results
+node_modules
+output

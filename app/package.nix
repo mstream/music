@@ -23,6 +23,12 @@ mkSpagoDerivation {
       --verbose \
       --verbose-stats
   '';
+  checkPhase = ''
+    set -x
+    export PATH=''${PATH}:${nodejs}/bin
+    spago test
+  '';
+  doCheck = true;
   installPhase = ''
     set -x
     mkdir $out
