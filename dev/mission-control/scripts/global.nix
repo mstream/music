@@ -22,6 +22,7 @@ in
     description = "Check all files";
     exec = script ''
       run app-check
+      run app-spec-check
       ${nix} flake check
     '';
   };
