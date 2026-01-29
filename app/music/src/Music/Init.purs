@@ -28,5 +28,5 @@ exampleCode = Codec.encoder AudioNodes.stringCodec unit
 
 exampleAudioNodes ∷ AudioNodes
 exampleAudioNodes = Gen.evalGen arbitrary
-  { newSeed: mkSeed 123, size: 2 }
+  { newSeed: mkSeed 123, size: 5 }
 

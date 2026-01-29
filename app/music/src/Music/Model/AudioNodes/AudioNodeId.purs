@@ -1,66 +1,43 @@
 module Music.Model.AudioNodes.AudioNodeId
   ( AudioNodeId
-  , dummy
-  , duration
-  , frequency
-  , gain
-  , inputs
-  , oscillators
-  , output
-  , parameters
-  , sequence
-  , sequencers
-  , userDefined
-  , wave
+  , fromBlockId
+  , stringCodec
+  , toBlockId
   ) where
 
 import Prelude
 
+import Data.Codec (Codec, Decoder, Encoder)
+import Data.Codec as Codec
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
 import Mermaid.DiagramDef.Blocks.BlockId.AlphaChar (AlphaChar(..))
+import Test.QuickCheck.Arbitrary (class Arbitrary)
 
-type AudioNodeId = BlockId
+newtype AudioNodeId = AudioNodeId BlockId
 
-userDefined ∷ AudioNodeId → AudioNodeId
-userDefined id = prefix <> id
+derive newtype instance Arbitrary AudioNodeId
+derive newtype instance Eq AudioNodeId
+derive newtype instance Ord AudioNodeId
+derive newtype instance Show AudioNodeId
+
+toBlockId ∷ AudioNodeId → BlockId
+toBlockId (AudioNodeId blockId) = prefix <> blockId
   where
-  prefix ∷ AudioNodeId
-  prefix = make D [ E, F ]
+  prefix ∷ BlockId
+  prefix = BlockId.make D [ E, F ] []
 
-duration ∷ AudioNodeId
-duration = make D [ U, R, A, T, I, O, N ]
+fromBlockId ∷ BlockId → AudioNodeId
+fromBlockId = AudioNodeId
 
-dummy ∷ AudioNodeId
-dummy = make D [ U, M, M, Y ]
+stringCodec ∷ Codec AudioNodeId String Unit
+stringCodec = Codec.codec stringDecoder stringEncoder
 
-frequency ∷ AudioNodeId
-frequency = make F
-  [ R, E, Q, U, E, N, C, Y ]
+stringDecoder ∷ Decoder AudioNodeId String
+stringDecoder = AudioNodeId <$> Codec.decoder BlockId.stringCodec
 
-gain ∷ AudioNodeId
-gain = make G [ A, I, N ]
-
-inputs ∷ AudioNodeId
-inputs = make I [ N, P, U, T, S ]
-
-oscillators ∷ AudioNodeId
-oscillators = make O [ S, C, I, L, L, A, T, O, R, S ]
-
-output ∷ AudioNodeId
-output = make O [ U, T, P, U, T ]
-
-parameters ∷ AudioNodeId
-parameters = make P [ A, R, A, M, E, T, E, R, S ]
-
-sequence ∷ AudioNodeId
-sequence = make S [ E, Q, U, E, N, C, E ]
-
-sequencers ∷ AudioNodeId
-sequencers = make S [ E, Q, U, E, N, C, E, R, S ]
-
-wave ∷ AudioNodeId
-wave = make W [ A, V, E ]
-
-make ∷ AlphaChar → Array AlphaChar → AudioNodeId
-make firstChar otherChars = BlockId.make firstChar otherChars []
+stringEncoder ∷ Encoder AudioNodeId String Unit
+stringEncoder _ (AudioNodeId blockId) = Codec.encoder
+  BlockId.stringCodec
+  unit
+  blockId

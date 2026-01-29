@@ -4,35 +4,32 @@ import Prelude
 
 import Data.Array as Array
 import Data.Codec as Codec
-import Data.Either (Either(..))
-import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
 import Data.Traversable (sequence_)
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import Mermaid.DiagramDef.Blocks.BlockDef
   ( BlockDef(..)
   , Columns(..)
   , GroupBlock
   )
-import Mermaid.DiagramDef.Blocks.BlockId (stringCodec) as BlockId
 import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
-import Partial.Unsafe (unsafeCrashWith)
+import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Random.LCG (mkSeed)
 import Test.Data.Codec (codecTestSuite)
 import Test.Mermaid.DiagramDef.Blocks.BlockDef.Unsafe
   ( unsafeGroup
   , unsafeGroupBlockChildren
   )
-import Test.Mermaid.DiagramDef.Blocks.BlockId.Unsafe (unsafeBlockId)
 import Test.Music.Model.AudioNodes.AudioNode as AudioNode
 import Test.Music.Model.AudioNodes.AudioNodeName as AudioNodeName
+import Test.Music.Model.AudioNodes.Unsafe (unsafeAudioNodes)
 import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen (evalGen, vectorOf) as Gen
 import Test.Spec (Spec, describe)
@@ -59,35 +56,54 @@ codecsSpec = codecsTestSuite 5 do
     id8OscSquare = renderAudioNodeId id8
   pure $ Map.fromFoldable
     [ unsafeAudioNodes
-        [ ("def_" <> id1SeqFreqConnectedMultiple) /\
-            ( AudioNode.unsafeFrequencySequencer 1
-                [ 100.0, 200.0, 300.0 ]
-                /\ [ "def_" <> id7OscSine, "def_" <> id8OscSquare ]
+        [ id1SeqFreqConnectedMultiple /\
+            ( { audioNode: AudioNode.unsafeFrequencySequencer 1
+                  [ 100.0, 200.0, 300.0 ]
+              , isConnectedToOutput: false
+              }
+                /\ [ id7OscSine, id8OscSquare ]
             )
-        , ("def_" <> id2SeqFreqConnectedSingle) /\
-            ( AudioNode.unsafeFrequencySequencer 1
-                [ 200.0, 300.0, 400.0 ]
-                /\ [ "def_" <> id7OscSine ]
+        , id2SeqFreqConnectedSingle /\
+            ( { audioNode: AudioNode.unsafeFrequencySequencer 1
+                  [ 200.0, 300.0, 400.0 ]
+              , isConnectedToOutput: false
+              }
+                /\ [ id7OscSine ]
             )
-        , ("def_" <> id3SeqFreqDisconnected) /\
-            ( AudioNode.unsafeFrequencySequencer 1
-                [ 300.0, 400.0, 500.0 ]
+        , id3SeqFreqDisconnected /\
+            ( { audioNode: AudioNode.unsafeFrequencySequencer 1
+                  [ 300.0, 400.0, 500.0 ]
+              , isConnectedToOutput: false
+              }
                 /\ []
             )
-        , ("def_" <> id4SeqGainConnectedMultiple) /\
-            ( AudioNode.unsafeGainSequencer 2 [ 0.0, 0.1 ] /\
-                [ "def_" <> id7OscSine, "def_" <> id8OscSquare ]
+        , id4SeqGainConnectedMultiple /\
+            ( { audioNode: AudioNode.unsafeGainSequencer 2 [ 0.0, 0.1 ]
+              , isConnectedToOutput: false
+              } /\
+                [ id7OscSine, id8OscSquare ]
             )
-        , ("def_" <> id5SeqGainConnectedSingle) /\
-            ( AudioNode.unsafeGainSequencer 2 [ 0.1, 0.2 ] /\
-                [ "def_" <> id8OscSquare ]
+        , id5SeqGainConnectedSingle /\
+            ( { audioNode: AudioNode.unsafeGainSequencer 2 [ 0.1, 0.2 ]
+              , isConnectedToOutput: false
+              } /\
+                [ id8OscSquare ]
             )
-        , ("def_" <> id6SeqGainDisconnected) /\
-            (AudioNode.unsafeGainSequencer 2 [ 0.2, 0.3 ] /\ [])
-        , ("def_" <> id7OscSine) /\
-            (Oscillator { wave: Sine } /\ [ "output" ])
-        , ("def_" <> id8OscSquare) /\
-            (Oscillator { wave: Square } /\ [])
+        , id6SeqGainDisconnected /\
+            ( { audioNode: AudioNode.unsafeGainSequencer 2 [ 0.2, 0.3 ]
+              , isConnectedToOutput: false
+              } /\ []
+            )
+        , id7OscSine /\
+            ( { audioNode: Oscillator { wave: Sine }
+              , isConnectedToOutput: true
+              } /\ []
+            )
+        , id8OscSquare /\
+            ( { audioNode: Oscillator { wave: Square }
+              , isConnectedToOutput: false
+              } /\ []
+            )
         ] /\
         { groupBlock:
             { children: unsafeGroupBlockChildren
@@ -605,7 +621,7 @@ codecsSpec = codecsTestSuite 5 do
     ]
 
 renderAudioNodeId ∷ AudioNodeId → String
-renderAudioNodeId = Codec.encoder BlockId.stringCodec unit
+renderAudioNodeId = Codec.encoder AudioNodeId.stringCodec unit
 
 type CodecsTestSuiteConf = Map AudioNodes
   { groupBlock ∷ GroupBlock
@@ -649,28 +665,3 @@ stringCodecTestSuite examples = codecTestSuite
   , examples: lines <$> examples
   , name: "audioNodes/string"
   }
-
-unsafeAudioNodes
-  ∷ Array (String /\ (AudioNode /\ Array String))
-  → AudioNodes
-unsafeAudioNodes = Array.uncons >>> case _ of
-  Just { head, tail } →
-    case AudioNodes.make (toEntry head) (toEntry <$> tail) of
-      Left violations →
-        unsafeCrashWith $
-          "audio node entries violate integrity constraints: " <>
-            show violations
-      Right audioNodes →
-        audioNodes
-
-  Nothing →
-    unsafeCrashWith "audio nodes should have at least one entry"
-
-  where
-  toEntry ∷ String /\ (AudioNode /\ Array String) → AudioNodes.Entry
-  toEntry (id /\ (node /\ connectionEnds)) =
-    unsafeBlockId id /\
-      ( node /\
-          (List.fromFoldable $ unsafeBlockId <$> connectionEnds)
-      )
-

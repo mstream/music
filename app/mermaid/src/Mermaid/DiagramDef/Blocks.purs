@@ -15,7 +15,7 @@ import Data.Codec (Codec, Decoder, Encoder)
 import Data.Codec as Codec
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
-import Data.Foldable (any, findMap)
+import Data.Foldable (any, findMap, foldl)
 import Data.Graph as Graph
 import Data.Graph.NonEmpty as GraphNE
 import Data.List (List(..))
@@ -23,6 +23,7 @@ import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Set (Set)
 import Data.Set as Set
 import Data.String as String
 import Data.String.CodeUnits as SCU
@@ -69,10 +70,10 @@ defStringDecoder ∷ Decoder Def String
 defStringDecoder = do
   items ← parseItems
   let
-    allEdges ∷ Map BlockId (List BlockId)
-    allEdges = items # collectEdges # List.foldl
+    allEdges ∷ Map BlockId (Set BlockId)
+    allEdges = items # collectEdges # foldl
       ( \acc (from /\ to) →
-          Map.insertWith append from (List.singleton to) acc
+          Map.insertWith append from (Set.singleton to) acc
       )
       Map.empty
   case buildGroupBlock allEdges items of
@@ -88,9 +89,12 @@ data ParsedItem
 
 collectEdges ∷ List ParsedItem → List (BlockId /\ BlockId)
 collectEdges = List.concatMap case _ of
-  PEdge from to → List.singleton (from /\ to)
-  PGroup _ items → collectEdges items
-  _ → Nil
+  PEdge from to →
+    List.singleton (from /\ to)
+  PGroup _ items →
+    collectEdges items
+  _ →
+    Nil
 
 parseItems ∷ Parser String (List ParsedItem)
 parseItems = List.fromFoldable <$> PC.many (skipSpaces *> parseItem)
@@ -158,7 +162,7 @@ parseLabel = do
   pure $ SCU.fromCharArray $ Array.fromFoldable chars
 
 buildGroupBlock
-  ∷ Map BlockId (List BlockId)
+  ∷ Map BlockId (Set BlockId)
   → List ParsedItem
   → Either String GroupBlock
 buildGroupBlock allEdges items = do
@@ -186,11 +190,11 @@ buildGroupBlock allEdges items = do
 
   let
     combine
-      ∷ BlockId → BlockDef → (BlockId /\ (BlockDef /\ List BlockId))
+      ∷ BlockId → BlockDef → (BlockId /\ (BlockDef /\ Set BlockId))
     combine id blockDef = id /\
-      (blockDef /\ (fromMaybe Nil $ Map.lookup id allEdges))
+      (blockDef /\ (fromMaybe Set.empty $ Map.lookup id allEdges))
 
-    combinedList ∷ List (BlockId /\ (BlockDef /\ List BlockId))
+    combinedList ∷ List (BlockId /\ (BlockDef /\ Set BlockId))
     combinedList = rawNodes <#> uncurry combine
 
   case List.uncons combinedList of
@@ -229,11 +233,11 @@ defStringEncoder useIndent (Def groupBlock) =
       indentString ∷ String
       indentString = makeIndent indent
 
-      childrenMap ∷ Map BlockId (BlockDef /\ List BlockId)
+      childrenMap ∷ Map BlockId (BlockDef /\ Set BlockId)
       childrenMap = GraphNE.toMap groupBlock0.children
 
       orderedChildren
-        ∷ Array (BlockId /\ (BlockDef /\ List BlockId))
+        ∷ Array (BlockId /\ (BlockDef /\ Set BlockId))
       orderedChildren = Array.sortBy compareChild
         (Map.toUnfoldable childrenMap)
 
@@ -264,7 +268,7 @@ defStringEncoder useIndent (Def groupBlock) =
   encodeChild
     ∷ Int
     → String
-    → BlockId /\ (BlockDef /\ List BlockId)
+    → BlockId /\ (BlockDef /\ Set BlockId)
     → { edges ∷ Array (BlockId /\ BlockId), lines ∷ Array String }
   encodeChild
     currentIndent
@@ -305,14 +309,14 @@ defStringEncoder useIndent (Def groupBlock) =
     where
     edgesFromConnections
       ∷ BlockId
-      → List BlockId
+      → Set BlockId
       → Array (BlockId /\ BlockId)
     edgesFromConnections start =
-      Array.fromFoldable <<< map (start /\ _)
+      Array.fromFoldable <<< Set.map (start /\ _)
 
   compareChild
-    ∷ BlockId /\ (BlockDef /\ List BlockId)
-    → BlockId /\ (BlockDef /\ List BlockId)
+    ∷ BlockId /\ (BlockDef /\ Set BlockId)
+    → BlockId /\ (BlockDef /\ Set BlockId)
     → Ordering
   compareChild a b = case tagOf a `compare` tagOf b of
     EQ →
@@ -321,14 +325,14 @@ defStringEncoder useIndent (Def groupBlock) =
       other
     where
     tagOf
-      ∷ BlockId /\ (BlockDef /\ List BlockId)
+      ∷ BlockId /\ (BlockDef /\ Set BlockId)
       → Int
     tagOf (_ /\ (blockDef /\ _)) = case blockDef of
       Node _ → 0
       Group _ → 1
 
     nameOf
-      ∷ BlockId /\ (BlockDef /\ List BlockId)
+      ∷ BlockId /\ (BlockDef /\ Set BlockId)
       → String
     nameOf (bid /\ _) = Codec.encoder BlockId.stringCodec unit bid
 

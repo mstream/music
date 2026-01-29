@@ -6,7 +6,6 @@ package:
     - either
     - foldable-traversable
     - graph
-    - lists
     - maybe
     - mermaid
     - ordered-collections

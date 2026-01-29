@@ -20,11 +20,13 @@ import Data.CatList (CatList)
 import Data.CatList as CL
 import Data.Foldable (class Foldable, foldMap, foldl, foldr)
 import Data.FoldableWithIndex (foldlWithIndex)
-import Data.List (List(..), (:))
+import Data.List (List(..))
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Data.Tuple.Nested (type (/\), (/\))
@@ -32,7 +34,7 @@ import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen (arrayOf, elements, listOf) as Gen
 
-newtype Graph k v = Graph (Map k (v /\ List k))
+newtype Graph k v = Graph (Map k (v /\ Set k))
 
 derive newtype instance (Eq k, Eq v) ⇒ Eq (Graph k v)
 derive newtype instance (Ord k, Ord v) ⇒ Ord (Graph k v)
@@ -67,12 +69,12 @@ gen genKey genValue = do
   keys ← List.fromFoldable <$> Gen.arrayOf genKey
   values ← Gen.listOf (List.length keys) genValue
   let
-    genEntries ∷ Gen (List (k /\ (v /\ List k)))
+    genEntries ∷ Gen (List (k /\ (v /\ Set k)))
     genEntries = case ArrayNE.fromFoldable keys of
       Just nonEmptyKeys → do
         edgeEnds ← Gen.listOf
           (ArrayNE.length nonEmptyKeys)
-          ( List.fromFoldable <$>
+          ( Set.fromFoldable <$>
               (Gen.arrayOf $ Gen.elements nonEmptyKeys)
           )
         pure $ List.zip keys (List.zip values edgeEnds)
@@ -98,7 +100,7 @@ unfoldGraph ks label theEdges =
         ( map
             ( \k →
                 Tuple k
-                  (Tuple (label k) (List.fromFoldable (theEdges k)))
+                  (Tuple (label k) (Set.fromFoldable (theEdges k)))
             )
             ks
         )
@@ -107,37 +109,40 @@ unfoldGraph ks label theEdges =
 empty ∷ ∀ k v. Graph k v
 empty = Graph Map.empty
 
-fromMap ∷ ∀ k v. Map k (Tuple v (List k)) → Graph k v
+fromMap ∷ ∀ k v. Map k (Tuple v (Set k)) → Graph k v
 fromMap = Graph
 
-toMap ∷ ∀ k v. Graph k v → Map k (Tuple v (List k))
+toMap ∷ ∀ k v. Graph k v → Map k (Tuple v (Set k))
 toMap (Graph g) = g
 
 vertices ∷ ∀ k v. Graph k v → List v
 vertices (Graph g) = map fst (Map.values g)
 
-edges ∷ ∀ k v. Graph k v → List (Edge k)
-edges (Graph g) = foldlWithIndex edges' Nil g
+edges ∷ ∀ k v. Ord k ⇒ Graph k v → Set (Edge k)
+edges (Graph g) = foldlWithIndex edges' Set.empty g
   where
-  edges' ∷ k → List (Edge k) → Tuple v (List k) → List (Edge k)
+  edges' ∷ k → Set (Edge k) → Tuple v (Set k) → Set (Edge k)
   edges' src acc (_ /\ dests) =
     foldl (mkEdge src) acc dests
 
-  mkEdge ∷ k → List (Edge k) → k → List (Edge k)
-  mkEdge src acc dest = { start: src, end: dest } : acc
+  mkEdge ∷ k → Set (Edge k) → k → Set (Edge k)
+  mkEdge src acc dest = Set.insert { start: src, end: dest } acc
 
 lookup ∷ ∀ k v. Ord k ⇒ k → Graph k v → Maybe v
 lookup k (Graph g) = map fst (Map.lookup k g)
 
-outEdges ∷ ∀ k v. Ord k ⇒ k → Graph k v → Maybe (List k)
+outEdges ∷ ∀ k v. Ord k ⇒ k → Graph k v → Maybe (Set k)
 outEdges k (Graph g) = map snd (Map.lookup k g)
 
 type SortState k v =
-  { unvisited ∷ Map k (Tuple v (List k))
+  { unvisited ∷ Map k (Tuple v (Set k))
   , result ∷ List k
   }
 
 data SortStep a = Emit a | Visit a
+
+derive instance Eq a ⇒ Eq (SortStep a)
+derive instance Ord a ⇒ Ord (SortStep a)
 
 topologicalSort ∷ ∀ k v. Ord k ⇒ Graph k v → List k
 topologicalSort (Graph g) =
@@ -170,11 +175,12 @@ topologicalSort (Graph g) =
                 , unvisited: Map.delete k state.unvisited
                 }
 
-              next ∷ List k
+              next ∷ Set k
               next = maybe mempty snd (Map.lookup k g)
             in
               visit start
-                ( CL.fromFoldable (map Visit next) <> CL.cons (Emit k)
+                ( CL.fromFoldable (Set.map Visit next) <> CL.cons
+                    (Emit k)
                     ks
                 )
         | otherwise → visit state ks
