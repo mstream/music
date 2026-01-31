@@ -4,11 +4,11 @@ package:
     censorProjectWarnings:
       - UserDefinedWarning
   dependencies:
-    - effect: ">=4.0.0 <5.0.0"
-    - elmish: ">=0.13.0 <0.14.0"
-    - elmish-time-machine: ">=0.4.2 <0.5.0"
-    - music: "*"
-    - prelude: ">=6.0.2 <7.0.0"
+    - effect
+    - elmish
+    - elmish-time-machine
+    - music
+    - prelude
   test:
     main: Test.Music.Main
     dependencies: []
@@ -27,4 +27,4 @@ workspace:
       git: https://github.com/mstream/purescript-webaudio.git
       ref: f6b537a55f77a2e3dd5c797fd5be3bf087b7c66a
   packageSet:
-    registry: 69.3.0
+    registry: 71.1.1

@@ -3,6 +3,8 @@ module Mermaid.DiagramDef.Blocks.BlockDef
   , Columns(..)
   , GroupBlock
   , GroupProperties
+  , NodeBlock
+  , Shape(..)
   , genGroupBlock
   , groupBlockIds
   , columnsToString
@@ -33,7 +35,24 @@ import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen (elements, oneOf) as Gen
 
-data BlockDef = Group GroupBlock | Node String
+data BlockDef = Group GroupBlock | Node NodeBlock
+
+type NodeBlock =
+  { contents ∷ String
+  , shape ∷ Shape
+  }
+
+data Shape = Rectangle | Circle
+
+derive instance Eq Shape
+derive instance Generic Shape _
+derive instance Ord Shape
+
+instance Arbitrary Shape where
+  arbitrary = genericArbitrary
+
+instance Show Shape where
+  show = genericShow
 
 type GroupBlock =
   { children ∷ NonEmptyGraph BlockId BlockDef
@@ -42,12 +61,11 @@ type GroupBlock =
   }
 
 derive instance Eq BlockDef
+derive instance Generic BlockDef _
 derive instance Ord BlockDef
 
 instance Show BlockDef where
-  show ∷ BlockDef → String
-  show (Group groupBlock) = show groupBlock
-  show (Node s) = s
+  show x = genericShow x
 
 genBlockDef
   ∷ Int
@@ -82,8 +100,9 @@ groupBlockIds { children } = local `Set.union` nested
 
 genNode ∷ Gen BlockDef
 genNode = do
-  label ← genLabel
-  pure $ Node label
+  contents ← genLabel
+  shape ← arbitrary
+  pure $ Node { contents, shape }
 
 genGroup ∷ Int → Set BlockId → Gen (BlockDef /\ NonEmptySet BlockId)
 genGroup n existingIds = do

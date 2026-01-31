@@ -26,7 +26,7 @@
     description = "Check all files";
     exec = script ''
       rm -rf output
-      ${spago} build --ensure-ranges --pedantic-packages --pure --strict
+      ${spago} build --pedantic-packages --pure --strict
       run app-test
       ${nix} build .#music
     '';

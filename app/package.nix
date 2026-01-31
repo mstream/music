@@ -12,7 +12,6 @@ mkSpagoDerivation {
     set -x
     spago bundle \
       --bundle-type module \
-      --ensure-ranges \
       --minify \
       --module Main\
       --package app \

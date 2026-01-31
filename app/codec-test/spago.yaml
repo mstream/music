@@ -6,8 +6,8 @@ package:
     - either
     - foldable-traversable
     - ordered-collections
+    - parsing
     - partial
     - prelude
     - quickcheck
     - spec
-    - parsing: ">=10.3.0 <11.0.0"

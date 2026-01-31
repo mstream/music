@@ -1,22 +1,18 @@
 {
   categories,
-  geminiCli,
   git,
   nix,
+  openCode,
   script,
   ...
 }:
-let
-  ai = model: {
-    description = "Run AI CLI (${model} model) in the application context";
+{
+  ai = {
+    description = "Run AI CLI in the application context";
     exec = script ''
-      SEATBELT_PROFILE=custom ${geminiCli} --model ${model} 
+      ${openCode} 
     '';
   };
-in
-{
-  ai-fast = ai "gemini-3-flash-preview";
-  ai-thorough = ai "gemini-3-pro-preview";
   check-all = {
     category = categories.checks;
     description = "Check all files";
