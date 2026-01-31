@@ -5,21 +5,11 @@
         "path": "./",
         "core": {
           "dependencies": [
-            {
-              "effect": ">=4.0.0 <5.0.0"
-            },
-            {
-              "elmish": ">=0.13.0 <0.14.0"
-            },
-            {
-              "elmish-time-machine": ">=0.4.2 <0.5.0"
-            },
-            {
-              "music": "*"
-            },
-            {
-              "prelude": ">=6.0.2 <7.0.0"
-            }
+            "effect",
+            "elmish",
+            "elmish-time-machine",
+            "music",
+            "prelude"
           ],
           "build_plan": [
             "aff",
@@ -141,9 +131,7 @@
         "core": {
           "dependencies": [
             "either",
-            {
-              "parsing": ">=10.3.0 <11.0.0"
-            },
+            "parsing",
             "prelude"
           ],
           "build_plan": [
@@ -204,9 +192,7 @@
             "either",
             "foldable-traversable",
             "ordered-collections",
-            {
-              "parsing": ">=10.3.0 <11.0.0"
-            },
+            "parsing",
             "partial",
             "prelude",
             "quickcheck",
@@ -1012,7 +998,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "69.3.0"
+        "registry": "71.1.1"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -1094,7 +1080,7 @@
         "coroutines": "7.0.0",
         "css": "6.0.0",
         "css-class-name-extractor": "0.0.4",
-        "css-frameworks": "1.0.1",
+        "css-frameworks": "1.1.0",
         "csv-stream": "2.3.0",
         "data-mvc": "0.0.2",
         "datetime": "6.1.0",
@@ -1345,7 +1331,7 @@
         "owoify": "1.2.0",
         "pairs": "9.0.1",
         "parallel": "7.0.0",
-        "parsing": "10.3.0",
+        "parsing": "11.0.0",
         "parsing-dataview": "3.2.4",
         "partial": "4.0.0",
         "pathy": "9.0.0",
@@ -1360,7 +1346,7 @@
         "pointed-list": "0.5.1",
         "polymorphic-vectors": "4.0.0",
         "posix-types": "6.0.0",
-        "postgresql": "2.0.20",
+        "postgresql": "2.0.21",
         "precise": "6.0.0",
         "precise-datetime": "7.0.0",
         "prelude": "6.0.2",
@@ -1480,6 +1466,7 @@
         "toestand": "0.9.0",
         "transformation-matrix": "1.0.1",
         "transformers": "6.1.0",
+        "transit": "1.0.0",
         "tree-rose": "4.0.2",
         "trivial-unfold": "0.5.0",
         "ts-bridge": "4.0.0",
@@ -1547,16 +1534,24 @@
         "web-url": "2.0.0",
         "web-workers": "1.1.0",
         "web-xhr": "5.0.1",
+        "webb-aff-list": "0.0.2",
+        "webb-array": "0.0.2",
+        "webb-channel": "0.0.3",
         "webb-commandline": "0.0.3",
-        "webb-directory": "0.0.4",
+        "webb-directory": "0.0.7",
         "webb-file": "0.0.1",
+        "webb-map": "0.0.1",
         "webb-monad": "0.0.2",
-        "webb-mutex": "0.0.3",
+        "webb-mutex": "0.0.7",
         "webb-parsing": "0.0.5",
         "webb-random": "0.0.1",
         "webb-refer": "0.0.3",
-        "webb-stateful": "0.0.2",
+        "webb-set": "0.0.1",
+        "webb-slot": "0.0.1",
+        "webb-stateful": "0.0.3",
+        "webb-string": "0.0.1",
         "webb-test": "0.0.1",
+        "webb-thread": "0.0.2",
         "webb-writer": "0.0.3",
         "webextension-polyfill": "0.1.0",
         "webgpu": "0.0.1",
@@ -2723,8 +2718,8 @@
     },
     "parsing": {
       "type": "registry",
-      "version": "10.3.0",
-      "integrity": "sha256-ykIVIZcsyRcMxui1ZH+4GLzoVTstv6BRVZyz55+2TvI=",
+      "version": "11.0.0",
+      "integrity": "sha256-Z89Hcd2V+gr0a1M7myTZ6A4v+DiqN1AC8ZbINLSckO4=",
       "dependencies": [
         "arrays",
         "control",

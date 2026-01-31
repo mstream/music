@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Array as Array
 import Data.Codec as Codec
+import Data.Foldable (fold)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -14,6 +15,7 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   ( BlockDef(..)
   , Columns(..)
   , GroupBlock
+  , Shape(..)
   )
 import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
@@ -46,50 +48,50 @@ codecsSpec = codecsTestSuite 5 do
   id1 /\ id2 /\ id3 /\ id4 /\ id5 /\ id6 /\ id7 /\ id8 ←
     unsafeGenSorted8
   let
-    id1SeqFreqConnectedMultiple = renderAudioNodeId id1
-    id2SeqFreqConnectedSingle = renderAudioNodeId id2
-    id3SeqFreqDisconnected = renderAudioNodeId id3
-    id4SeqGainConnectedMultiple = renderAudioNodeId id4
-    id5SeqGainConnectedSingle = renderAudioNodeId id5
-    id6SeqGainDisconnected = renderAudioNodeId id6
+    id1SeqFreqConnMultiple = renderAudioNodeId id1
+    id2SeqFreqConnSingle = renderAudioNodeId id2
+    id3SeqFreqDisconn = renderAudioNodeId id3
+    id4SeqGainConnMultiple = renderAudioNodeId id4
+    id5SeqGainConnSingle = renderAudioNodeId id5
+    id6SeqGainDisconn = renderAudioNodeId id6
     id7OscSine = renderAudioNodeId id7
     id8OscSquare = renderAudioNodeId id8
   pure $ Map.fromFoldable
     [ unsafeAudioNodes
-        [ id1SeqFreqConnectedMultiple /\
+        [ id1SeqFreqConnMultiple /\
             ( { audioNode: AudioNode.unsafeFrequencySequencer 1
                   [ 100.0, 200.0, 300.0 ]
               , isConnectedToOutput: false
               }
                 /\ [ id7OscSine, id8OscSquare ]
             )
-        , id2SeqFreqConnectedSingle /\
+        , id2SeqFreqConnSingle /\
             ( { audioNode: AudioNode.unsafeFrequencySequencer 1
                   [ 200.0, 300.0, 400.0 ]
               , isConnectedToOutput: false
               }
                 /\ [ id7OscSine ]
             )
-        , id3SeqFreqDisconnected /\
+        , id3SeqFreqDisconn /\
             ( { audioNode: AudioNode.unsafeFrequencySequencer 1
                   [ 300.0, 400.0, 500.0 ]
               , isConnectedToOutput: false
               }
                 /\ []
             )
-        , id4SeqGainConnectedMultiple /\
+        , id4SeqGainConnMultiple /\
             ( { audioNode: AudioNode.unsafeGainSequencer 2 [ 0.0, 0.1 ]
               , isConnectedToOutput: false
               } /\
                 [ id7OscSine, id8OscSquare ]
             )
-        , id5SeqGainConnectedSingle /\
+        , id5SeqGainConnSingle /\
             ( { audioNode: AudioNode.unsafeGainSequencer 2 [ 0.1, 0.2 ]
               , isConnectedToOutput: false
               } /\
                 [ id8OscSquare ]
             )
-        , id6SeqGainDisconnected /\
+        , id6SeqGainDisconn /\
             ( { audioNode: AudioNode.unsafeGainSequencer 2 [ 0.2, 0.3 ]
               , isConnectedToOutput: false
               } /\ []
@@ -126,7 +128,10 @@ codecsSpec = codecsTestSuite 5 do
                                                 )
                                                   /\
                                                     ( Node
-                                                        "f"
+                                                        { contents: "f"
+                                                        , shape:
+                                                            Rectangle
+                                                        }
                                                         /\
                                                           []
                                                     )
@@ -136,7 +141,10 @@ codecsSpec = codecsTestSuite 5 do
                                                     <>
                                                       "_gain"
                                                 ) /\
-                                                  ( Node "g"
+                                                  ( Node
+                                                      { contents: "g"
+                                                      , shape: Rectangle
+                                                      }
                                                       /\
                                                         []
                                                   )
@@ -161,7 +169,10 @@ codecsSpec = codecsTestSuite 5 do
                                                       "_wave"
                                                 ) /\
                                                   ( Node
-                                                      "w=sine"
+                                                      { contents:
+                                                          "w=sine"
+                                                      , shape: Rectangle
+                                                      }
                                                       /\ []
                                                   )
                                               ]
@@ -194,7 +205,10 @@ codecsSpec = codecsTestSuite 5 do
                                                 )
                                                   /\
                                                     ( Node
-                                                        "f"
+                                                        { contents: "f"
+                                                        , shape:
+                                                            Rectangle
+                                                        }
                                                         /\
                                                           []
                                                     )
@@ -204,7 +218,10 @@ codecsSpec = codecsTestSuite 5 do
                                                     <>
                                                       "_gain"
                                                 ) /\
-                                                  ( Node "g"
+                                                  ( Node
+                                                      { contents: "g"
+                                                      , shape: Rectangle
+                                                      }
                                                       /\
                                                         []
                                                   )
@@ -229,7 +246,10 @@ codecsSpec = codecsTestSuite 5 do
                                                       "_wave"
                                                 ) /\
                                                   ( Node
-                                                      "w=square"
+                                                      { contents:
+                                                          "w=square"
+                                                      , shape: Rectangle
+                                                      }
                                                       /\ []
                                                   )
                                               ]
@@ -254,19 +274,24 @@ codecsSpec = codecsTestSuite 5 do
                 , "sequencers" /\
                     ( unsafeGroup
                         { children:
-                            [ ("def_" <> id1SeqFreqConnectedMultiple)
+                            [ ("def_" <> id1SeqFreqConnMultiple)
                                 /\
                                   unsafeGroup
                                     { children:
                                         [ ( "def_"
                                               <>
-                                                id1SeqFreqConnectedMultiple
+                                                id1SeqFreqConnMultiple
                                               <> "_dummy"
                                           )
-                                            /\ (Node " " /\ [])
+                                            /\
+                                              ( Node
+                                                  { contents: " "
+                                                  , shape: Rectangle
+                                                  } /\ []
+                                              )
                                         , ( "def_"
                                               <>
-                                                id1SeqFreqConnectedMultiple
+                                                id1SeqFreqConnMultiple
                                               <>
                                                 "_parameters"
                                           )
@@ -274,21 +299,30 @@ codecsSpec = codecsTestSuite 5 do
                                               { children:
                                                   [ ( "def_"
                                                         <>
-                                                          id1SeqFreqConnectedMultiple
+                                                          id1SeqFreqConnMultiple
                                                         <> "_duration"
                                                     )
                                                       /\
-                                                        ( Node "d=1" /\
+                                                        ( Node
+                                                            { contents:
+                                                                "d=1"
+                                                            , shape:
+                                                                Rectangle
+                                                            } /\
                                                             []
                                                         )
                                                   , ( "def_"
                                                         <>
-                                                          id1SeqFreqConnectedMultiple
+                                                          id1SeqFreqConnMultiple
                                                         <> "_sequence"
                                                     )
                                                       /\
                                                         ( Node
-                                                            "s=[100.0 200.0 300.0]"
+                                                            { contents:
+                                                                "s=[100.0 200.0 300.0]"
+                                                            , shape:
+                                                                Rectangle
+                                                            }
                                                             /\ []
                                                         )
                                                   ]
@@ -311,19 +345,24 @@ codecsSpec = codecsTestSuite 5 do
                                       "_frequency"
                                   ]
 
-                            , ("def_" <> id2SeqFreqConnectedSingle)
+                            , ("def_" <> id2SeqFreqConnSingle)
                                 /\ unsafeGroup
                                   { children:
                                       [ ( "def_"
                                             <>
-                                              id2SeqFreqConnectedSingle
+                                              id2SeqFreqConnSingle
                                             <> "_dummy"
                                         )
-                                          /\ (Node " " /\ [])
+                                          /\
+                                            ( Node
+                                                { contents: " "
+                                                , shape: Rectangle
+                                                } /\ []
+                                            )
 
                                       , ( "def_"
                                             <>
-                                              id2SeqFreqConnectedSingle
+                                              id2SeqFreqConnSingle
                                             <>
                                               "_parameters"
                                         )
@@ -331,19 +370,29 @@ codecsSpec = codecsTestSuite 5 do
                                             { children:
                                                 [ ( "def_"
                                                       <>
-                                                        id2SeqFreqConnectedSingle
+                                                        id2SeqFreqConnSingle
                                                       <> "_duration"
                                                   )
                                                     /\
-                                                      (Node "d=1" /\ [])
+                                                      ( Node
+                                                          { contents:
+                                                              "d=1"
+                                                          , shape:
+                                                              Rectangle
+                                                          } /\ []
+                                                      )
                                                 , ( "def_"
                                                       <>
-                                                        id2SeqFreqConnectedSingle
+                                                        id2SeqFreqConnSingle
                                                       <> "_sequence"
                                                   )
                                                     /\
                                                       ( Node
-                                                          "s=[200.0 300.0 400.0]"
+                                                          { contents:
+                                                              "s=[200.0 300.0 400.0]"
+                                                          , shape:
+                                                              Rectangle
+                                                          }
                                                           /\ []
                                                       )
 
@@ -362,19 +411,24 @@ codecsSpec = codecsTestSuite 5 do
                                 /\
                                   [ "def_" <> id7OscSine <> "_frequency"
                                   ]
-                            , ("def_" <> id3SeqFreqDisconnected)
+                            , ("def_" <> id3SeqFreqDisconn)
                                 /\ unsafeGroup
                                   { children:
                                       [ ( "def_"
                                             <>
-                                              id3SeqFreqDisconnected
+                                              id3SeqFreqDisconn
                                             <> "_dummy"
                                         )
-                                          /\ (Node " " /\ [])
+                                          /\
+                                            ( Node
+                                                { contents: " "
+                                                , shape: Rectangle
+                                                } /\ []
+                                            )
 
                                       , ( "def_"
                                             <>
-                                              id3SeqFreqDisconnected
+                                              id3SeqFreqDisconn
                                             <>
                                               "_parameters"
                                         )
@@ -382,19 +436,29 @@ codecsSpec = codecsTestSuite 5 do
                                             { children:
                                                 [ ( "def_"
                                                       <>
-                                                        id3SeqFreqDisconnected
+                                                        id3SeqFreqDisconn
                                                       <> "_duration"
                                                   )
                                                     /\
-                                                      (Node "d=1" /\ [])
+                                                      ( Node
+                                                          { contents:
+                                                              "d=1"
+                                                          , shape:
+                                                              Rectangle
+                                                          } /\ []
+                                                      )
                                                 , ( "def_"
                                                       <>
-                                                        id3SeqFreqDisconnected
+                                                        id3SeqFreqDisconn
                                                       <> "_sequence"
                                                   )
                                                     /\
                                                       ( Node
-                                                          "s=[300.0 400.0 500.0]"
+                                                          { contents:
+                                                              "s=[300.0 400.0 500.0]"
+                                                          , shape:
+                                                              Rectangle
+                                                          }
                                                           /\ []
                                                       )
 
@@ -413,20 +477,25 @@ codecsSpec = codecsTestSuite 5 do
                                   }
                                 /\
                                   []
-                            , ("def_" <> id4SeqGainConnectedMultiple)
+                            , ("def_" <> id4SeqGainConnMultiple)
                                 /\
                                   unsafeGroup
                                     { children:
                                         [ ( "def_"
                                               <>
-                                                id4SeqGainConnectedMultiple
+                                                id4SeqGainConnMultiple
                                               <> "_dummy"
                                           )
-                                            /\ (Node " " /\ [])
+                                            /\
+                                              ( Node
+                                                  { contents: " "
+                                                  , shape: Rectangle
+                                                  } /\ []
+                                              )
 
                                         , ( "def_"
                                               <>
-                                                id4SeqGainConnectedMultiple
+                                                id4SeqGainConnMultiple
                                               <>
                                                 "_parameters"
                                           )
@@ -434,21 +503,30 @@ codecsSpec = codecsTestSuite 5 do
                                               { children:
                                                   [ ( "def_"
                                                         <>
-                                                          id4SeqGainConnectedMultiple
+                                                          id4SeqGainConnMultiple
                                                         <> "_duration"
                                                     )
                                                       /\
-                                                        ( Node "d=2" /\
+                                                        ( Node
+                                                            { contents:
+                                                                "d=2"
+                                                            , shape:
+                                                                Rectangle
+                                                            } /\
                                                             []
                                                         )
                                                   , ( "def_"
                                                         <>
-                                                          id4SeqGainConnectedMultiple
+                                                          id4SeqGainConnMultiple
                                                         <> "_sequence"
                                                     )
                                                       /\
                                                         ( Node
-                                                            "s=[0.0 0.1]"
+                                                            { contents:
+                                                                "s=[0.0 0.1]"
+                                                            , shape:
+                                                                Rectangle
+                                                            }
                                                             /\
                                                               []
                                                         )
@@ -474,20 +552,25 @@ codecsSpec = codecsTestSuite 5 do
                                       "_gain"
                                   ]
                             , ( "def_" <>
-                                  id5SeqGainConnectedSingle
+                                  id5SeqGainConnSingle
                               )
                                 /\ unsafeGroup
                                   { children:
                                       [ ( "def_"
                                             <>
-                                              id5SeqGainConnectedSingle
+                                              id5SeqGainConnSingle
                                             <> "_dummy"
                                         )
-                                          /\ (Node " " /\ [])
+                                          /\
+                                            ( Node
+                                                { contents: " "
+                                                , shape: Rectangle
+                                                } /\ []
+                                            )
 
                                       , ( "def_"
                                             <>
-                                              id5SeqGainConnectedSingle
+                                              id5SeqGainConnSingle
                                             <>
                                               "_parameters"
                                         )
@@ -495,19 +578,29 @@ codecsSpec = codecsTestSuite 5 do
                                             { children:
                                                 [ ( "def_"
                                                       <>
-                                                        id5SeqGainConnectedSingle
+                                                        id5SeqGainConnSingle
                                                       <> "_duration"
                                                   )
                                                     /\
-                                                      (Node "d=2" /\ [])
+                                                      ( Node
+                                                          { contents:
+                                                              "d=2"
+                                                          , shape:
+                                                              Rectangle
+                                                          } /\ []
+                                                      )
                                                 , ( "def_"
                                                       <>
-                                                        id5SeqGainConnectedSingle
+                                                        id5SeqGainConnSingle
                                                       <> "_sequence"
                                                   )
                                                     /\
                                                       ( Node
-                                                          "s=[0.1 0.2]"
+                                                          { contents:
+                                                              "s=[0.1 0.2]"
+                                                          , shape:
+                                                              Rectangle
+                                                          }
                                                           /\
                                                             []
                                                       )
@@ -529,20 +622,25 @@ codecsSpec = codecsTestSuite 5 do
                                   [ "def_" <> id8OscSquare <>
                                       "_gain"
                                   ]
-                            , ("def_" <> id6SeqGainDisconnected)
+                            , ("def_" <> id6SeqGainDisconn)
                                 /\
                                   unsafeGroup
                                     { children:
                                         [ ( "def_"
                                               <>
-                                                id6SeqGainDisconnected
+                                                id6SeqGainDisconn
                                               <> "_dummy"
                                           )
-                                            /\ (Node " " /\ [])
+                                            /\
+                                              ( Node
+                                                  { contents: " "
+                                                  , shape: Rectangle
+                                                  } /\ []
+                                              )
 
                                         , ( "def_"
                                               <>
-                                                id6SeqGainDisconnected
+                                                id6SeqGainDisconn
                                               <>
                                                 "_parameters"
                                           )
@@ -550,21 +648,30 @@ codecsSpec = codecsTestSuite 5 do
                                               { children:
                                                   [ ( "def_"
                                                         <>
-                                                          id6SeqGainDisconnected
+                                                          id6SeqGainDisconn
                                                         <> "_duration"
                                                     )
                                                       /\
-                                                        ( Node "d=2" /\
+                                                        ( Node
+                                                            { contents:
+                                                                "d=2"
+                                                            , shape:
+                                                                Rectangle
+                                                            } /\
                                                             []
                                                         )
                                                   , ( "def_"
                                                         <>
-                                                          id6SeqGainDisconnected
+                                                          id6SeqGainDisconn
                                                         <> "_sequence"
                                                     )
                                                       /\
                                                         ( Node
-                                                            "s=[0.2 0.3]"
+                                                            { contents:
+                                                                "s=[0.2 0.3]"
+                                                            , shape:
+                                                                Rectangle
+                                                            }
                                                             /\
                                                               []
                                                         )
@@ -589,33 +696,42 @@ codecsSpec = codecsTestSuite 5 do
                         , spacedOut: false
                         } /\ []
                     )
-                , "output" /\ (Node "output" /\ [])
+                , "output" /\
+                    ( Node { contents: "output", shape: Circle } /\
+                        []
+                    )
                 ]
             , properties: { columns: Just C1 }
             , spacedOut: true
             }
-        , lines:
-            [ id1SeqFreqConnectedMultiple
-                <> " fseq{d=1,s=[100.0 200.0 300.0]}"
-            , id2SeqFreqConnectedSingle
-                <> " fseq{d=1,s=[200.0 300.0 400.0]}"
-            , id3SeqFreqDisconnected
-                <> " fseq{d=1,s=[300.0 400.0 500.0]}"
-            , id4SeqGainConnectedMultiple
-                <> " gseq{d=2,s=[0.0 0.1]}"
-            , id5SeqGainConnectedSingle
-                <> " gseq{d=2,s=[0.1 0.2]}"
-            , id6SeqGainDisconnected
-                <> " gseq{d=2,s=[0.2 0.3]}"
-            , id7OscSine <> " osc{w=sine}"
-            , id8OscSquare <> " osc{w=square}"
-            , id1SeqFreqConnectedMultiple <> "->" <> id7OscSine
-            , id1SeqFreqConnectedMultiple <> "->" <> id8OscSquare
-            , id2SeqFreqConnectedSingle <> "->" <> id7OscSine
-            , id4SeqGainConnectedMultiple <> "->" <> id7OscSine
-            , id4SeqGainConnectedMultiple <> "->" <> id8OscSquare
-            , id5SeqGainConnectedSingle <> "->" <> id8OscSquare
-            , id7OscSine <> "->output"
+        , lines: fold <$>
+            [ [ id1SeqFreqConnMultiple
+              , " fseq{d=1,s=[100.0 200.0 300.0]}"
+              ]
+            , [ id2SeqFreqConnSingle
+              , " fseq{d=1,s=[200.0 300.0 400.0]}"
+              ]
+            , [ id3SeqFreqDisconn
+              , " fseq{d=1,s=[300.0 400.0 500.0]}"
+              ]
+            , [ id4SeqGainConnMultiple
+              , " gseq{d=2,s=[0.0 0.1]}"
+              ]
+            , [ id5SeqGainConnSingle
+              , " gseq{d=2,s=[0.1 0.2]}"
+              ]
+            , [ id6SeqGainDisconn
+              , " gseq{d=2,s=[0.2 0.3]}"
+              ]
+            , [ id7OscSine, " osc{w=sine}" ]
+            , [ id8OscSquare, " osc{w=square}" ]
+            , [ id1SeqFreqConnMultiple, "->" <> id7OscSine ]
+            , [ id1SeqFreqConnMultiple, "->" <> id8OscSquare ]
+            , [ id2SeqFreqConnSingle, "->" <> id7OscSine ]
+            , [ id4SeqGainConnMultiple, "->" <> id7OscSine ]
+            , [ id4SeqGainConnMultiple, "->" <> id8OscSquare ]
+            , [ id5SeqGainConnSingle, "->" <> id8OscSquare ]
+            , [ id7OscSine, "->output" ]
             ]
         }
     ]

@@ -45,6 +45,7 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   ( BlockDef(..)
   , Columns(..)
   , GroupBlock
+  , Shape(..)
   )
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
@@ -58,7 +59,11 @@ import Music.Model.AudioNodes.AudioNode as AudioNode
 import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency (Frequency)
 import Music.Model.AudioNodes.AudioNode.Oscillator.Gain (Gain)
 import Music.Model.AudioNodes.AudioNode.Sequencer (Sequencer)
-import Music.Model.AudioNodes.AudioNodeId (AudioNodeId, fromBlockId, toBlockId)
+import Music.Model.AudioNodes.AudioNodeId
+  ( AudioNodeId
+  , fromBlockId
+  , toBlockId
+  )
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Parsing (ParseState(..), Parser, fail, getParserT, runParser) as P
 import Parsing.Combinators as PC
@@ -213,7 +218,7 @@ findViolations nodes = Map.filter
         else Set.singleton ConnectedWithItself
       )
         <>
-          ( ConnectedWithNonExistingNode `Set.map` 
+          ( ConnectedWithNonExistingNode `Set.map`
               nonExistingNodesReferences
           )
 
@@ -289,11 +294,14 @@ stringDecoder = do
     combine id (node /\ _) =
       let
         allEdges = fromMaybe Set.empty (Map.lookup id edges)
-        isConnectedToOutput = Set.member "output" (renderId `Set.map` allEdges)
-        edgesWithoutOutput = Set.filter (\e → renderId e /= "output") allEdges
+        isConnectedToOutput = Set.member "output"
+          (renderId `Set.map` allEdges)
+        edgesWithoutOutput = Set.filter (\e → renderId e /= "output")
+          allEdges
       in
         id /\
-          ( { audioNode: node, isConnectedToOutput } /\ edgesWithoutOutput
+          ( { audioNode: node, isConnectedToOutput } /\
+              edgesWithoutOutput
           )
 
     entries = Map.toUnfoldable nodes <#> uncurry combine
@@ -331,11 +339,12 @@ stringEncoder _ (AudioNodes graph) = String.joinWith "\n"
   nodeLines = renderNodeLine <$> sortedEntries
 
   renderNodeLine (nodeId /\ ({ audioNode } /\ _)) =
-    renderId nodeId <> " " <> Codec.encoder AudioNode.stringCodec unit audioNode
+    renderId nodeId <> " " <> Codec.encoder AudioNode.stringCodec unit
+      audioNode
 
   connectionLines = renderedConnections
 
-  renderedConnections = 
+  renderedConnections =
     sortedEntries >>= \(nodeId /\ ({ isConnectedToOutput } /\ ends)) →
       (renderConnection nodeId <$> Array.fromFoldable ends)
         <>
@@ -370,8 +379,11 @@ groupBlockDecoder = do
       lookupGroup key = case Map.lookup key childrenMap of
         Just (Group g /\ _) → Right g
         _ → Right
-          { children: GraphNE.singleton (BlockId.make P [ L, A, C, E, H, O, L, D, E, R ] [])
-              (Node "empty" /\ Set.empty)
+          { children: GraphNE.singleton
+              (BlockId.make P [ L, A, C, E, H, O, L, D, E, R ] [])
+              ( Node { contents: "empty", shape: Rectangle } /\
+                  Set.empty
+              )
           , properties: { columns: Nothing }
           , spacedOut: false
           }
@@ -379,23 +391,33 @@ groupBlockDecoder = do
       decodeNode (bid /\ (def /\ edges)) = case def of
         Group g → do
           node ←
-            case P.runParser g (Codec.decoder AudioNode.groupBlockCodec) of
+            case
+              P.runParser g (Codec.decoder AudioNode.groupBlockCodec)
+              of
               Left err → Left $ show err
               Right n → Right n
           let id = fromBlockId (baseId bid)
           let isConnectedToOutput = Set.member outputBlockId edges
-          let edges' = (fromBlockId <<< baseId) `Set.map` (Set.filter (_ /= outputBlockId) edges)
-          pure (id /\ ({ audioNode: node, isConnectedToOutput } /\ edges'))
+          let
+            edges' = (fromBlockId <<< baseId) `Set.map`
+              (Set.filter (_ /= outputBlockId) edges)
+          pure
+            (id /\ ({ audioNode: node, isConnectedToOutput } /\ edges'))
         _ → Left $ "Invalid node definition for " <> show bid
 
     oscGroup ← lookupGroup oscillatorsBlockId
     seqGroup ← lookupGroup sequencersBlockId
 
     let
-      getEntries g = 
-        let m = GraphNE.toMap g.children in
-        if Map.member (BlockId.make P [ L, A, C, E, H, O, L, D, E, R ] []) m then []
-        else Map.toUnfoldable m
+      getEntries g =
+        let
+          m = GraphNE.toMap g.children
+        in
+          if
+            Map.member
+              (BlockId.make P [ L, A, C, E, H, O, L, D, E, R ] [])
+              m then []
+          else Map.toUnfoldable m
 
       allEntries = getEntries oscGroup <> getEntries seqGroup
 
@@ -411,9 +433,12 @@ groupBlockDecoder = do
   baseId ∷ BlockId → BlockId
   baseId bid = fromMaybe bid $ do
     let s = Codec.encoder BlockId.stringCodec unit bid
-    let sWithoutPrefix = fromMaybe s (String.stripPrefix (String.Pattern "def_") s)
-    let s' = fromMaybe sWithoutPrefix $
-          stripSuffix "_frequency" sWithoutPrefix
+    let
+      sWithoutPrefix = fromMaybe s
+        (String.stripPrefix (String.Pattern "def_") s)
+    let
+      s' = fromMaybe sWithoutPrefix $
+        stripSuffix "_frequency" sWithoutPrefix
           <|> stripSuffix "_gain" sWithoutPrefix
           <|> stripSuffix "_wave" sWithoutPrefix
           <|> stripSuffix "_duration" sWithoutPrefix
@@ -441,10 +466,14 @@ groupBlockEncoder _ (AudioNodes graph) =
         Just { audioNode: Oscillator _ } →
           let
             bid = toBlockId targetId
-            suffix = case (nodesById (AudioNodes graph) # Map.lookup sourceId) of
-              Just { audioNode: FrequencySequencer _ } → frequencyBlockId
-              Just { audioNode: GainSequencer _ } → gainBlockId
-              _ → BlockId.make E [ M, P, T, Y ] []
+            suffix =
+              case
+                (nodesById (AudioNodes graph) # Map.lookup sourceId)
+                of
+                Just { audioNode: FrequencySequencer _ } →
+                  frequencyBlockId
+                Just { audioNode: GainSequencer _ } → gainBlockId
+                _ → BlockId.make E [ M, P, T, Y ] []
           in
             bid <> suffix
         _ → toBlockId targetId
@@ -461,76 +490,84 @@ groupBlockEncoder _ (AudioNodes graph) =
     oscillators = Array.filter isOscillator entries
     sequencers = Array.filter isSequencer entries
 
-    encodeNode (id /\ ({ audioNode, isConnectedToOutput } /\ _)) = 
+    encodeNode (id /\ ({ audioNode, isConnectedToOutput } /\ _)) =
       let
         bid = toBlockId id
         edges = fromMaybe Set.empty $ Map.lookup id edgeMap
         edges' = translateTarget id `Set.map` edges
-        finalEdges = if isConnectedToOutput then Set.insert outputBlockId edges' else edges'
+        finalEdges =
+          if isConnectedToOutput then Set.insert outputBlockId edges'
+          else edges'
       in
         bid /\
-          ( Group (Codec.encoder AudioNode.groupBlockCodec bid audioNode) /\
+          ( Group
+              (Codec.encoder AudioNode.groupBlockCodec bid audioNode) /\
               finalEdges
           )
 
     buildGroup nodes = case Array.uncons nodes of
       Just { head, tail } →
-        let 
+        let
           h = encodeNode head
           t = encodeNode <$> tail
           gMap = Map.fromFoldable t
           g = Graph.fromMap gMap
-        in 
+        in
           GraphNE.make (Tuple.fst h) (Tuple.snd h) g
-      Nothing → GraphNE.singleton (BlockId.make P [ L, A, C, E, H, O, L, D, E, R ] []) 
-        (Node "empty" /\ Set.empty)
+      Nothing → GraphNE.singleton
+        (BlockId.make P [ L, A, C, E, H, O, L, D, E, R ] [])
+        (Node { contents: "empty", shape: Rectangle } /\ Set.empty)
 
     oscGroup = buildGroup oscillators
     seqGroup = buildGroup sequencers
 
-    rootChildren = 
-      ( if Array.null oscillators then [] 
-        else 
+    rootChildren =
+      ( if Array.null oscillators then []
+        else
           [ oscillatorsBlockId /\
-              ( Group 
-                  { children: oscGroup 
-                  , properties: { columns: Nothing } 
-                  , spacedOut: false 
-                  } /\ Set.empty 
+              ( Group
+                  { children: oscGroup
+                  , properties: { columns: Nothing }
+                  , spacedOut: false
+                  } /\ Set.empty
               )
           ]
       )
         <>
-          ( if Array.null sequencers then [] 
-            else 
+          ( if Array.null sequencers then []
+            else
               [ sequencersBlockId /\
-                  ( Group 
-                      { children: seqGroup 
-                      , properties: { columns: Nothing } 
-                      , spacedOut: false 
-                      } /\ Set.empty 
+                  ( Group
+                      { children: seqGroup
+                      , properties: { columns: Nothing }
+                      , spacedOut: false
+                      } /\ Set.empty
                   )
               ]
           )
         <>
-          [ outputBlockId /\ (Node "output" /\ Set.empty) ]
-  in 
+          [ outputBlockId /\
+              ( Node { contents: "output", shape: Circle } /\
+                  Set.empty
+              )
+          ]
+  in
     case Array.uncons rootChildren of
       Just { head, tail } →
-        let 
+        let
           gMap = Map.fromFoldable tail
           g = Graph.fromMap gMap
           rootG = GraphNE.make (Tuple.fst head) (Tuple.snd head) g
-        in 
-          { children: rootG 
-          , properties: { columns: Just C1 } 
-          , spacedOut: true 
+        in
+          { children: rootG
+          , properties: { columns: Just C1 }
+          , spacedOut: true
           }
-      Nothing → 
-        { children: GraphNE.singleton outputBlockId 
-            (Node "output" /\ Set.empty)
-        , properties: { columns: Just C1 } 
-        , spacedOut: true 
+      Nothing →
+        { children: GraphNE.singleton outputBlockId
+            (Node { contents: "output", shape: Circle } /\ Set.empty)
+        , properties: { columns: Just C1 }
+        , spacedOut: true
         }
 
 oscillatorsBlockId ∷ BlockId

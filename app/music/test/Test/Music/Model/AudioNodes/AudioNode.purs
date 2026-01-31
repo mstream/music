@@ -18,6 +18,7 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   ( BlockDef(..)
   , Columns(..)
   , GroupBlock
+  , Shape(..)
   )
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
@@ -60,13 +61,24 @@ codecsSpec = codecsTestSuite
         [ unsafeFrequencySequencer 1 [ 100.0, 200.0, 300.0 ] /\
             { groupBlock:
                 { children: unsafeGroupBlockChildren
-                    [ "parent_dummy" /\ (Node " " /\ [])
+                    [ "parent_dummy" /\
+                        (Node { contents: " ", shape: Rectangle } /\ [])
                     , "parent_parameters"
                         /\ unsafeGroup
                           { children:
-                              [ "parent_duration" /\ (Node "d=1" /\ [])
+                              [ "parent_duration" /\
+                                  ( Node
+                                      { contents: "d=1"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
                               , "parent_sequence" /\
-                                  (Node "s=[100.0 200.0 300.0]" /\ [])
+                                  ( Node
+                                      { contents:
+                                          "s=[100.0 200.0 300.0]"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
                               ]
                           , properties: { columns: Just C2 }
                           , spacedOut: false
@@ -81,13 +93,23 @@ codecsSpec = codecsTestSuite
         , unsafeGainSequencer 2 [ 0.0, 0.5 ] /\
             { groupBlock:
                 { children: unsafeGroupBlockChildren
-                    [ "parent_dummy" /\ (Node " " /\ [])
+                    [ "parent_dummy" /\
+                        (Node { contents: " ", shape: Rectangle } /\ [])
                     , "parent_parameters"
                         /\ unsafeGroup
                           { children:
-                              [ "parent_duration" /\ (Node "d=2" /\ [])
+                              [ "parent_duration" /\
+                                  ( Node
+                                      { contents: "d=2"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
                               , "parent_sequence" /\
-                                  (Node "s=[0.0 0.5]" /\ [])
+                                  ( Node
+                                      { contents: "s=[0.0 0.5]"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
                               ]
                           , properties: { columns: Just C2 }
                           , spacedOut: false
@@ -105,8 +127,18 @@ codecsSpec = codecsTestSuite
                     [ "parent_inputs"
                         /\ unsafeGroup
                           { children:
-                              [ "parent_frequency" /\ (Node "f" /\ [])
-                              , "parent_gain" /\ (Node "g" /\ [])
+                              [ "parent_frequency" /\
+                                  ( Node
+                                      { contents: "f"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
+                              , "parent_gain" /\
+                                  ( Node
+                                      { contents: "g"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
                               ]
                           , properties: { columns: Just C2 }
                           , spacedOut: false
@@ -115,7 +147,13 @@ codecsSpec = codecsTestSuite
                     , "parent_parameters"
                         /\ unsafeGroup
                           { children:
-                              [ "parent_wave" /\ (Node "w=sine" /\ []) ]
+                              [ "parent_wave" /\
+                                  ( Node
+                                      { contents: "w=sine"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
+                              ]
                           , properties: { columns: Just C1 }
                           , spacedOut: false
                           }
@@ -132,8 +170,18 @@ codecsSpec = codecsTestSuite
                     [ "parent_inputs"
                         /\ unsafeGroup
                           { children:
-                              [ "parent_frequency" /\ (Node "f" /\ [])
-                              , "parent_gain" /\ (Node "g" /\ [])
+                              [ "parent_frequency" /\
+                                  ( Node
+                                      { contents: "f"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
+                              , "parent_gain" /\
+                                  ( Node
+                                      { contents: "g"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
                               ]
                           , properties: { columns: Just C2 }
                           , spacedOut: false
@@ -142,7 +190,12 @@ codecsSpec = codecsTestSuite
                     , "parent_parameters"
                         /\ unsafeGroup
                           { children:
-                              [ "parent_wave" /\ (Node "w=square" /\ [])
+                              [ "parent_wave" /\
+                                  ( Node
+                                      { contents: "w=square"
+                                      , shape: Rectangle
+                                      } /\ []
+                                  )
                               ]
                           , properties: { columns: Just C1 }
                           , spacedOut: false

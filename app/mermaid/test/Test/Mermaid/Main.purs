@@ -12,7 +12,7 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Mermaid (render) as Mermaid
 import Mermaid.DiagramDef (DiagramDef)
-import Mermaid.DiagramDef.Blocks.BlockDef (BlockDef(..))
+import Mermaid.DiagramDef.Blocks.BlockDef (BlockDef(..), Shape(..))
 import Random.LCG (mkSeed)
 import Test.Mermaid.DiagramDef as DiagramDef
 import Test.Mermaid.DiagramDef.Blocks.BlockDef.Unsafe
@@ -41,7 +41,12 @@ spec = do
     { examples: Map.fromFoldable
         [ unsafeBlockDiagramDef
             { children: unsafeGroupBlockChildren
-                [ "node1" /\ (Node "node1 contents" /\ []) ]
+                [ "node1" /\
+                    ( Node
+                        { contents: "node1 contents", shape: Rectangle }
+                        /\ []
+                    )
+                ]
             , properties: { columns: Nothing }
             , spacedOut: false
             } /\

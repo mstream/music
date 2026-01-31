@@ -15,6 +15,7 @@ module Test.Utils
 
 import Prelude
 
+import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as ArrayNE
 import Data.Set (Set)
@@ -28,7 +29,7 @@ import Test.QuickCheck (Result, (<=?), (>=?))
 import Test.QuickCheck as QC
 import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (Gen)
-import Test.QuickCheck.Gen (listOf) as Gen
+import Test.QuickCheck.Gen (listOf, suchThat) as Gen
 import Test.QuickCheck.Laws.Data
   ( checkBounded
   , checkEq
@@ -173,7 +174,11 @@ unsafeGenSorted8 = unsafePartial do
   pure $ x1 /\ x2 /\ x3 /\ x4 /\ x5 /\ x6 /\ x7 /\ x8
 
 genSorted ∷ ∀ a. Arbitrary a ⇒ Ord a ⇒ Int → Gen (Array a)
-genSorted quantity = do
-  values ← Gen.listOf quantity arbitrary
-  pure $ Set.toUnfoldable $ Set.fromFoldable values
+genSorted quantity =
+  gen `Gen.suchThat` \xs → Array.length xs == quantity
+  where
+  gen ∷ Gen (Array a)
+  gen = do
+    values ← Gen.listOf quantity arbitrary
+    pure $ Set.toUnfoldable $ Set.fromFoldable values
 

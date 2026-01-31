@@ -26,6 +26,7 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   ( BlockDef(..)
   , Columns(..)
   , GroupBlock
+  , Shape(..)
   )
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
@@ -173,8 +174,8 @@ groupBlockDecoder = do
 
       nodeLabels ∷ BlockDef → Array String
       nodeLabels = case _ of
-        Node label →
-          [ label ]
+        Node { contents } →
+          [ contents ]
         Group nested →
           allLabels nested
 
@@ -252,7 +253,7 @@ sequencerGroupBlockEncoder sequenceStringCodec parentBlockId conf =
   dummyId = parentBlockId <> dummyBlockId
 
   dummy ∷ BlockDef
-  dummy = Node " "
+  dummy = Node { contents: " ", shape: Rectangle }
 
   parametersGroupId ∷ BlockId
   parametersGroupId = parentBlockId <> parametersBlockId
@@ -264,13 +265,19 @@ sequencerGroupBlockEncoder sequenceStringCodec parentBlockId conf =
   sequenceParameterId = parentBlockId <> sequenceBlockId
 
   durationParameter ∷ BlockDef
-  durationParameter = Node $ Codec.encoder Duration.parameterStringCodec
-    unit
-    conf.duration
+  durationParameter = Node
+    { contents: Codec.encoder Duration.parameterStringCodec
+        unit
+        conf.duration
+    , shape: Rectangle
+    }
 
   sequenceParameter ∷ BlockDef
-  sequenceParameter = Node $ Codec.encoder sequenceStringCodec unit
-    conf.sequence
+  sequenceParameter = Node
+    { contents: Codec.encoder sequenceStringCodec unit
+        conf.sequence
+    , shape: Rectangle
+    }
 
   parametersGroup ∷ BlockDef
   parametersGroup = Group
@@ -331,14 +338,17 @@ oscillatorGroupBlockEncoder parentBlockId conf =
   waveParameterId = parentBlockId <> waveBlockId
 
   frequencyInput ∷ BlockDef
-  frequencyInput = Node "f"
+  frequencyInput = Node { contents: "f", shape: Rectangle }
 
   gainInput ∷ BlockDef
-  gainInput = Node "g"
+  gainInput = Node { contents: "g", shape: Rectangle }
 
   waveParameter ∷ BlockDef
-  waveParameter = Node $ Codec.encoder Wave.parameterStringCodec unit
-    conf.wave
+  waveParameter = Node
+    { contents: Codec.encoder Wave.parameterStringCodec unit
+        conf.wave
+    , shape: Rectangle
+    }
 
 dummyBlockId ∷ BlockId
 dummyBlockId = BlockId.make D [ U, M, M, Y ] []

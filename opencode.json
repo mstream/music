@@ -1,0 +1,49 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "formatter": {
+    "custom": {
+      "command": [
+        "nix",
+        "fmt",
+        "$FILE"
+      ],
+      "extensions": [
+        ".purs"
+      ]
+    },
+  },
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "cat *": "allow",
+      "find *": "allow",
+      "git status*": "allow",
+      "grep *": "allow",
+      "head *": "allow",
+      "ls*": "allow",
+      "rg *": "allow",
+      "sed *": "allow",
+      "spago test": "allow",
+      "tail *": "allow"
+    },
+    "edit": {
+      "*": "deny",
+      "app/codec/src/*": "allow",
+      "app/codec-test/src/*": "allow",
+      "app/generation/src/*": "allow",
+      "app/graph/src/*": "allow",
+      "app/mermaid/src/*": "allow",
+      "app/mermaid-test/src/*": "allow",
+      "app/src/*": "allow",
+      "app/utils-test/*": "allow"
+    },
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "lsp": "allow",
+    "read": "allow",
+    "todoread": "allow",
+    "todowrite": "deny",
+    "webfetch": "allow",
+  }
+}

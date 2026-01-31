@@ -34,6 +34,7 @@ import Mermaid.DiagramDef.Blocks.BlockDef
   ( BlockDef(..)
   , Columns(..)
   , GroupBlock
+  , Shape(..)
   )
 import Mermaid.DiagramDef.Blocks.BlockDef as BlockDef
 import Mermaid.DiagramDef.Blocks.BlockId (BlockId)
@@ -82,7 +83,7 @@ defStringDecoder = do
 
 data ParsedItem
   = PCol Columns
-  | PNode BlockId String
+  | PNode BlockId String Shape
   | PGroup BlockId (List ParsedItem)
   | PEdge BlockId BlockId
   | PSpace
@@ -150,10 +151,20 @@ parseEdgeOrNode = PC.try do
         id2 ← blockIdParser
         pure $ PEdge id1 id2
     , do
+        _ ← PS.string "[(\""
+        label ← parseLabel
+        _ ← PS.string "\")]"
+        pure $ PNode id1 label Circle
+    , do
+        _ ← PS.string "((\""
+        label ← parseLabel
+        _ ← PS.string "\"))"
+        pure $ PNode id1 label Circle
+    , do
         _ ← PS.string "[\""
         label ← parseLabel
         _ ← PS.string "\"]"
-        pure $ PNode id1 label
+        pure $ PNode id1 label Rectangle
     ]
 
 parseLabel ∷ Parser String String
@@ -180,7 +191,8 @@ buildGroupBlock allEdges items = do
   rawNodes ∷ List (BlockId /\ BlockDef) ← items
     # List.mapMaybe
         ( case _ of
-            PNode id label → Just $ pure (id /\ Node label)
+            PNode id label shape → Just $ pure
+              (id /\ Node { contents: label, shape })
             PGroup id nestedItems → Just do
               gb ← buildGroupBlock allEdges nestedItems
               pure (id /\ Group gb)
@@ -275,14 +287,14 @@ defStringEncoder useIndent (Def groupBlock) =
     indentString
     (bid /\ (blockDef /\ connectionEnds)) =
     case blockDef of
-      Node label →
+      Node { contents, shape } →
         { edges: edgesFromConnections bid connectionEnds
         , lines:
             [ indentString
                 <> Codec.encoder BlockId.stringCodec unit bid
-                <> "[\""
-                <> label
-                <> "\"]"
+                <> (if shape == Circle then "((\"" else "[\"")
+                <> contents
+                <> (if shape == Circle then "\"))" else "\"]")
             ]
         }
       Group nested →
