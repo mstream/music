@@ -9,6 +9,7 @@ import Data.Codec as Codec
 import Data.Either (Either(..))
 import Data.List (List)
 import Data.Map as Map
+import Data.Natural (Natural)
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Traversable (traverse_)
@@ -17,6 +18,7 @@ import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
+import Effect.Timer (clearInterval, setInterval)
 import Elmish (Transition')
 import Elmish as E
 import Music.Audio as Audio
@@ -25,15 +27,16 @@ import Music.Init.Perspective.Diagram as Diagram
 import Music.Init.Types (Init)
 import Music.Message (Message(..))
 import Music.Model (Model)
-import Music.Model.AudioNodes (AudioNodeEntry)
+import Music.Model.AudioNodes (AudioNodeEntry, AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
+import Music.Model.AudioNodes.AudioNode.Sequencer as Sequencer
 import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence as Sequence
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.Perspective (ControlsPerspective)
 import Music.Model.Perspective as Perspective
 import Music.Model.Perspective.PerspectiveName (PerspectiveName(..))
-import Music.Model.Playback (Playback(..))
+import Music.Model.Playback (Playback(..), PlaybackControls)
 import Music.Update.Types (Update)
 
 update ∷ ∀ m. MonadAff m ⇒ MonadLogger m ⇒ Update m ControlsPerspective
@@ -54,20 +57,36 @@ update model = case _ of
       _ →
         noop
   PlayRequested → do
-    E.fork $ liftAff do
-      playbackControls ← Audio.play model.audioNodes
-      pure $ PlaybackStarted playbackControls
+    E.forks \{ dispatch } → liftAff do
+      controls ← Audio.play model.audioNodes
+      stepUpdateIntervalId ← liftEffect
+        $ setInterval 250 (dispatch PlaybackTick)
+      liftEffect $ dispatch $ PlaybackStarted
+        { controls, step: zero, stepUpdateIntervalId }
     pure
       { perspective: Perspective.Controls model
           { playback = PlaybackStarting }
       }
-  PlaybackStarted playbackControls → do
+  PlaybackStarted playing → do
     E.forkVoid $ liftAff $ Audio.initializeAnalyserCanvas
-      playbackControls.analyser
+      playing.controls.analyser
     pure
       { perspective: Perspective.Controls model
-          { playback = Playing playbackControls }
+          { playback = Playing playing }
       }
+  PlaybackTick → case model.playback of
+    Playing playing → do
+      let
+        newStep ∷ Natural
+        newStep = playing.step + one
+      E.forkVoid $ liftAff
+        $ actuateSequencers playing.controls newStep model.audioNodes
+      pure
+        { perspective: Perspective.Controls model
+            { playback = Playing playing { step = newStep } }
+        }
+    _ →
+      noop
   StopRequested → case model.playback of
     Playing _ → do
       E.forkVoid $ liftAff ensurePlaybackStopped
@@ -91,8 +110,8 @@ update model = case _ of
           $ "failed to update audio nodes: " <> show violationsById
         noop
       Right (updatedAudioNodes /\ connectionEnds) → do
-        E.forkVoid $ liftEffect case model.playback of
-          Playing playbackControls → do
+        E.forkVoid $ liftAff case model.playback of
+          Playing { controls } → do
             case audioNodeEntry.audioNode of
               FrequencySequencer frequencySequencerConf →
                 traverse_
@@ -121,7 +140,7 @@ update model = case _ of
               ∷ Set AudioNodeId → List (GainNode /\ OscillatorNode)
             findOscillators nodeIds = Map.values $ Map.filterKeys
               (\id → Set.member id nodeIds)
-              playbackControls.oscillators
+              controls.oscillators
 
           _ →
             pure unit
@@ -130,13 +149,40 @@ update model = case _ of
               { audioNodes = updatedAudioNodes }
           }
 
+  actuateSequencers ∷ PlaybackControls → Natural → AudioNodes → Aff Unit
+  actuateSequencers controls step = AudioNodes.toMap >>> traverse_ f
+    where
+    f ∷ AudioNodeEntry /\ Set AudioNodeId → Aff Unit
+    f ({ audioNode } /\ connectionEnds) = case audioNode of
+      FrequencySequencer sequencer →
+        traverse_
+          ( \(_ /\ osc) → Audio.updateOscillatorFrequency osc
+              (sequencer `Sequencer.valueAt` step)
+          )
+          (findConnectedOscillatorNodes connectionEnds)
+      GainSequencer sequencer →
+        traverse_
+          ( \(gain /\ _) → Audio.updateOscillatorGain gain
+              (sequencer `Sequencer.valueAt` step)
+          )
+          (findConnectedOscillatorNodes $ connectionEnds)
+      _ →
+        pure unit
+      where
+      findConnectedOscillatorNodes
+        ∷ Set AudioNodeId → List (GainNode /\ OscillatorNode)
+      findConnectedOscillatorNodes nodeIds = Map.values $ Map.filterKeys
+        (\id → Set.member id nodeIds)
+        controls.oscillators
+
   noop ∷ Init m Model
   noop = pure { perspective: Perspective.Controls model }
 
   ensurePlaybackStopped ∷ Aff Unit
   ensurePlaybackStopped = case model.playback of
-    Playing playbackControls →
-      Audio.stop playbackControls.audioContext
+    Playing { controls, stepUpdateIntervalId } → do
+      Audio.stop controls.audioContext
+      liftEffect $ clearInterval stepUpdateIntervalId
     _ →
       pure unit
 

@@ -4,7 +4,7 @@ import Audio.WebAudio.Types (AudioContext)
 import Music.Model.AudioNodes (AudioNodeEntry, AudioNodes)
 import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.Perspective.PerspectiveName (PerspectiveName)
-import Music.Model.Playback (PlaybackControls)
+import Music.Model.Playback (Playing)
 
 data Message
   = AudioContextCreated AudioContext
@@ -13,7 +13,8 @@ data Message
   | DiagramRendered String
   | PerspectiveChanged PerspectiveChange
   | PlayRequested
-  | PlaybackStarted PlaybackControls
+  | PlaybackTick
+  | PlaybackStarted Playing
   | StopRequested
 
 type PerspectiveChange =

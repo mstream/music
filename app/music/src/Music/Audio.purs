@@ -83,7 +83,7 @@ type ActiveOscillatorConfig =
   }
 
 play ∷ AudioNodes → Aff PlaybackControls
-play audioNodes = liftEffect do
+play audioNodes = do
   audioContext ← createAudioContext
   analyser ← createOutput audioContext
   oscillators ← traverse
@@ -95,11 +95,11 @@ play audioNodes = liftEffect do
           isConnectedToOutput
     )
     (activeOscillatorConfigs audioNodes)
-  WebAudio.resume audioContext
+  liftEffect $ WebAudio.resume audioContext
   pure { analyser, audioContext, oscillators: oscillators }
   where
-  createAudioContext ∷ Effect WebAudio.AudioContext
-  createAudioContext = do
+  createAudioContext ∷ Aff WebAudio.AudioContext
+  createAudioContext = liftEffect do
     audioContext ← WebAudio.newAudioContext
     WebAudio.suspend audioContext
     pure audioContext
@@ -146,8 +146,8 @@ activeOscillatorConfigs audioNodes = foldlWithIndex
       _ →
         acc
 
-createOutput ∷ WebAudio.AudioContext → Effect WebAudio.AnalyserNode
-createOutput audioContext = do
+createOutput ∷ WebAudio.AudioContext → Aff WebAudio.AnalyserNode
+createOutput audioContext = liftEffect do
   destination ← WebAudio.destination audioContext
   analyserNode ← WebAudio.createAnalyser audioContext
   WebAudio.setFftSize 2048 analyserNode
@@ -161,7 +161,7 @@ createOscillator
   → Gain
   → Oscillator
   → Boolean
-  → Effect (WebAudio.GainNode /\ WebAudio.OscillatorNode)
+  → Aff (WebAudio.GainNode /\ WebAudio.OscillatorNode)
 createOscillator
   audioContext
   analyserNode
@@ -169,31 +169,32 @@ createOscillator
   gain
   conf
   isConnectedToOutput = do
-  oscillatorNode ← WebAudio.createOscillator audioContext
-  gainNode ← WebAudio.createGain audioContext
-  WebAudio.setFrequency (codecConf.unwrap frequency) oscillatorNode
-  WebAudio.setGain (codecConf.unwrap gain) gainNode
+  oscillatorNode ← liftEffect $ WebAudio.createOscillator audioContext
+  gainNode ← liftEffect $ WebAudio.createGain audioContext
   updateOscillatorWave oscillatorNode conf.wave
-  WebAudio.startOscillator zero oscillatorNode
-  WebAudio.connect oscillatorNode gainNode
-  when
-    isConnectedToOutput
-    (WebAudio.connect gainNode analyserNode)
+  liftEffect do
+    WebAudio.setFrequency (codecConf.unwrap frequency) oscillatorNode
+    WebAudio.setGain (codecConf.unwrap gain) gainNode
+    WebAudio.startOscillator zero oscillatorNode
+    WebAudio.connect oscillatorNode gainNode
+    when
+      isConnectedToOutput
+      (WebAudio.connect gainNode analyserNode)
   pure $ gainNode /\ oscillatorNode
 
 updateOscillatorFrequency
-  ∷ WebAudio.OscillatorNode → Frequency → Effect Unit
-updateOscillatorFrequency oscillatorNode frequency =
-  WebAudio.setFrequency (codecConf.unwrap frequency) oscillatorNode
+  ∷ WebAudio.OscillatorNode → Frequency → Aff Unit
+updateOscillatorFrequency oscillatorNode frequency = liftEffect
+  $ WebAudio.setFrequency (codecConf.unwrap frequency) oscillatorNode
 
 updateOscillatorGain
-  ∷ WebAudio.GainNode → Gain → Effect Unit
-updateOscillatorGain gainNode gain =
-  WebAudio.setGain (codecConf.unwrap gain) gainNode
+  ∷ WebAudio.GainNode → Gain → Aff Unit
+updateOscillatorGain gainNode gain = liftEffect
+  $ WebAudio.setGain (codecConf.unwrap gain) gainNode
 
 updateOscillatorWave
-  ∷ WebAudio.OscillatorNode → Wave → Effect Unit
-updateOscillatorWave oscillatorNode wave = do
+  ∷ WebAudio.OscillatorNode → Wave → Aff Unit
+updateOscillatorWave oscillatorNode wave = liftEffect do
   WebAudio.setOscillatorType oscillatorType oscillatorNode
   where
   oscillatorType ∷ WebAudio.OscillatorType

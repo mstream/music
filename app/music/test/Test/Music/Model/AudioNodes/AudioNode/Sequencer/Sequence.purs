@@ -12,9 +12,7 @@ import Data.Set as Set
 import Data.Tuple.Nested ((/\))
 import Music.Model.AudioNodes.AudioNode.Oscillator.Frequency (Frequency)
 import Music.Model.AudioNodes.AudioNode.Oscillator.Gain (Gain)
-import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence
-  ( Sequence(..)
-  )
+import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence (Sequence)
 import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence as Sequence
 import Test.Data.Codec (codecTestSuite)
 import Test.Music.Model.AudioNodes.AudioNode.Oscillator.Frequency
@@ -128,7 +126,7 @@ orderedGainSequenceExamples = ArrayNE.cons'
   []
 
 frequencySequenceExample ∷ Sequence Frequency
-frequencySequenceExample = Sequence $ ArrayNE.cons'
+frequencySequenceExample = Sequence.fromFoldable1 $ ArrayNE.cons'
   ( Frequency.unsafeFrequency
       "100.0"
   )
@@ -137,7 +135,7 @@ frequencySequenceExample = Sequence $ ArrayNE.cons'
   ]
 
 gainSequenceExample ∷ Sequence Gain
-gainSequenceExample = Sequence $ ArrayNE.cons'
+gainSequenceExample = Sequence.fromFoldable1 $ ArrayNE.cons'
   (Gain.unsafeGain "0.0")
   [ Gain.unsafeGain "0.5"
   , Gain.unsafeGain "1.0"

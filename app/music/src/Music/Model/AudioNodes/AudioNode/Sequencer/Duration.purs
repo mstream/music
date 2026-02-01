@@ -1,5 +1,9 @@
 module Music.Model.AudioNodes.AudioNode.Sequencer.Duration
   ( Duration
+  , d1
+  , d2
+  , d3
+  , d4
   , parameterStringCodec
   , toInt
   , valueStringCodec
@@ -76,6 +80,18 @@ maxValue = 4
 
 minValue ∷ Int
 minValue = 1
+
+d1 ∷ Duration
+d1 = Duration 1
+
+d2 ∷ Duration
+d2 = Duration 2
+
+d3 ∷ Duration
+d3 = Duration 3
+
+d4 ∷ Duration
+d4 = Duration 4
 
 toInt ∷ Duration → Int
 toInt (Duration i) = i

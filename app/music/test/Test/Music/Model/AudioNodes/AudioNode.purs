@@ -26,9 +26,8 @@ import Music.Model.AudioNodes.AudioNode as AudioNode
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))
 import Music.Model.AudioNodes.AudioNode.Sequencer (Sequencer)
 import Music.Model.AudioNodes.AudioNode.Sequencer.Duration (Duration)
-import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence
-  ( Sequence(..)
-  )
+import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence (Sequence)
+import Music.Model.AudioNodes.AudioNode.Sequencer.Sequence as Sequence
 import Partial.Unsafe (unsafeCrashWith)
 import Test.Data.Codec (codecTestSuite)
 import Test.Mermaid.DiagramDef.Blocks.BlockDef.Unsafe
@@ -265,7 +264,7 @@ unsafeSequencer ctor valStringToEl durationValue sequenceValues =
   ctor { duration, sequence }
   where
   sequence ∷ Sequence a
-  sequence = Sequence elements
+  sequence = Sequence.fromFoldable1 elements
 
   duration ∷ Duration
   duration = Duration.unsafeDuration $ show durationValue
