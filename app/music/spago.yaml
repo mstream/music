@@ -18,11 +18,13 @@ package:
     - gesso
     - graph
     - integers
+    - js-timers
     - lcg
     - lists
     - maybe
     - mermaid
     - monad-logger
+    - naturals
     - numbers
     - ordered-collections
     - parsing

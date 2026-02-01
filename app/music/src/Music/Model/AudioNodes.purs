@@ -11,6 +11,7 @@ module Music.Model.AudioNodes
   , nodesById
   , stringCodec
   , toGraph
+  , toMap
   , updateAudioNode
   ) where
 
@@ -233,6 +234,9 @@ findViolations nodes = Map.filter
 
 toGraph ∷ AudioNodes → (Graph AudioNodeId AudioNodeEntry)
 toGraph (AudioNodes graph) = GraphNE.toGraph graph
+
+toMap ∷ AudioNodes → Map AudioNodeId (AudioNodeEntry /\ Set AudioNodeId)
+toMap = Graph.toMap <<< toGraph
 
 connections ∷ AudioNodes → Set (Edge AudioNodeId)
 connections (AudioNodes graph) = GraphNE.edges graph

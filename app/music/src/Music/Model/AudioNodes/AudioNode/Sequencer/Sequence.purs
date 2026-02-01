@@ -1,10 +1,12 @@
 module Music.Model.AudioNodes.AudioNode.Sequencer.Sequence
-  ( Sequence(..)
+  ( Sequence
   , frequencyParameterStringCodec
   , frequencyValueStringCodec
+  , fromFoldable1
   , gainParameterStringCodec
   , gainValueStringCodec
   , toArray
+  , updateAt
   ) where
 
 import Prelude
@@ -14,6 +16,10 @@ import Data.Array.NonEmpty as ArrayNE
 import Data.Codec (Codec)
 import Data.Codec as Codec
 import Data.Either (Either(..))
+import Data.Foldable (class Foldable)
+import Data.FunctorWithIndex (class FunctorWithIndex)
+import Data.Maybe (Maybe)
+import Data.Semigroup.Foldable (class Foldable1)
 import Data.Set as Set
 import Data.String as String
 import Data.Value as Value
@@ -33,6 +39,10 @@ import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen as Gen
 
 newtype Sequence a = Sequence (NonEmptyArray a)
+
+derive newtype instance Functor Sequence
+derive newtype instance FunctorWithIndex Int Sequence
+derive newtype instance Foldable Sequence
 
 instance Arbitrary a ⇒ Arbitrary (Sequence a) where
   arbitrary = Sequence <$> Gen.arrayOf1 arbitrary
@@ -67,6 +77,13 @@ instance Value.Codeable (Sequence Gain) (NonEmptyArray Gain) Unit where
     , unwrap: \(Sequence xs) → xs
     , wrap: Right <<< Sequence
     }
+
+fromFoldable1 ∷ ∀ a f. Foldable1 f ⇒ f a → Sequence a
+fromFoldable1 = Sequence <<< ArrayNE.fromFoldable1
+
+updateAt ∷ ∀ a. Int → a → Sequence a → Maybe (Sequence a)
+updateAt index value (Sequence values) = Sequence
+  <$> ArrayNE.updateAt index value values
 
 parser ∷ ∀ a. Codec a String Unit → Parser String (NonEmptyArray a)
 parser elementStringCodec = ArrayNE.fromFoldable1
