@@ -3,6 +3,7 @@
 .purs-repl
 .spago
 .spec-results
+coverage
 index.js
 node_modules
 output

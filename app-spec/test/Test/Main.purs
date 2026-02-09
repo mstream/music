@@ -12,4 +12,4 @@ main ∷ Effect Unit
 main = do
   runSpecAndExitProcess
     [ consoleReporter ]
-    (AppSpec.spec $ URL "https://mstream.github.io/music/")
+    (AppSpec.spec "https://mstream.github.io/music")

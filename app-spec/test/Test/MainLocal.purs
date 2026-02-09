@@ -12,4 +12,4 @@ main ∷ Effect Unit
 main = do
   runSpecAndExitProcess
     [ consoleReporter ]
-    (AppSpec.spec $ URL "http://localhost:8080/")
+    (AppSpec.spec "http://localhost:8080")
