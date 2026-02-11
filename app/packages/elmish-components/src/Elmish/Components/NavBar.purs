@@ -1,4 +1,4 @@
-module Music.View.Components.NavBar (Item(..), Model, view) where
+module Elmish.Components.NavBar (Item(..), Model, view) where
 
 import Prelude
 
@@ -6,16 +6,15 @@ import Data.Array (fromFoldable)
 import Data.FoldableWithIndex (foldMapWithIndex)
 import Data.List (List, singleton)
 import Data.Map (Map)
-import Elmish (ReactElement)
+import Elmish (Dispatch, ReactElement)
 import Elmish.Dispatch ((<|))
 import Elmish.HTML.Styled as H
-import Music.View.Types (ViewModel)
 
 type Model t msg = Map t (Item msg)
 data Item msg = Active | Available msg | Unavailable String
 
-view ∷ ∀ msg t. Show t ⇒ ViewModel (Model t msg) msg
-view model dispatch = H.nav ""
+view ∷ ∀ msg t. (t → String) → Model t msg → Dispatch msg → ReactElement
+view showTitle model dispatch = H.nav ""
   [ H.ul "" (fromFoldable $ renderItems model) ]
   where
   renderItems ∷ Map t (Item msg) → List ReactElement
@@ -24,7 +23,7 @@ view model dispatch = H.nav ""
 
   renderItem ∷ t → Item msg → ReactElement
   renderItem title item = H.li ""
-    [ render $ show title ]
+    [ render $ showTitle title ]
     where
     render ∷ String → ReactElement
     render = case item of

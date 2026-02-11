@@ -1,5 +1,5 @@
 package:
-  name: music-view
+  name: elmish-components
   dependencies:
     - arrays
     - codec
@@ -7,16 +7,12 @@ package:
     - effect
     - either
     - elmish
-    - elmish-components
     - elmish-html
     - foldable-traversable
     - integers
     - lists
     - lz-string
     - maybe
-    - mermaid
-    - music-api
-    - music-model
     - numbers
     - ordered-collections
     - parsing
@@ -24,8 +20,7 @@ package:
     - tuples
     - typelevel-prelude
   test:
-    main: Test.Music.View.Main
+    main: Test.Elmish.Components.Main
     dependencies:
-      - mermaid
       - spec
       - spec-node
