@@ -6,6 +6,7 @@ import Data.Codec as Codec
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Number as Number
 import Elmish (ReactElement)
+import Elmish.Components.Accordion as Accordion
 import Elmish.Dispatch ((<|))
 import Elmish.HTML.Styled as H
 import Music.Api.Message (Message(..))
@@ -18,7 +19,6 @@ import Music.Model.AudioNodes.AudioNodeId (AudioNodeId)
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.Model.Perspective (ControlsPerspective)
 import Music.Model.Playback (Playback(..))
-import Music.View.Components.Accordion as Accordion
 import Music.View.Controls.Oscillator as Oscillator
 import Music.View.Controls.Sequencer as Sequencer
 import Music.View.Types (ViewModel, ViewVoid)

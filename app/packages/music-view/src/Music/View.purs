@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Tuple.Nested ((/\))
 import Elmish (ReactElement)
+import Elmish.Components.NavBar as NavBar
 import Elmish.HTML.Styled as H
 import Music.Api.Message (Message(..))
 import Music.Model (Model)
@@ -14,7 +15,6 @@ import Music.Model.AudioNodes as AudioNodes
 import Music.Model.Perspective as Perspective
 import Music.Model.Perspective.PerspectiveName (PerspectiveName(..))
 import Music.View.Code (view) as Code
-import Music.View.Components.NavBar as NavBar
 import Music.View.Controls (view) as Controls
 import Music.View.Diagram as Diagram
 import Music.View.Types (ViewModel, ViewVoid)
@@ -42,11 +42,21 @@ view model dispatch = H.div ""
     ]
 
   navBar ∷ ViewVoid Message
-  navBar = NavBar.view $ Map.fromFoldable
-    [ Code /\ codeNavbarItem
-    , Controls /\ controlsNavbarItem
-    , Diagram /\ diagramNavbarItem
-    ]
+  navBar = NavBar.view
+    ( case _ of
+        Code →
+          "Code"
+        Controls →
+          "Controls"
+        Diagram →
+          "Diagram"
+    )
+    ( Map.fromFoldable
+        [ Code /\ codeNavbarItem
+        , Controls /\ controlsNavbarItem
+        , Diagram /\ diagramNavbarItem
+        ]
+    )
 
   codeNavbarItem ∷ NavBar.Item Message
   codeNavbarItem = case model.perspective of

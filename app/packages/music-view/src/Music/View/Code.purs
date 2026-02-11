@@ -14,6 +14,7 @@ import Data.Symbol (class IsSymbol)
 import Data.Tuple.Nested ((/\))
 import Effect.Uncurried (EffectFn1)
 import Elmish (ReactElement, (<|))
+import Elmish.Components.Accordion as Accordion
 import Elmish.HTML.Events (SyntheticEvent)
 import Elmish.HTML.Events as E
 import Elmish.HTML.Styled as H
@@ -29,7 +30,6 @@ import Music.Model.AudioNodes.AudioNode.Code.Parameter as Parameter
 import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
 import Music.Model.AudioNodes.AudioNodeName (AudioNodeName(..))
 import Music.Model.Perspective (CodePerspective)
-import Music.View.Components.Accordion as Accordion
 import Music.View.Types (ViewModel)
 import Parsing (ParseError, parseErrorMessage, runParser)
 import Type.Proxy (Proxy(..))
