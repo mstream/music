@@ -1,6 +1,8 @@
 {
   categories,
   httpServer,
+  jq,
+  mkTemp,
   nix,
   npm,
   script,
@@ -8,6 +10,12 @@
   watchexec,
   ...
 }:
+let
+  npmExec =
+    package: command: "${npm} exec --package=${package} -- ${command}";
+  c8 = npmExec "c8@10.1.3" "c8";
+  psSuggest = npmExec "purescript-suggest@2.2.0" "ps-suggest";
+in
 {
   app-build = {
     category = categories.builds;
@@ -34,13 +42,19 @@
   app-format = {
     category = categories.formats;
     description = "Format application source code";
+    exec = script ''
+      rm -rf output
+      ${spago} build --json-errors | ${psSuggest} --apply
+    '';
+  };
+  app-list-modules = {
+    description = "List all PureScript modules belonging to this project.";
     exec =
       let
-        psSuggest = "${npm} exec --package=purescript-suggest@2.2.0 -- ps-suggest";
+        jqExpr = "with_entries(select(.value.path | startswith(\".spago\") | not)) | keys | .[]";
       in
       script ''
-        rm -rf output
-        ${spago} build --json-errors | ${psSuggest} --apply
+        ${spago} graph modules --json | ${jq} -r '${jqExpr}'
       '';
   };
   app-preview = {
@@ -56,7 +70,9 @@
     category = categories.checks;
     description = "Test application";
     exec = script ''
-      ${spago} test 
+      c8_conf=$(${mkTemp})
+      run app-list-modules | ${jq} -Rs '{all: true, clean: true, include: split("\n") | map(select(length > 0) |= "output/" + . + "/*.js"), reporter: ["text"]}' > "''${c8_conf}"
+      ${c8} --config "''${c8_conf}" ${spago} test 
     '';
   };
   app-update-npm-packages = {

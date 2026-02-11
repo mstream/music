@@ -3,6 +3,7 @@
     "jsdom": "^27"
   },
   "dependencies": {
+    "lz-string": "^1",
     "mermaid": "^11",
     "react": "^17",
     "react-dom": "^17",

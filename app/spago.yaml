@@ -5,10 +5,16 @@ package:
       - UserDefinedWarning
   dependencies:
     - effect
+    - either
     - elmish
     - elmish-time-machine
+    - lz-string
+    - maybe
     - music
     - prelude
+    - strings
+    - web-clipboard
+    - web-html
   test:
     main: Test.Music.Main
     dependencies: []

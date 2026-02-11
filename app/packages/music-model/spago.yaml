@@ -1,0 +1,35 @@
+package:
+  name: music-model
+  dependencies:
+    - arrays
+    - codec
+    - control
+    - either
+    - foldable-traversable
+    - graph
+    - integers
+    - js-timers
+    - lists
+    - maybe
+    - mermaid
+    - naturals
+    - numbers
+    - ordered-collections
+    - parsing
+    - prelude
+    - quickcheck
+    - strings
+    - tuples
+    - webaudio
+  test:
+    main: Test.Music.Model.Main
+    dependencies:
+      - codec-test
+      - effect
+      - lcg
+      - mermaid
+      - mermaid-test
+      - partial
+      - spec
+      - spec-node
+      - utils-test

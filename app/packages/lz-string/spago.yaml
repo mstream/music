@@ -1,0 +1,16 @@
+package:
+  name: lz-string
+  dependencies:
+    - arrays
+    - either
+    - foreign
+    - lists
+    - prelude
+    - strings
+    - transformers
+  test:
+    main: Test.Data.LzString.Main
+    dependencies:
+      - quickcheck
+      - spec
+      - spec-node
