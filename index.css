@@ -9,3 +9,7 @@
 #gh-logo {
   height: 5vh;
 }
+
+.icon {
+  color: var(--pico-color);
+}
