@@ -70,6 +70,7 @@ in
     category = categories.checks;
     description = "Test application";
     exec = script ''
+      npm ci
       c8_conf=$(${mkTemp})
       run app-list-modules | ${jq} -Rs '{all: true, clean: true, include: split("\n") | map(select(length > 0) |= "output/" + . + "/*.js"), reporter: ["text"]}' > "''${c8_conf}"
       ${c8} --config "''${c8_conf}" ${spago} test 
