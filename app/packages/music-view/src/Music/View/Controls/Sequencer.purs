@@ -6,7 +6,7 @@ import Data.Codec as Codec
 import Data.Value (class Codeable, codecConf)
 import Elmish.HTML.Styled as H
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
-import Music.Message (Message(..))
+import Music.Api.Message (Message(..))
 import Music.Model.AudioNodes.AudioNodeId as AudioNodeId
 import Music.View.Controls.Sequencer.Duration (view) as Duration
 import Music.View.Controls.Sequencer.Sequence (view) as Sequence

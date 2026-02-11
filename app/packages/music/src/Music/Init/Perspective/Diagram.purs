@@ -13,8 +13,8 @@ import Mermaid as Mermaid
 import Mermaid.DiagramDef (DiagramDef(..))
 import Mermaid.DiagramDef.Blocks as Blocks
 import Mermaid.DiagramDef.Blocks.BlockDef (GroupBlock)
+import Music.Api.Message (Message(..))
 import Music.Init.Types (Init)
-import Music.Message (Message(..))
 import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.Perspective (DiagramPerspective, DiagramState(..))

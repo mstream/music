@@ -11,6 +11,7 @@ package:
   test:
     main: Test.Data.LzString.Main
     dependencies:
+      - effect
       - quickcheck
       - spec
       - spec-node

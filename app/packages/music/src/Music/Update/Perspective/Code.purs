@@ -11,11 +11,11 @@ import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
 import Elmish as E
+import Music.Api.Message (Message(..))
 import Music.App (Env)
 import Music.Init.Perspective.Controls as Controls
 import Music.Init.Perspective.Diagram as Diagram
 import Music.Init.Types (Init)
-import Music.Message (Message(..))
 import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.Perspective (CodePerspective, Perspective)
 import Music.Model.Perspective as Perspective

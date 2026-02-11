@@ -1,4 +1,4 @@
-module Music.Message (Message(..), PerspectiveChange) where
+module Music.Api.Message (Message(..), PerspectiveChange) where
 
 import Audio.WebAudio.Types (AudioContext)
 import Music.Model.AudioNodes (AudioNodeEntry, AudioNodes)
