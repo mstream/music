@@ -11,11 +11,7 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Set as Set
 import Data.Tuple.Nested ((/\))
-import Music.Model.AudioNodes.AudioNode.Note
-  ( Name(..)
-  , Note(..)
-  , Octave(..)
-  )
+import Music.Model.AudioNodes.AudioNode.Note (Note)
 import Music.Model.AudioNodes.AudioNode.Note as Note
 import Test.Data.Codec (codecTestSuite, unsafeDecoded)
 import Test.QuickCheck.Gen as Gen

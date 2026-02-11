@@ -5,9 +5,9 @@ import Prelude
 import Control.Monad.Logger.Class (class MonadLogger)
 import Control.Monad.Reader (class MonadAsk)
 import Effect.Aff.Class (class MonadAff)
+import Music.Api.Message (Message)
 import Music.App (Env)
 import Music.Init.Types (Init)
-import Music.Message (Message)
 import Music.Model (Model)
 import Music.Model.Perspective (Perspective(..))
 import Music.Update.Perspective.Code (update) as Code

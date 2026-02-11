@@ -8,7 +8,7 @@ import Data.Map as Map
 import Data.Tuple.Nested ((/\))
 import Elmish (ReactElement)
 import Elmish.HTML.Styled as H
-import Music.Message (Message(..))
+import Music.Api.Message (Message(..))
 import Music.Model (Model)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.Perspective as Perspective

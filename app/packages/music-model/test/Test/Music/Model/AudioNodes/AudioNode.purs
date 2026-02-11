@@ -37,13 +37,10 @@ import Test.Mermaid.DiagramDef.Blocks.BlockDef.Unsafe
 import Test.Mermaid.DiagramDef.Blocks.BlockId.Unsafe (unsafeBlockId)
 import Test.Music.Model.AudioNodes.AudioNode.Frequency (spec) as Frequency
 import Test.Music.Model.AudioNodes.AudioNode.Frequency (unsafeFrequency)
-import Test.Music.Model.AudioNodes.AudioNode.Frequency as Frequency
 import Test.Music.Model.AudioNodes.AudioNode.Gain (spec) as Gain
 import Test.Music.Model.AudioNodes.AudioNode.Gain (unsafeGain)
-import Test.Music.Model.AudioNodes.AudioNode.Gain as Gain
 import Test.Music.Model.AudioNodes.AudioNode.Note (spec) as Note
 import Test.Music.Model.AudioNodes.AudioNode.Note (unsafeNote)
-import Test.Music.Model.AudioNodes.AudioNode.Note as Note
 import Test.Music.Model.AudioNodes.AudioNode.Oscillator as Oscillator
 import Test.Music.Model.AudioNodes.AudioNode.Sequencer as Sequencer
 import Test.Music.Model.AudioNodes.AudioNode.Sequencer.Duration as Duration

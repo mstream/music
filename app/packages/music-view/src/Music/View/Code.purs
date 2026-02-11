@@ -17,7 +17,7 @@ import Elmish (ReactElement, (<|))
 import Elmish.HTML.Events (SyntheticEvent)
 import Elmish.HTML.Events as E
 import Elmish.HTML.Styled as H
-import Music.Message (Message(..))
+import Music.Api.Message (Message(..))
 import Music.Model.AudioNodes (AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode.Code.Documentable

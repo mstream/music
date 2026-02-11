@@ -14,7 +14,7 @@ import Elmish.HTML.Events
 import Elmish.HTML.Events (handleEffect, selectSelectedValue) as E
 import Elmish.HTML.Styled as H
 import Mermaid.DiagramDef.Blocks.BlockId as BlockId
-import Music.Message (Message(..))
+import Music.Api.Message (Message(..))
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))
 import Music.Model.AudioNodes.AudioNode.Oscillator (Oscillator)
 import Music.Model.AudioNodes.AudioNode.Oscillator.Wave (Wave(..))

@@ -8,7 +8,7 @@ import Data.Number as Number
 import Elmish (ReactElement)
 import Elmish.Dispatch ((<|))
 import Elmish.HTML.Styled as H
-import Music.Message (Message(..))
+import Music.Api.Message (Message(..))
 import Music.Model.AudioNodes (AudioNodeEntry)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))

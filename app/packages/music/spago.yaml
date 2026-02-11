@@ -8,48 +8,39 @@ package:
     - canvas
     - codec
     - console
-    - control
     - effect
     - either
     - elmish
-    - elmish-html
     - exceptions
     - foldable-traversable
-    - foreign
     - gesso
     - graph
     - integers
+    - js-promise
     - js-timers
-    - lcg
     - lists
-    - lz-string
     - maybe
     - mermaid
     - monad-logger
+    - music-api
     - music-model
     - music-view
     - naturals
-    - numbers
     - ordered-collections
-    - parsing
     - prelude
     - quickcheck
     - strings
     - tailrec
     - transformers
     - tuples
-    - typelevel-prelude
     - uint
     - unfoldable
     - web-clipboard
+    - web-html
     - webaudio
   test:
     main: Test.Music.Main
     dependencies:
-      - codec-test
       - mermaid
-      - mermaid-test
-      - partial
       - spec
       - spec-node
-      - utils-test

@@ -20,11 +20,11 @@ import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
 import Effect.Timer (clearInterval, setInterval)
 import Elmish as E
+import Music.Api.Message (Message(..))
 import Music.Audio as Audio
 import Music.Init.Perspective.Code (init) as Code
 import Music.Init.Perspective.Diagram as Diagram
 import Music.Init.Types (Init)
-import Music.Message (Message(..))
 import Music.Model.AudioNodes (AudioNodeEntry, AudioNodes)
 import Music.Model.AudioNodes as AudioNodes
 import Music.Model.AudioNodes.AudioNode (AudioNode(..))

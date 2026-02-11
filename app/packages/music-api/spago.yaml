@@ -1,0 +1,12 @@
+package:
+  name: music-api
+  dependencies:
+    - music-model
+    - webaudio
+  test:
+    main: Test.Music.Api.Main
+    dependencies:
+      - effect
+      - prelude
+      - spec
+      - spec-node

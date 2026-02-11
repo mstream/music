@@ -7,10 +7,10 @@ import Data.Maybe (Maybe, isJust)
 import Effect.Aff (Aff)
 import Elmish.Component (ComponentDef, ComponentDef')
 import Elmish.Component as Component
+import Music.Api.Message (Message)
 import Music.App (AppM)
 import Music.App as App
 import Music.Init (init)
-import Music.Message (Message)
 import Music.Model (Model)
 import Music.Update (update)
 import Music.View (view)

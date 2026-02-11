@@ -25,6 +25,10 @@ mkSpagoDerivation {
   checkPhase = ''
     set -x
     export PATH=''${PATH}:${nodejs}/bin
+    packages=($(ls packages))
+    for package in "''${packages[@]}"; do
+      spago build --package "''${package}" --pedantic-packages --pure --strict
+    done
     spago test
   '';
   doCheck = true;
